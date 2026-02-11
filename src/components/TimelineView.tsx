@@ -3,8 +3,10 @@ import { parseISO, format } from "date-fns";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Github, Twitter, ExternalLink, BookOpen, Link as LinkIcon, Loader2 } from "lucide-react";
+import { Github, Twitter, Link as LinkIcon, Loader2 } from "lucide-react";
 import TimelineSidebar from "./TimelineSidebar";
+import { CnblogsIcon } from "./icons/CnblogsIcon";
+import { XiaohongshuIcon } from "./icons/XiaohongshuIcon";
 import { useState, useEffect } from "react";
 import { siteConfig } from "@/config/site.config";
 
@@ -133,7 +135,8 @@ export default function TimelineView() {
                         let Icon = LinkIcon;
                         if (link.platform === 'github') Icon = Github;
                         if (link.platform === 'twitter') Icon = Twitter;
-                        if (link.platform === 'cnblogs') Icon = BookOpen;
+                        if (link.platform === 'cnblogs') Icon = CnblogsIcon;
+                        if (link.platform === 'xiaohongshu') Icon = XiaohongshuIcon;
 
                         return (
                             <a 

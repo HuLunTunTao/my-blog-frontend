@@ -107,12 +107,17 @@ export default function FolderDetailPage() {
       </motion.nav>
 
       {/* Folder Title */}
-      <motion.h1
-        variants={item}
-        className="text-4xl font-serif text-foreground"
-      >
-        {folder.name}
-      </motion.h1>
+      <div className="flex items-baseline gap-4 mb-2">
+        <motion.h1
+          variants={item}
+          className="text-4xl font-serif text-foreground"
+        >
+          {folder.name}
+        </motion.h1>
+        <motion.span variants={item} className="text-stone-500 text-lg">
+           ({folder.directPostCount ?? 0} / {folder.postCount ?? 0})
+        </motion.span>
+      </div>
 
       {/* Folder Description */}
       {folder.description && (
@@ -166,12 +171,7 @@ export default function FolderDetailPage() {
                       {subfolder.name}
                     </h3>
                     <p className="text-xs text-stone-500 mt-0.5">
-                      {subfolder.postCount ?? 0} 篇文章
-                      {subfolder.directPostCount && subfolder.directPostCount > 0 && subfolder.directPostCount !== subfolder.postCount && (
-                        <span className="opacity-70 ml-1">
-                          (直接: {subfolder.directPostCount})
-                        </span>
-                      )}
+                      {subfolder.directPostCount ?? 0} / {subfolder.postCount ?? 0} 篇文章
                     </p>
                   </div>
                   <svg

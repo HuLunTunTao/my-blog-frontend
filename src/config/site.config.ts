@@ -1,6 +1,6 @@
 
 export interface SocialLink {
-    platform: 'github' | 'twitter' | 'cnblogs' | 'other';
+  platform: 'github' | 'twitter' | 'cnblogs' | 'xiaohongshu' | 'other';
     url: string;
     label?: string;
 }
@@ -40,9 +40,14 @@ export const siteConfig: SiteConfig = {
       label: "Twitter"
     },
     {
+      platform: "xiaohongshu",
+      url: "https://www.xiaohongshu.com/user/profile/5e42316e000000000100251a",
+      label: "Red Note"
+    },
+    {
       platform: "cnblogs",
       url: "https://www.cnblogs.com/hulun",
-      label: "Blog Garden"
+      label: "CNBLOGS"
     }
   ]
 };

@@ -69,11 +69,7 @@ function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
           >
             {folder.name}
             <span className="ml-2 text-xs text-stone-400">
-               {/* Display direct/total if different, or just total if direct is 0 or same */}
-               {folder.directPostCount && folder.directPostCount !== folder.postCount 
-                  ? `(${folder.directPostCount}/${folder.postCount})`
-                  : `(${folder.postCount ?? 0})`
-               }
+               ({folder.directPostCount ?? 0} / {folder.postCount ?? 0})
             </span>
           </Link>
         ) : (

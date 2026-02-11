@@ -78,7 +78,7 @@ export default function FoldersPage() {
         </div>
         <div className="p-4 bg-stone-50/50 rounded-lg border border-stone-200/40">
           <div className="text-2xl font-serif text-foreground mb-1">
-            {countPosts(folderTree)}
+            {folderTree.postCount ?? 0}
           </div>
           <div className="text-xs text-stone-500 uppercase tracking-wider">
             文章总数
@@ -104,17 +104,6 @@ function countFolders(node: FolderNode): number {
   node.children.forEach((child) => {
     count += countFolders(child);
   });
-  return count;
-}
-
-function countPosts(node: FolderNode): number {
-  if (!node) return 0;
-  let count = (node.posts || []).length;
-  if (node.children) {
-    node.children.forEach((child) => {
-      count += countPosts(child);
-    });
-  }
   return count;
 }
 
