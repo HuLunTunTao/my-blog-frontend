@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
+import { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import mermaid from "mermaid";
 import { Link } from "react-router-dom";
 import CopyButton from "./CopyButton";
 import { getPostBySlug } from "@/lib/api";
@@ -25,35 +27,7 @@ interface MarkdownRendererProps {
 }
 
 const MAX_EMBED_DEPTH = 5;
-const MERMAID_SCRIPT_URL = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
-
-declare global {
-  interface Window {
-    mermaid?: {
-      initialize: (config: unknown) => void;
-      render: (id: string, graphDefinition: string) => Promise<{ svg: string }>;
-    };
-    __mermaidInitialized?: boolean;
-    __mermaidLoaderPromise?: Promise<void>;
-  }
-}
-
-function ensureMermaidLoaded(): Promise<void> {
-  if (typeof window === "undefined") return Promise.resolve();
-  if (window.mermaid) return Promise.resolve();
-  if (window.__mermaidLoaderPromise) return window.__mermaidLoaderPromise;
-
-  window.__mermaidLoaderPromise = new Promise<void>((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = MERMAID_SCRIPT_URL;
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load mermaid"));
-    document.head.appendChild(script);
-  });
-
-  return window.__mermaidLoaderPromise;
-}
+let mermaidInitialized = false;
 
 function MermaidBlock({ code }: { code: string }) {
   const [svg, setSvg] = useState<string>("");
@@ -64,13 +38,11 @@ function MermaidBlock({ code }: { code: string }) {
     let active = true;
     void (async () => {
       try {
-        await ensureMermaidLoaded();
-        if (!window.mermaid) throw new Error("Mermaid unavailable");
-        if (!window.__mermaidInitialized) {
-          window.mermaid.initialize({ startOnLoad: false, theme: "neutral" });
-          window.__mermaidInitialized = true;
+        if (!mermaidInitialized) {
+          mermaid.initialize({ startOnLoad: false, theme: "neutral", securityLevel: "loose" });
+          mermaidInitialized = true;
         }
-        const rendered = await window.mermaid.render(id, code);
+        const rendered = await mermaid.render(id, code);
         if (active) setSvg(rendered.svg);
       } catch (e) {
         if (active) setError(e instanceof Error ? e.message : "Mermaid render failed");
@@ -229,6 +201,12 @@ function normalizeAssetSrc(src?: string): string | undefined {
 
 export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: MarkdownRendererProps) {
   const processedContent = useMemo(() => preprocessMarkdown(content), [content]);
+  const urlTransform = useCallback((url: string) => {
+    if (url.startsWith("obsidian-embed://")) {
+      return url;
+    }
+    return defaultUrlTransform(url);
+  }, []);
 
   const components: Components = {
     code({ className, children }) {
@@ -321,13 +299,13 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       prose-h3:text-xl prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-4
       prose-p:text-foreground prose-p:leading-relaxed
       prose-code:before:content-none prose-code:after:content-none
-      prose-strong:font-black prose-strong:text-foreground prose-strong:bg-neutral-200/50 prose-strong:rounded-sm prose-strong:px-1 prose-strong:mx-0.5 prose-strong:inline-block prose-strong:leading-none prose-strong:py-0.5
+      prose-strong:font-black prose-strong:text-foreground
       prose-a:text-foreground prose-a:decoration-1 prose-a:underline-offset-4 prose-a:font-bold
       prose-blockquote:border-l-4 prose-blockquote:border-foreground prose-blockquote:bg-stone-200/20 prose-blockquote:py-4 prose-blockquote:px-8 prose-blockquote:rounded-r-lg prose-blockquote:font-kaiti prose-blockquote:italic prose-blockquote:shadow-sm prose-blockquote:text-stone-700
       prose-li:marker:text-stone-400 prose-ul:list-disc prose-ol:list-decimal
       prose-pre:bg-transparent prose-pre:p-0"
     >
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components} urlTransform={urlTransform}>
         {processedContent}
       </ReactMarkdown>
     </div>
