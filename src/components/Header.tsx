@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
+import { siteConfig } from "@/config/site.config";
 
 export default function Header() {
   return (
     <header className="md:hidden flex items-center justify-between p-6 border-b border-stone-100 bg-background/80 backdrop-blur sticky top-0 z-40">
-       {/* Brand removed */}
        <div />
        
        {/* Simple Mobile Menu Trigger (Ideally would open a drawer, but for prototype links are fine) */}

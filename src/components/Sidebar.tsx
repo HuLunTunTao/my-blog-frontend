@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { siteConfig } from "@/config/site.config";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -14,7 +15,7 @@ export default function Sidebar() {
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-20 md:w-32 lg:w-48 flex flex-col justify-between py-12 items-center border-r border-stone-200/60 z-50 bg-background/50 backdrop-blur-sm hidden md:flex">
-      {/* Brand / Logo removed as requested */}
+      {/* Brand / Logo removed */}
       <div />
 
       {/* Navigation - Bamboo Joint Style Reimagined for Visibility */}

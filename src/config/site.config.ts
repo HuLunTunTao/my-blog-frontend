@@ -6,6 +6,8 @@ export interface SocialLink {
 }
 
 export interface SiteConfig {
+  title: string;
+  logo: string;
   author: {
     name: string;
     avatar: string; // URL
@@ -16,9 +18,11 @@ export interface SiteConfig {
 }
 
 export const siteConfig: SiteConfig = {
+  title: "囫囵吞桃的个人博客",
+  logo: "🍑",
   author: {
     name: "囫囵吞桃🍑",
-    avatar: "https://avatars.githubusercontent.com/u/34204332?v=4", // Updated to a generic cnblogs placeholder or similar if the previous one was specific
+    avatar: "https://avatars.githubusercontent.com/u/34204332?v=4", 
     bio: "Developer & Designer. Writing about code, art, and life.",
     motto: "Nulla dies sine linea." // No day without a line
   },
