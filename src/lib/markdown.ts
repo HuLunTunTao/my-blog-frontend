@@ -1,104 +1,273 @@
-import { Post } from "@/data/mockData";
 import { toPostRoute } from "./postSlug";
 
+const OBSIDIAN_EMBED_SCHEME = "obsidian-embed://";
+const OBSIDIAN_WIDTH_TITLE_PREFIX = "obsidian-width=";
+
+type RefParts = {
+  slug: string;
+  fragment?: string;
+  option?: string;
+};
+
+function parseRefParts(raw: string): RefParts {
+  const [targetRaw, optionRaw] = raw.split("|", 2);
+  const target = (targetRaw || "").trim();
+  const [slugRaw, fragmentRaw] = target.split("#", 2);
+  return {
+    slug: (slugRaw || "").trim(),
+    fragment: fragmentRaw ? fragmentRaw.trim() : undefined,
+    option: optionRaw ? optionRaw.trim() : undefined,
+  };
+}
+
+function isImagePath(path: string): boolean {
+  return /\.(png|jpe?g|gif|webp|svg|bmp|avif)$/i.test(path);
+}
+
+function normalizeAssetPath(path: string): string {
+  return path
+    .trim()
+    .replace(/^\.\/+/, "")
+    .replace(/^\/+/, "");
+}
+
+function extractInlineCodeSpan(content: string, start: number): { end: number } | null {
+  let run = 0;
+  while (content[start + run] === "`") run++;
+  const delimiter = "`".repeat(run);
+  const closePos = content.indexOf(delimiter, start + run);
+  if (closePos === -1) return null;
+  return { end: closePos + run };
+}
+
+function extractFencedCode(content: string, start: number): { end: number } | null {
+  let run = 0;
+  while (content[start + run] === "`") run++;
+  if (run < 3) return null;
+  const atLineStart = start === 0 || content[start - 1] === "\n";
+  if (!atLineStart) return null;
+
+  const fence = "`".repeat(run);
+  let searchFrom = start + run;
+  while (searchFrom < content.length) {
+    const candidate = content.indexOf(`\n${fence}`, searchFrom);
+    if (candidate === -1) return null;
+    let after = candidate + 1 + run;
+    while (after < content.length && (content[after] === " " || content[after] === "\t")) after++;
+    if (after >= content.length || content[after] === "\n") {
+      let end = after;
+      if (end < content.length) end++;
+      return { end };
+    }
+    searchFrom = candidate + 1;
+  }
+  return null;
+}
+
 function maskCodeChunks(content: string): { masked: string; chunks: string[] } {
-    const chunks: string[] = [];
-    let out = "";
-    let i = 0;
+  const chunks: string[] = [];
+  let out = "";
+  let i = 0;
 
-    const pushCodeChunk = (chunk: string) => {
-        const token = `__CODE_CHUNK_${chunks.length}__`;
-        chunks.push(chunk);
-        out += token;
-    };
+  const pushChunk = (chunk: string) => {
+    const token = `__CODE_CHUNK_${chunks.length}__`;
+    chunks.push(chunk);
+    out += token;
+  };
 
-    while (i < content.length) {
-        const tickPos = content.indexOf("`", i);
-        if (tickPos === -1) {
-            out += content.slice(i);
-            break;
-        }
+  while (i < content.length) {
+    const tickPos = content.indexOf("`", i);
+    if (tickPos === -1) {
+      out += content.slice(i);
+      break;
+    }
+    out += content.slice(i, tickPos);
 
-        out += content.slice(i, tickPos);
-
-        let run = 0;
-        while (content[tickPos + run] === "`") run++;
-
-        const atLineStart = tickPos === 0 || content[tickPos - 1] === "\n";
-        if (run >= 3 && atLineStart) {
-            const fence = "`".repeat(run);
-            let closeStart = -1;
-            let searchFrom = tickPos + run;
-            while (searchFrom < content.length) {
-                const candidate = content.indexOf(`\n${fence}`, searchFrom);
-                if (candidate === -1) break;
-
-                let after = candidate + 1 + run;
-                while (after < content.length && (content[after] === " " || content[after] === "\t")) after++;
-                if (after >= content.length || content[after] === "\n") {
-                    closeStart = candidate + 1;
-                    break;
-                }
-                searchFrom = candidate + 1;
-            }
-
-            if (closeStart !== -1) {
-                let closeEnd = closeStart + run;
-                while (closeEnd < content.length && content[closeEnd] !== "\n") closeEnd++;
-                if (closeEnd < content.length) closeEnd++;
-                pushCodeChunk(content.slice(tickPos, closeEnd));
-                i = closeEnd;
-                continue;
-            }
-        }
-
-        const delimiter = "`".repeat(run);
-        const closePos = content.indexOf(delimiter, tickPos + run);
-        if (closePos !== -1) {
-            pushCodeChunk(content.slice(tickPos, closePos + run));
-            i = closePos + run;
-            continue;
-        }
-
-        out += content.slice(tickPos, tickPos + run);
-        i = tickPos + run;
+    const fenced = extractFencedCode(content, tickPos);
+    if (fenced) {
+      pushChunk(content.slice(tickPos, fenced.end));
+      i = fenced.end;
+      continue;
     }
 
-    return { masked: out, chunks };
+    const inline = extractInlineCodeSpan(content, tickPos);
+    if (inline) {
+      pushChunk(content.slice(tickPos, inline.end));
+      i = inline.end;
+      continue;
+    }
+
+    out += "`";
+    i = tickPos + 1;
+  }
+
+  return { masked: out, chunks };
 }
 
 function replaceOutsideCode(content: string, replacer: (text: string) => string): string {
-    const { masked, chunks } = maskCodeChunks(content);
-    const transformed = replacer(masked);
-    return transformed.replace(/__CODE_CHUNK_(\d+)__/g, (_, index) => {
-        const i = Number(index);
-        return chunks[i] ?? "";
-    });
+  const { masked, chunks } = maskCodeChunks(content);
+  const transformed = replacer(masked);
+  return transformed.replace(/__CODE_CHUNK_(\d+)__/g, (_, idx) => chunks[Number(idx)] ?? "");
 }
 
-export function parseWikiLinks(content: string, posts: Post[]): string {
-    return replaceOutsideCode(content, (text) => {
-        // Regex matches [[Title]] or [[Title|Alias]]
-        return text.replace(/\[\[(.*?)\]\]/g, (_, inner) => {
-            const [target, alias] = inner.split('|');
-            const title = target.trim();
-            const display = (alias || title).trim();
-            
-            const post = posts.find(p => p.title.toLowerCase() === title.toLowerCase());
-            
-            if (post) {
-                return `[${display}](${toPostRoute(post.slug)})`;
-            }
-            return display; // Fallback to text
-        });
-    });
+export function removeObsidianComments(content: string): string {
+  return replaceOutsideCode(content, (text) => text.replace(/%%[\s\S]*?%%/g, ""));
+}
+
+export function convertObsidianEmbeds(content: string): string {
+  return replaceOutsideCode(content, (text) =>
+    text.replace(/!\[\[([^\]]+)\]\]/g, (_, inner: string) => {
+      const ref = parseRefParts(inner);
+      if (!ref.slug) return "";
+
+      if (isImagePath(ref.slug)) {
+        const assetPath = normalizeAssetPath(ref.slug);
+        const alt = assetPath.split("/").pop() || "image";
+        const width = ref.option && /^\d+(?:px)?$/i.test(ref.option) ? parseInt(ref.option, 10) : undefined;
+        if (width && width > 0) {
+          return `![${alt}](/api/assets/${assetPath} "${OBSIDIAN_WIDTH_TITLE_PREFIX}${width}")`;
+        }
+        return `![${alt}](/api/assets/${assetPath})`;
+      }
+
+      return `[嵌入引用](${OBSIDIAN_EMBED_SCHEME}${encodeURIComponent(inner.trim())})`;
+    }),
+  );
+}
+
+export function parseWikiLinks(content: string): string {
+  return replaceOutsideCode(content, (text) =>
+    text.replace(/(?<!!)\[\[([^\]]+)\]\]/g, (_, inner: string) => {
+      const [targetRaw, aliasRaw] = inner.split("|", 2);
+      const target = (targetRaw || "").trim();
+      const alias = (aliasRaw || "").trim();
+      if (!target) return "";
+
+      const [slugRaw, fragmentRaw] = target.split("#", 2);
+      const slug = slugRaw.trim();
+      if (!slug) return alias || "";
+
+      const display = alias || slug.split("/").pop() || slug;
+      let href = toPostRoute(slug);
+      if (fragmentRaw) {
+        const fragment = fragmentRaw.trim();
+        const params = new URLSearchParams();
+        if (fragment.startsWith("^")) {
+          params.set("block", fragment.slice(1));
+        } else {
+          params.set("heading", fragment);
+        }
+        href += `?${params.toString()}`;
+      }
+      return `[${display}](${href})`;
+    }),
+  );
 }
 
 export function parseHashTags(content: string): string {
-    return replaceOutsideCode(content, (text) => {
-        // Matches #Tag. Ensure it's not a header (##) and has boundaries.
-        return text.replace(/(^|\s|>)#([a-zA-Z0-9\u4e00-\u9fa5]+)/g, (_, prefix, tag) => {
-            return `${prefix}[#${tag}](/tags/${tag})`;
-        });
-    });
+  return replaceOutsideCode(content, (text) =>
+    text.replace(/(^|\s|>)#([a-zA-Z0-9\u4e00-\u9fa5]+)/g, (_, prefix: string, tag: string) => {
+      return `${prefix}[#${tag}](/tags/${tag})`;
+    }),
+  );
+}
+
+export function preprocessMarkdown(content: string): string {
+  const noComments = removeObsidianComments(content);
+  const withEmbeds = convertObsidianEmbeds(noComments);
+  const withLinks = parseWikiLinks(withEmbeds);
+  return parseHashTags(withLinks);
+}
+
+export function isObsidianEmbedHref(href?: string): boolean {
+  return Boolean(href && href.startsWith(OBSIDIAN_EMBED_SCHEME));
+}
+
+export function decodeObsidianEmbedHref(href: string): string {
+  return decodeURIComponent(href.replace(OBSIDIAN_EMBED_SCHEME, ""));
+}
+
+export function getImageWidthFromTitle(title?: string): number | null {
+  if (!title || !title.startsWith(OBSIDIAN_WIDTH_TITLE_PREFIX)) return null;
+  const value = parseInt(title.slice(OBSIDIAN_WIDTH_TITLE_PREFIX.length), 10);
+  if (!Number.isFinite(value) || value <= 0) return null;
+  return value;
+}
+
+export function parseObsidianRef(raw: string): RefParts {
+  return parseRefParts(raw);
+}
+
+function stripBlockIdSuffix(line: string): string {
+  return line.replace(/\s+\^[A-Za-z0-9_-]+\s*$/, "").trim();
+}
+
+function headingLevel(line: string): number {
+  const m = /^(#{1,6})\s+/.exec(line);
+  return m ? m[1].length : 0;
+}
+
+function extractByHeading(content: string, heading: string): string {
+  const target = heading.trim().toLowerCase();
+  if (!target) return "";
+  const lines = content.split("\n");
+  let start = -1;
+  let level = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const lv = headingLevel(lines[i]);
+    if (lv === 0) continue;
+    const text = stripBlockIdSuffix(lines[i].replace(/^#{1,6}\s+/, "")).toLowerCase();
+    if (text === target) {
+      start = i;
+      level = lv;
+      break;
+    }
+  }
+  if (start === -1) return "";
+  let end = lines.length;
+  for (let i = start + 1; i < lines.length; i++) {
+    const lv = headingLevel(lines[i]);
+    if (lv > 0 && lv <= level) {
+      end = i;
+      break;
+    }
+  }
+  return lines.slice(start, end).join("\n").trim();
+}
+
+function extractByBlockId(content: string, blockId: string): string {
+  const id = blockId.replace(/^\^/, "").trim();
+  if (!id) return "";
+  const lines = content.split("\n");
+  const mark = `^${id}`;
+  for (let i = 0; i < lines.length; i++) {
+    if (!lines[i].includes(mark)) continue;
+    const lv = headingLevel(lines[i]);
+    if (lv > 0) {
+      let end = lines.length;
+      for (let j = i + 1; j < lines.length; j++) {
+        const nl = headingLevel(lines[j]);
+        if (nl > 0 && nl <= lv) {
+          end = j;
+          break;
+        }
+      }
+      return lines.slice(i, end).join("\n").trim();
+    }
+
+    let start = i;
+    while (start > 0 && lines[start - 1].trim() !== "") start--;
+    let end = i + 1;
+    while (end < lines.length && lines[end].trim() !== "") end++;
+    return lines.slice(start, end).join("\n").trim();
+  }
+  return "";
+}
+
+export function extractObsidianFragment(content: string, fragment?: string): string {
+  if (!fragment) return content;
+  if (fragment.startsWith("^")) {
+    return extractByBlockId(content, fragment) || "";
+  }
+  return extractByHeading(content, fragment) || "";
 }
