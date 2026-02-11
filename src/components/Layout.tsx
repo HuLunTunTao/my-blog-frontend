@@ -37,7 +37,7 @@ export default function Layout() {
       {/* Added left margin for sidebar offset on desktop */}
       <main className="flex-1 md:ml-20 lg:ml-48 min-h-screen relative w-full z-10">
         {/* Container for content - aligned slightly left or center, breathy */}
-        <div className="w-full max-w-4xl mx-auto px-6 py-12 md:py-20 md:px-12 lg:px-24">
+        <div className="w-full max-w-7xl mx-auto px-6 py-12 md:py-20 md:px-12 lg:px-24">
             <Outlet />
         </div>
         

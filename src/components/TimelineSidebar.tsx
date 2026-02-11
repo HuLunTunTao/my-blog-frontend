@@ -15,7 +15,7 @@ export default function TimelineSidebar({ groups, activeYear, onSelectYear }: Ti
     <motion.aside 
       initial={{ opacity: 0, x: 10 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.8, delay: 0.5 }}
+      transition={{ duration: 0.5, delay: 0.3 }}
       // Moved to RIGHT side, visible on larger screens
       className="hidden xl:flex fixed right-12 top-1/2 -translate-y-1/2 flex-col items-center gap-4 z-40 w-12"
     >

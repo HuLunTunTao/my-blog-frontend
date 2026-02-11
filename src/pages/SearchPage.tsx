@@ -57,7 +57,14 @@ export default function SearchPage() {
         )}
         
         {results.map((post) => (
-          <article key={post.slug} className="group pb-8 border-b border-dashed border-border last:border-0">
+          <article key={post.slug} className="group relative p-6 transition-all duration-300 hover:translate-x-1">
+             {/* Individual Paper Layer */}
+             <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] rounded-sm" 
+                  style={{
+                    backgroundImage: `url("/assets/paperGrain-128.svg")`
+                  }}
+             />
+
              <Link to={`/posts/${post.slug}`} className="block space-y-2">
                 <div className="flex justify-between items-baseline">
                     <h2 className="text-xl font-medium group-hover:underline decoration-1 underline-offset-4">

@@ -11,14 +11,14 @@ const container = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.05
+      staggerChildren: 0.03
     }
   }
 };
 
 const item = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+  show: { opacity: 1, y: 0, transition: { duration: 0.2 } }
 };
 
 export default function TimelineView() {
@@ -113,10 +113,17 @@ export default function TimelineView() {
                         <div className="h-px bg-border flex-1" />
                       </div>
                       
-                      <div className="space-y-10 pl-2">
+                      <div className="space-y-4 pl-2">
                         {monthPosts.map((post) => (
-                          <article key={post.slug} className="group relative pl-4 border-l border-neutral-200 hover:border-black transition-colors duration-300">
-                            <header className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-2">
+                          <article key={post.slug} className="group relative py-4 px-6 transition-all duration-300 hover:translate-x-1">
+                            {/* Individual Paper Layer */}
+                            <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] rounded-sm" 
+                                 style={{
+                                   backgroundImage: `url("/assets/paperGrain-128.svg")`
+                                 }}
+                            />
+
+                            <header className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-1">
                               <Link 
                                   to={`/posts/${post.slug}`}
                                   className={cn(

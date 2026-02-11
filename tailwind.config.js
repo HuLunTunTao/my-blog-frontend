@@ -21,6 +21,9 @@ export default {
         ],
         serif: [
           "Songti SC", "Noto Serif SC", "SimSun", "Times New Roman", "serif"
+        ],
+        kaiti: [
+          "Kaiti SC", "STKaiti", "KaiTi", "serif"
         ]
       },
       maxWidth: {
@@ -28,5 +31,7 @@ export default {
       }
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }
