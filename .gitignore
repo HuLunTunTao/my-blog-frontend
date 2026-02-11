@@ -1,0 +1,64 @@
+# Node
+node_modules/
+
+# Vite / build
+dist/
+.vite/
+build/
+out/
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Testing / coverage
+coverage/
+.nyc_output/
+
+# Caches
+.cache/
+.parcel-cache/
+/.pnp/
+
+# ESLint
+.eslintcache
+
+# Storybook
+storybook-static/
+
+# Turbo / pnpm / yarn modern files
+.turbo/
+.turbo-cache/
+.pnp.cjs
+
+# Misc
+*.local
+*.swp
+node_modules
+
+.agent/
