@@ -1,5 +1,116 @@
-import { Post, mockPosts } from "@/data/mockData";
+import { Post, mockPosts, FolderNode } from "@/data/mockData";
 import { compareDesc, format, parseISO } from "date-fns";
+
+// Helper function to check if a post is a folder description
+function isFolderDescription(post: Post): boolean {
+  return post.slug.startsWith('_folder_');
+}
+
+// Build folder tree structure from posts
+export function buildFolderTree(): FolderNode {
+  const root: FolderNode = {
+    name: '根目录',
+    path: '',
+    children: [],
+    posts: []
+  };
+
+  const folderMap = new Map<string, FolderNode>();
+  folderMap.set('', root);
+
+  // First pass: create all folders
+  mockPosts.forEach(post => {
+    const path = post.path || '';
+    if (!path) return;
+
+    const parts = path.split('/');
+    let currentPath = '';
+
+    parts.forEach(part => {
+      const parentPath = currentPath;
+      currentPath = currentPath ? `${currentPath}/${part}` : part;
+
+      if (!folderMap.has(currentPath)) {
+        const newFolder: FolderNode = {
+          name: part,
+          path: currentPath,
+          children: [],
+          posts: []
+        };
+
+        folderMap.set(currentPath, newFolder);
+        
+        // Add to parent
+        const parent = folderMap.get(parentPath);
+        if (parent) {
+          parent.children.push(newFolder);
+        }
+      }
+    });
+  });
+
+  // Second pass: assign posts and descriptions to folders
+  mockPosts.forEach(post => {
+    const path = post.path || '';
+    const folder = folderMap.get(path);
+
+    if (folder) {
+      if (isFolderDescription(post)) {
+        // This is a folder description
+        folder.description = post.content;
+      } else {
+        // This is a regular post
+        if (post.visibility !== 'private' && !post.masked) {
+          folder.posts.push(post);
+        }
+      }
+    }
+  });
+
+  // Sort posts in each folder by date
+  folderMap.forEach(folder => {
+    folder.posts.sort((a, b) => compareDesc(parseISO(a.date), parseISO(b.date)));
+  });
+
+  return root;
+}
+
+// Get a specific folder by path
+export function getFolderByPath(path: string): FolderNode | undefined {
+  const tree = buildFolderTree();
+  
+  if (!path || path === '') {
+    return tree;
+  }
+
+  const parts = path.split('/');
+  let current: FolderNode | undefined = tree;
+
+  for (const part of parts) {
+    if (!current) return undefined;
+    current = current.children.find(child => child.name === part);
+  }
+
+  return current;
+}
+
+// Get all posts under a folder (including subfolders)
+export function getAllPostsInFolder(path: string, includeSubfolders: boolean = false): Post[] {
+  const folder = getFolderByPath(path);
+  if (!folder) return [];
+
+  let posts = [...folder.posts];
+
+  if (includeSubfolders) {
+    const collectPosts = (node: FolderNode) => {
+      posts.push(...node.posts);
+      node.children.forEach(collectPosts);
+    };
+    folder.children.forEach(collectPosts);
+  }
+
+  return posts.sort((a, b) => compareDesc(parseISO(a.date), parseISO(b.date)));
+}
 
 export function getAllPosts(): Post[] {
   return mockPosts.sort((a, b) => compareDesc(parseISO(a.date), parseISO(b.date)));

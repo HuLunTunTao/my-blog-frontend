@@ -5,6 +5,8 @@ import AllTagsPage from "./pages/AllTagsPage";
 import TagDetailPage from "./pages/TagDetailPage";
 import SearchPage from "./pages/SearchPage";
 import PostPage from "./pages/PostPage";
+import FoldersPage from "./pages/FoldersPage";
+import FolderDetailPage from "./pages/FolderDetailPage";
 import { useEffect } from "react";
 import { siteConfig } from "./config/site.config";
 
@@ -18,6 +20,8 @@ const router = createBrowserRouter([
       { path: "tags/:tag", element: <TagDetailPage /> },
       { path: "search", element: <SearchPage /> },
       { path: "posts/:slug", element: <PostPage /> },
+      { path: "folders", element: <FoldersPage /> },
+      { path: "folders/:path", element: <FolderDetailPage /> },
     ],
   },
 ], {

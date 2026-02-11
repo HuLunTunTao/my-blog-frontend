@@ -1,7 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { siteConfig } from "@/config/site.config";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -9,6 +7,7 @@ export default function Sidebar() {
 
   const navItems = [
     { name: "Time", path: "/", zh: "岁" },
+    { name: "Folders", path: "/folders", zh: "录" },
     { name: "Tags", path: "/tags", zh: "类" },
     { name: "Search", path: "/search", zh: "寻" },
   ];

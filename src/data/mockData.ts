@@ -8,6 +8,16 @@ export interface Post {
   excerpt: string;
   content: string;
   encryptedPassword?: string;
+  path?: string; // Folder path, e.g., "tech/frontend" or "" for root
+}
+
+// Folder structure to represent directory hierarchy
+export interface FolderNode {
+  name: string; // Folder name
+  path: string; // Full path, e.g., "tech/frontend"
+  description?: string; // Optional description content from a special file
+  children: FolderNode[]; // Sub-folders
+  posts: Post[]; // Posts directly in this folder
 }
 
 export const mockPosts: Post[] = [
@@ -56,7 +66,8 @@ console.log(inkWash(3));
 - 清 (Clear)
 
 这也正是 [[Markdown 渲染测试]] 所需要展示的能力。
-    `
+    `,
+    path: ""
   },
   {
     slug: "markdown-test",
@@ -125,7 +136,8 @@ fn main() {
 - 内部Wiki链接: [[Hello World]] (指向第一篇文章)
 - 标签链接: #Tech #Test
 
-`
+`,
+    path: ""
   },
   {
     slug: "hello-world",
@@ -148,7 +160,8 @@ Here is some code:
 \`\`\`typescript
 console.log("Hello World");
 \`\`\`
-    `
+    `,
+    path: ""
   },
   {
     slug: "the-meaning-of-life",
@@ -158,7 +171,8 @@ console.log("Hello World");
     visibility: "public",
     masked: false,
     excerpt: "Exploring the depths.",
-    content: "The answer is 42. See also [[Deep Thought]]."
+    content: "The answer is 42. See also [[Deep Thought]].",
+    path: ""
   },
   {
     slug: "deep-thought",
@@ -168,7 +182,8 @@ console.log("Hello World");
     visibility: "public",
     masked: false,
     excerpt: "Computers thinking deep thoughts.",
-    content: "Calculating... Please wait."
+    content: "Calculating... Please wait.",
+    path: ""
   },
   {
     slug: "secret-diary",
@@ -178,7 +193,8 @@ console.log("Hello World");
     visibility: "private",
     masked: false,
     excerpt: "You shouldn't see this.",
-    content: "This is top secret."
+    content: "This is top secret.",
+    path: ""
   },
   {
     slug: "masked-thoughts",
@@ -188,7 +204,8 @@ console.log("Hello World");
     visibility: "public",
     masked: true,
     excerpt: "Hidden behind a mask.",
-    content: "You cannot see me on the timeline easily."
+    content: "You cannot see me on the timeline easily.",
+    path: ""
   },
   {
     slug: "encrypted-note",
@@ -199,7 +216,8 @@ console.log("Hello World");
     masked: false,
     excerpt: "Password required.",
     content: "The secret code is: BANANA",
-    encryptedPassword: "123"
+    encryptedPassword: "123",
+    path: ""
   },
   {
     slug: "obsidian-workflow",
@@ -209,7 +227,8 @@ console.log("Hello World");
     visibility: "public",
     masked: false,
     excerpt: "How I use Obsidian.",
-    content: "I use [[Double Brackets]] for linking and #Tags for organizing."
+    content: "I use [[Double Brackets]] for linking and #Tags for organizing.",
+    path: ""
   },
   {
     slug: "zen-mode",
@@ -219,7 +238,8 @@ console.log("Hello World");
     visibility: "public",
     masked: false,
     excerpt: "Achieving peace.",
-    content: "Just breathe. And maybe read [[Hello World|my first post]]."
+    content: "Just breathe. And maybe read [[Hello World|my first post]].",
+    path: ""
   },
   {
     slug: "_tag_philosophy",
@@ -229,7 +249,8 @@ console.log("Hello World");
     visibility: "private", // Helper post
     masked: true,
     excerpt: "",
-    content: "Philosophy is the study of general and fundamental questions, such as those about existence, reason, knowledge, values, mind, and language."
+    content: "Philosophy is the study of general and fundamental questions, such as those about existence, reason, knowledge, values, mind, and language.",
+    path: ""
   },
   {
     slug: "another-brick-in-the-wall",
@@ -239,6 +260,185 @@ console.log("Hello World");
     visibility: "public",
     masked: false,
     excerpt: "We don't need no education.",
-    content: "Pink Floyd is great."
+    content: "Pink Floyd is great.",
+    path: ""
+  },
+  // Folder-structured posts
+  {
+    slug: "_folder_tech",
+    title: "技术文件夹",
+    date: "2024-01-01",
+    tags: [],
+    visibility: "public",
+    masked: false,
+    excerpt: "技术相关文章的集合",
+    content: `# 技术专栏
+
+这里收录了我在技术领域的思考和实践。
+
+包括前端开发、后端架构、数据库设计等多个方向的文章。`,
+    path: "tech"
+  },
+  {
+    slug: "react-hooks-guide",
+    title: "React Hooks 完全指南",
+    date: "2024-02-10",
+    tags: ["Tech", "React"],
+    visibility: "public",
+    masked: false,
+    excerpt: "深入理解 React Hooks 的原理和最佳实践",
+    content: `# React Hooks 完全指南
+
+## useState 的妙用
+
+\`\`\`typescript
+const [count, setCount] = useState(0);
+\`\`\`
+
+Hooks 让函数组件拥有了状态管理的能力。`,
+    path: "tech/frontend"
+  },
+  {
+    slug: "_folder_tech_frontend",
+    title: "前端开发",
+    date: "2024-01-15",
+    tags: [],
+    visibility: "public",
+    masked: false,
+    excerpt: "前端技术专题",
+    content: `# 前端开发专栏
+
+关于现代前端开发的技术分享，包括：
+- React/Vue 框架
+- TypeScript
+- 性能优化
+- 工程化实践`,
+    path: "tech/frontend"
+  },
+  {
+    slug: "typescript-advanced",
+    title: "TypeScript 高级类型",
+    date: "2024-02-05",
+    tags: ["Tech", "TypeScript"],
+    visibility: "public",
+    masked: false,
+    excerpt: "掌握 TypeScript 的高级类型系统",
+    content: `# TypeScript 高级类型
+
+## 泛型约束
+
+\`\`\`typescript
+function getProperty<T, K extends keyof T>(obj: T, key: K) {
+  return obj[key];
+}
+\`\`\``,
+    path: "tech/frontend"
+  },
+  {
+    slug: "nodejs-best-practices",
+    title: "Node.js 最佳实践",
+    date: "2024-01-20",
+    tags: ["Tech", "Node.js"],
+    visibility: "public",
+    masked: false,
+    excerpt: "构建可靠的 Node.js 应用",
+    content: `# Node.js 最佳实践
+
+## 错误处理
+
+始终使用 try-catch 包裹异步操作。`,
+    path: "tech/backend"
+  },
+  {
+    slug: "_folder_tech_backend",
+    title: "后端开发",
+    date: "2024-01-10",
+    tags: [],
+    visibility: "public",
+    masked: false,
+    excerpt: "后端技术专题",
+    content: `# 后端开发专栏
+
+服务端开发的技术要点：
+- API 设计
+- 数据库优化
+- 微服务架构
+- 性能调优`,
+    path: "tech/backend"
+  },
+  {
+    slug: "database-indexing",
+    title: "数据库索引优化",
+    date: "2024-01-18",
+    tags: ["Tech", "Database"],
+    visibility: "public",
+    masked: false,
+    excerpt: "理解索引原理，提升查询性能",
+    content: `# 数据库索引优化
+
+正确使用索引可以大幅提升查询性能。
+
+## B-Tree 索引
+
+最常用的索引类型。`,
+    path: "tech/backend"
+  },
+  {
+    slug: "_folder_life",
+    title: "生活随笔",
+    date: "2024-01-01",
+    tags: [],
+    visibility: "public",
+    masked: false,
+    excerpt: "记录生活的点滴",
+    content: `# 生活随笔
+
+这里是我的生活记录，包括旅行、阅读、思考等内容。`,
+    path: "life"
+  },
+  {
+    slug: "travel-kyoto",
+    title: "京都之旅",
+    date: "2023-12-20",
+    tags: ["Life", "Travel"],
+    visibility: "public",
+    masked: false,
+    excerpt: "在古都感受时光的沉淀",
+    content: `# 京都之旅
+
+漫步在清水寺，感受千年古都的韵味。
+
+![京都街景](https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&q=80&w=1000)`,
+    path: "life/travel"
+  },
+  {
+    slug: "_folder_life_travel",
+    title: "旅行记录",
+    date: "2023-12-01",
+    tags: [],
+    visibility: "public",
+    masked: false,
+    excerpt: "世界那么大",
+    content: `# 旅行记录
+
+记录在路上的所见所闻，分享旅行的故事和感悟。`,
+    path: "life/travel"
+  },
+  {
+    slug: "book-review-sapiens",
+    title: "《人类简史》读后感",
+    date: "2023-11-15",
+    tags: ["Life", "Book"],
+    visibility: "public",
+    masked: false,
+    excerpt: "重新认识人类的历史",
+    content: `# 《人类简史》读后感
+
+尤瓦尔·赫拉利用独特的视角解读人类历史。
+
+## 认知革命
+
+虚构的故事让智人能够大规模协作。`,
+    path: "life/reading"
   }
 ];
