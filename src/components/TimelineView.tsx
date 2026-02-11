@@ -3,8 +3,10 @@ import { parseISO, format } from "date-fns";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { Github, Twitter, ExternalLink, BookOpen, Link as LinkIcon } from "lucide-react";
 import TimelineSidebar from "./TimelineSidebar";
 import { useState, useEffect } from "react";
+import { siteConfig } from "@/config/site.config";
 
 const container = {
   hidden: { opacity: 0 },
@@ -59,40 +61,71 @@ export default function TimelineView() {
         className="space-y-24 relative"
       >
         {/* Hero Section */}
-        <motion.section variants={item} className="py-16 md:py-24 flex flex-col md:flex-row items-center gap-8 md:gap-12 md:pl-4 border-b border-stone-200/50 pb-24 mb-12">
+        <motion.section variants={item} className="py-16 md:py-24 flex flex-col md:flex-row items-center gap-8 md:gap-16 md:pl-4 border-b border-stone-200/50 pb-24 mb-12">
             <div className="relative shrink-0">
-                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-stone-200/50 flex items-center justify-center overflow-hidden border border-stone-300">
-                   {/* Replace with your image */}
-                   <span className="text-4xl grayscale opacity-50">👤</span>
+                <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-stone-200/50 flex items-center justify-center overflow-hidden border border-stone-300 shadow-inner">
+                   {siteConfig.author.avatar ? (
+                     <img 
+                        src={siteConfig.author.avatar} 
+                        alt={siteConfig.author.name} 
+                        className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity duration-700" 
+                        referrerPolicy="no-referrer"
+                     />
+                   ) : (
+                     <span className="text-4xl grayscale opacity-50">👤</span>
+                   )}
                 </div>
                 {/* Decorative circle behind */}
-                <div className="absolute inset-0 border border-dashed border-stone-300 rounded-full scale-125 animate-spin-slow opacity-30 pointer-events-none"></div>
+                <div className="absolute inset-0 border border-dashed border-stone-300 rounded-full scale-110 animate-spin-slow opacity-30 pointer-events-none"></div>
             </div>
             
             <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
-                <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground tracking-tight">
-                    Author Name
+                <h1 className="text-2xl md:text-3xl font-serif font-black text-foreground tracking-tight">
+                    {siteConfig.author.name}
                 </h1>
-                <div className="text-sm md:text-base text-stone-500 leading-relaxed max-w-md font-sans">
-                    <p>Developer & Designer. Writing about code, art, and life.</p>
+                <div className="text-sm md:text-lg text-stone-600 leading-relaxed max-w-md font-sans">
+                    <p>{siteConfig.author.bio}</p>
                 </div>
                 <div className="pt-2">
-                    <span className="text-xs font-serif italic text-stone-400 border-t border-stone-200 pt-2 px-2 md:px-0 md:border-t-0 md:border-l md:pl-3 block md:inline-block">
-                        "Nulla dies sine linea."
+                    <span className="text-sm font-serif italic text-stone-500 border-t border-stone-200 pt-2 px-4 md:px-0 md:border-t-0 md:border-l md:pl-4 block md:inline-block">
+                        "{siteConfig.author.motto}"
                     </span>
+                </div>
+
+                {/* Social Links */}
+                <div className="flex gap-4 pt-4">
+                    {siteConfig.socialLinks.map((link) => {
+                        let Icon = LinkIcon;
+                        if (link.platform === 'github') Icon = Github;
+                        if (link.platform === 'twitter') Icon = Twitter;
+                        if (link.platform === 'cnblogs') Icon = BookOpen;
+
+                        return (
+                            <a 
+                                key={link.platform}
+                                href={link.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-200/50 rounded-full transition-all duration-300 group"
+                                title={link.label}
+                            >
+                                <Icon size={20} className="group-hover:scale-110 transition-transform" />
+                            </a>
+                        );
+                    })}
                 </div>
             </div>
         </motion.section>
 
         {years.map((year) => (
           <div key={year} id={`year-${year}`} className="relative scroll-mt-32">
-             {/* Year Marker - More prominent now */}
-            <div className="flex items-baseline border-b border-black pb-4 mb-12">
-                <span className="text-6xl md:text-8xl font-black text-neutral-100 absolute -left-4 -top-8 md:-left-12 md:-top-16 -z-10 select-none">
+             {/* Year Marker - Optimized: Ink wash style, muted, serif water mark */}
+            <div className="flex items-baseline border-b border-black pb-4 mb-12 relative">
+                <span className="text-7xl md:text-8xl font-serif font-bold text-stone-950 absolute -left-2 -top-4 md:-left-4 md:-top-6 -z-10 select-none opacity-[0.1] blur-[0.5px]">
                     {year}
                 </span>
-                <h2 className="text-3xl font-serif font-bold tracking-tight">{year}</h2>
-                <span className="ml-4 text-xs font-sans uppercase tracking-widest text-subtle">
+                <h2 className="text-3xl font-serif font-bold tracking-tight z-10">{year}</h2>
+                <span className="ml-4 text-xs font-sans uppercase tracking-widest text-subtle z-10 self-center translate-y-[2px]">
                     Archive
                 </span>
             </div>

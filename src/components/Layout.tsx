@@ -1,6 +1,7 @@
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { Outlet, ScrollRestoration } from "react-router-dom";
+import { siteConfig } from "@/config/site.config";
 
 export default function Layout() {
   return (
@@ -41,8 +42,21 @@ export default function Layout() {
             <Outlet />
         </div>
         
-        <footer className="py-12 text-center text-[10px] text-stone-300 md:hidden">
-          &copy; {new Date().getFullYear()} My Blog.
+        <footer className="py-12 mt-12 border-t border-stone-200/50 text-center text-xs text-stone-400 font-sans tracking-widest flex flex-col items-center gap-4">
+            <div className="flex gap-6">
+                {siteConfig.socialLinks.map((link) => (
+                    <a 
+                        key={link.platform} 
+                        href={link.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="hover:text-stone-600 transition-colors uppercase"
+                    >
+                        {link.label || link.platform}
+                    </a>
+                ))}
+            </div>
+            <span>&copy; {new Date().getFullYear()} {siteConfig.author.name}. All rights reserved.</span>
         </footer>
       </main>
       
