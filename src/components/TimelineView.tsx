@@ -150,7 +150,7 @@ export default function TimelineView() {
                         {monthPosts.map((post) => (
                           <article key={post.slug} className="group relative py-4 px-6 transition-all duration-300 hover:translate-x-1">
                             {/* Individual Paper Layer */}
-                            <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] rounded-sm" 
+                            <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] rounded-none" 
                                  style={{
                                    backgroundImage: `url("/assets/paperGrain-128.svg")`
                                  }}
