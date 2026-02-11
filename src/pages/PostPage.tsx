@@ -33,9 +33,14 @@ export default function PostPage() {
 
   return (
     <motion.article 
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }} // smooth, powerful ease
+      key={slug}
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -15 }}
+      transition={{ 
+        duration: 0.5, 
+        ease: [0.23, 1, 0.32, 1] // Custom quintic ease-out for a "ink spreading" feel
+      }} 
       className="max-w-5xl mx-auto relative group"
     >
       {/* Paper texture overlay - Extremely Subtle Xuan Paper */}
@@ -64,9 +69,9 @@ export default function PostPage() {
         <EncryptedGate post={post} onUnlock={() => setUnlocked(true)} />
       ) : (
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
         >
              <MarkdownRenderer content={post.content} />
         </motion.div>
