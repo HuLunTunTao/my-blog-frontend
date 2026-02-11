@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown';
+import type { Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -16,6 +17,44 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
   const contentWithLinks = parseWikiLinks(content, mockPosts);
   const processedContent = parseHashTags(contentWithLinks);
 
+  const components: Components = {
+    code({ className, children }) {
+      const match = /language-(\w+)/.exec(className || '');
+      return match ? (
+        <div className="relative group my-10">
+          <CopyButton text={String(children).replace(/\n$/, '')} />
+          <SyntaxHighlighter
+            style={oneLight as any}
+            language={match[1]}
+            PreTag="div"
+            useInlineStyles={true}
+            customStyle={{ 
+              background: '#FBFBFA', 
+              padding: '2rem', 
+              borderRadius: '0', 
+              fontSize: '0.875rem', 
+              border: '1px solid #D6D3D1',
+              margin: 0
+            }}
+          >
+            {String(children).replace(/\n$/, '')}
+          </SyntaxHighlighter>
+        </div>
+      ) : (
+        <code className={`${className} bg-neutral-200/60 px-1.5 py-0.5 rounded font-mono text-sm border border-neutral-300/50 text-foreground`}>
+          {children}
+        </code>
+      );
+    },
+    // Custom link component to handle internal links via React Router
+    a({ href, children, ...props }) {
+      if (href?.startsWith('/')) {
+        return <Link to={href} {...props}>{children}</Link>;
+      }
+      return <a href={href} target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
+    }
+  };
+
   return (
     <div className="prose prose-neutral max-w-none 
       prose-headings:font-serif prose-headings:text-foreground prose-headings:font-bold
@@ -30,44 +69,7 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
       prose-pre:bg-transparent prose-pre:p-0">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        components={{
-          code({ node, inline, className, children, ...props }: any) {
-            const match = /language-(\w+)/.exec(className || '');
-            return !inline && match ? (
-              <div className="relative group my-10">
-                <CopyButton text={String(children).replace(/\n$/, '')} />
-                <SyntaxHighlighter
-                  style={oneLight}
-                  language={match[1]}
-                  PreTag="div"
-                  useInlineStyles={true}
-                  customStyle={{ 
-                    background: '#FBFBFA', 
-                    padding: '2rem', 
-                    borderRadius: '0', 
-                    fontSize: '0.875rem', 
-                    border: '1px solid #D6D3D1',
-                    margin: 0
-                  }}
-                  {...props}
-                >
-                  {String(children).replace(/\n$/, '')}
-                </SyntaxHighlighter>
-              </div>
-            ) : (
-              <code className={`${className} bg-neutral-200/60 px-1.5 py-0.5 rounded font-mono text-sm border border-neutral-300/50 text-foreground`} {...props}>
-                {children}
-              </code>
-            );
-          },
-          // Custom link component to handle internal links via React Router
-          a({ href, children, ...props }) {
-              if (href?.startsWith('/')) {
-                  return <Link to={href} {...props}>{children}</Link>
-              }
-              return <a href={href} target="_blank" rel="noopener noreferrer" {...props}>{children}</a>
-          }
-        }}
+        components={components}
       >
         {processedContent}
       </ReactMarkdown>

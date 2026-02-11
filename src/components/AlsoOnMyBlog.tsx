@@ -1,79 +1,90 @@
 import { Link } from "react-router-dom";
 import { type Post } from "@/lib/posts";
-import { getRelatedPostsByTags, getPrevNextPost } from "@/lib/posts";
-import { useState, useEffect } from "react";
+import { getNearbyPostsByDate, getRelatedPostsByTags } from "@/lib/posts";
+import { useState, useEffect, useCallback } from "react";
+import { toPostRoute } from "@/lib/postSlug";
 
 interface Props {
   currentPost: Post;
 }
 
 export default function AlsoOnMyBlog({ currentPost }: Props) {
-  const [related, setRelated] = useState<Post[]>([]);
-  const [prev, setPrev] = useState<Post | undefined>();
-  const [next, setNext] = useState<Post | undefined>();
+  const [tagRelated, setTagRelated] = useState<Post[]>([]);
+  const [nearby, setNearby] = useState<Post[]>([]);
 
-  useEffect(() => {
-    loadRelated();
-  }, [currentPost.slug]);
-
-  const loadRelated = async () => {
+  const loadRelated = useCallback(async () => {
     try {
-      const relatedPosts = await getRelatedPostsByTags(currentPost.slug, currentPost.tags);
-      setRelated(relatedPosts);
+      const [relatedPosts, nearbyPosts] = await Promise.all([
+        getRelatedPostsByTags(currentPost.slug, currentPost.tags),
+        getNearbyPostsByDate(currentPost.slug, currentPost.date),
+      ]);
+      setTagRelated(relatedPosts);
 
-      const { prev: prevPost, next: nextPost } = await getPrevNextPost(currentPost.slug);
-      setPrev(prevPost);
-      setNext(nextPost);
+      // 去重，避免同一篇同时出现在两个区块
+      const relatedSet = new Set(relatedPosts.map((p) => p.slug));
+      setNearby(nearbyPosts.filter((p) => !relatedSet.has(p.slug)));
     } catch (error) {
       console.error("Failed to load related posts:", error);
     }
-  };
+  }, [currentPost.slug, currentPost.tags]);
+
+  useEffect(() => {
+    void loadRelated();
+  }, [loadRelated]);
 
   return (
     <div className="mt-24 pt-12 border-t border-border space-y-12">
-      {(prev || next) && (
-        <div className="grid grid-cols-2 gap-8 text-sm">
-            <div>
-                {prev && (
-                    <Link to={`/posts/${prev.slug}`} className="group block text-right md:text-left">
-                        <span className="text-subtle text-xs uppercase tracking-widest block mb-1">Previous</span>
-                        <span className="group-hover:underline decoration-1 underline-offset-4 line-clamp-1">
-                            {prev.title}
-                        </span>
-                    </Link>
-                )}
-            </div>
-            <div className="text-right">
-                {next && (
-                     <Link to={`/posts/${next.slug}`} className="group block">
-                        <span className="text-subtle text-xs uppercase tracking-widest block mb-1">Next</span>
-                        <span className="group-hover:underline decoration-1 underline-offset-4 line-clamp-1">
-                            {next.title}
-                        </span>
-                    </Link>
-                )}
-            </div>
-        </div>
-      )}
-
-      {related.length > 0 && (
+      {(tagRelated.length > 0 || nearby.length > 0) && (
         <div>
           <h3 className="text-sm font-sans font-bold text-subtle uppercase tracking-widest mb-6 border-b border-border pb-2 inline-block">
             Also on My Blog
           </h3>
-          <ul className="space-y-3">
-            {related.map((post) => (
-              <li key={post.slug}>
-                <Link 
-                    to={`/posts/${post.slug}`}
-                    className="group flex justify-between items-baseline hover:bg-neutral-50 p-2 -mx-2 rounded transition-colors"
-                >
-                  <span className="group-hover:underline decoration-1 underline-offset-4">{post.title}</span>
-                  <span className="text-xs text-subtle">{post.date}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {tagRelated.length > 0 && (
+            <div className="mb-8">
+              <h4 className="text-xs uppercase tracking-widest text-subtle mb-3">Same tags</h4>
+              <ul className="themed-scrollbar flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
+                {tagRelated.map((post) => (
+                  <li key={`tag-${post.slug}`} className="min-w-[260px] max-w-[320px] snap-start shrink-0">
+                    <Link
+                      to={toPostRoute(post.slug)}
+                      className="group block border border-stone-200/70 bg-white/60 p-4 h-full hover:bg-neutral-50 transition-colors"
+                    >
+                      <div className="flex justify-between items-baseline gap-3 mb-2">
+                        <span className="group-hover:underline decoration-1 underline-offset-4 line-clamp-2">{post.title}</span>
+                        <span className="text-xs text-subtle shrink-0">{post.date}</span>
+                      </div>
+                      <p className="text-xs text-stone-600 leading-relaxed line-clamp-3">
+                        {post.excerpt || "暂无简述"}
+                      </p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {nearby.length > 0 && (
+            <div>
+              <h4 className="text-xs uppercase tracking-widest text-subtle mb-3">Nearby in time</h4>
+              <ul className="themed-scrollbar flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
+                {nearby.map((post) => (
+                  <li key={`near-${post.slug}`} className="min-w-[260px] max-w-[320px] snap-start shrink-0">
+                    <Link
+                      to={toPostRoute(post.slug)}
+                      className="group block border border-stone-200/70 bg-white/60 p-4 h-full hover:bg-neutral-50 transition-colors"
+                    >
+                      <div className="flex justify-between items-baseline gap-3 mb-2">
+                        <span className="group-hover:underline decoration-1 underline-offset-4 line-clamp-2">{post.title}</span>
+                        <span className="text-xs text-subtle shrink-0">{post.date}</span>
+                      </div>
+                      <p className="text-xs text-stone-600 leading-relaxed line-clamp-3">
+                        {post.excerpt || "暂无简述"}
+                      </p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -3,8 +3,9 @@ import { getFolderByPath, getAllPostsInFolder, Post, FolderNode } from "@/lib/po
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { format, parseISO } from "date-fns";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
+import { toPostRoute } from "@/lib/postSlug";
 
 const container = {
   hidden: { opacity: 0 },
@@ -28,11 +29,7 @@ export default function FolderDetailPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadFolder();
-  }, [decodedPath]);
-
-  const loadFolder = async () => {
+  const loadFolder = useCallback(async () => {
     setLoading(true);
     try {
       const folderData = await getFolderByPath(decodedPath);
@@ -49,7 +46,11 @@ export default function FolderDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [decodedPath]);
+
+  useEffect(() => {
+    void loadFolder();
+  }, [loadFolder]);
 
   if (loading) {
     return (
@@ -227,7 +228,7 @@ export default function FolderDetailPage() {
 
                 <header className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-1">
                   <Link
-                    to={`/posts/${post.slug}`}
+                    to={toPostRoute(post.slug)}
                     className="text-xl font-medium decoration-1 underline-offset-4 hover:underline"
                   >
                     {post.title}

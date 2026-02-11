@@ -9,6 +9,10 @@ import { CnblogsIcon } from "./icons/CnblogsIcon";
 import { XiaohongshuIcon } from "./icons/XiaohongshuIcon";
 import { useState, useEffect } from "react";
 import { siteConfig } from "@/config/site.config";
+import { toPostRoute } from "@/lib/postSlug";
+import type { ComponentType } from "react";
+
+type SocialIconProps = { size?: string | number; className?: string };
 
 const container = {
   hidden: { opacity: 0 },
@@ -28,8 +32,6 @@ const item = {
 export default function TimelineView() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [activeYear, setActiveYear] = useState<string>("");
 
   const grouped = groupPostsByYearMonth(posts);
@@ -45,7 +47,7 @@ export default function TimelineView() {
     if (years.length > 0 && !activeYear) {
       setActiveYear(years[0]);
     }
-  }, [years]);
+  }, [years, activeYear]);
 
   const loadPosts = async () => {
     setLoading(true);
@@ -53,7 +55,6 @@ export default function TimelineView() {
       // 一次性加载所有文章（后端已经做了过滤）
       const newPosts = await getTimelinePosts(1, 1000);
       setPosts(newPosts);
-      setHasMore(false); // 已加载全部
     } catch (error) {
       console.error("Failed to load posts:", error);
     } finally {
@@ -132,7 +133,7 @@ export default function TimelineView() {
                 {/* Social Links */}
                 <div className="flex gap-4 pt-4">
                     {siteConfig.socialLinks.map((link) => {
-                        let Icon = LinkIcon;
+                        let Icon: ComponentType<SocialIconProps> = LinkIcon;
                         if (link.platform === 'github') Icon = Github;
                         if (link.platform === 'twitter') Icon = Twitter;
                         if (link.platform === 'cnblogs') Icon = CnblogsIcon;
@@ -196,7 +197,7 @@ export default function TimelineView() {
 
                             <header className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-1">
                               <Link 
-                                  to={`/posts/${post.slug}`}
+                                  to={toPostRoute(post.slug)}
                                   className={cn(
                                       "text-xl font-medium decoration-1 underline-offset-4 hover:underline",
                                       post.visibility === 'encrypted' && "font-mono text-base text-neutral-600"

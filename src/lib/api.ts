@@ -1,11 +1,12 @@
 import { siteConfig } from "@/config/site.config";
+import { encodeSlugForPath } from "./postSlug";
 
 export interface Post {
   slug: string;
   title: string;
   date: string;
   tags: string[];
-  visibility: "public" | "masked" | "encrypted" | "private";
+  visibility: "public" | "masked" | "encrypted";
   excerpt: string;
   path: string;
   content?: string;
@@ -63,8 +64,9 @@ export async function getPosts(params?: {
 export async function getPostBySlug(slug: string, password?: string): Promise<Post> {
   const queryParams = new URLSearchParams();
   if (password) queryParams.append("password", password);
+  const encodedSlug = encodeSlugForPath(slug);
 
-  const response = await fetch(`${API_BASE}/posts/${slug}?${queryParams}`);
+  const response = await fetch(`${API_BASE}/posts/${encodedSlug}?${queryParams}`);
   if (!response.ok) {
     throw new Error("Post not found");
   }

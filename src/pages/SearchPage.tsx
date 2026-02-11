@@ -2,8 +2,9 @@ import { useSearchParams, Link } from "react-router-dom";
 import { searchPosts, Post } from "@/lib/posts";
 import { format, parseISO } from "date-fns";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
+import { toPostRoute } from "@/lib/postSlug";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -11,15 +12,7 @@ export default function SearchPage() {
   const [results, setResults] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (query) {
-      performSearch();
-    } else {
-      setResults([]);
-    }
-  }, [query]);
-
-  const performSearch = async () => {
+  const performSearch = useCallback(async () => {
     setLoading(true);
     try {
       const data = await searchPosts(query);
@@ -29,7 +22,15 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [query]);
+
+  useEffect(() => {
+    if (query) {
+      void performSearch();
+    } else {
+      setResults([]);
+    }
+  }, [query, performSearch]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -92,7 +93,7 @@ export default function SearchPage() {
                   }}
              />
 
-             <Link to={`/posts/${post.slug}`} className="block space-y-2">
+             <Link to={toPostRoute(post.slug)} className="block space-y-2">
                 <div className="flex justify-between items-baseline">
                     <h2 className="text-xl font-medium group-hover:underline decoration-1 underline-offset-4">
                         <Highlight text={post.title} />

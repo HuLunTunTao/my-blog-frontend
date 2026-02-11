@@ -1,17 +1,17 @@
 import { useState } from "react";
-import { Post } from "@/data/mockData";
 
-export default function EncryptedGate({ post, onUnlock }: { post: Post; onUnlock: () => void }) {
+export default function EncryptedGate({ onUnlock }: { onUnlock: (password: string) => Promise<boolean> }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === post.encryptedPassword) {
-        onUnlock();
-    } else {
+    const ok = await onUnlock(password);
+    if (!ok) {
         setError(true);
+        return;
     }
+    setError(false);
   };
 
   return (

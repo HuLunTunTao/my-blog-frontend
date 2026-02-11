@@ -1,10 +1,10 @@
 import { useParams, Link } from "react-router-dom";
 import { getPostsByTag, getAllTags, Post, Tag } from "@/lib/posts";
-import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { format, parseISO } from "date-fns";
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
+import { toPostRoute } from "@/lib/postSlug";
 
 export default function TagDetailPage() {
   const { tag } = useParams();
@@ -14,13 +14,7 @@ export default function TagDetailPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    if (tag) {
-      loadData();
-    }
-  }, [tag, page]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!tag) return;
     
     setLoading(true);
@@ -43,7 +37,13 @@ export default function TagDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tag, page]);
+
+  useEffect(() => {
+    if (tag) {
+      void loadData();
+    }
+  }, [tag, loadData]);
 
   if (!tag) return null;
 
@@ -82,7 +82,7 @@ export default function TagDetailPage() {
                  }}
             />
             
-            <Link to={`/posts/${post.slug}`} className="block">
+            <Link to={toPostRoute(post.slug)} className="block">
                 <div className="flex justify-between items-baseline mb-2">
                     <h2 className="text-xl font-medium decoration-1 underline-offset-4 hover:underline tracking-tight transition-colors">
                         {post.title}

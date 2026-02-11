@@ -124,26 +124,42 @@ export function groupPostsByYearMonth(posts: api.Post[]) {
 // Get related posts by tags
 export async function getRelatedPostsByTags(currentSlug: string, tags: string[]): Promise<api.Post[]> {
   if (tags.length === 0) return [];
-  
-  // Get posts for the first tag and filter
-  const response = await api.getPosts({ tag: tags[0], limit: 20 });
+
+  const response = await api.getPosts({ limit: 1000 });
   return response.posts
-    .filter(p => p.slug !== currentSlug && p.tags.some(t => tags.includes(t)))
-    .slice(0, 5);
+    .filter((p) => p.slug !== currentSlug)
+    .map((p) => ({
+      post: p,
+      overlap: p.tags.filter((t) => tags.includes(t)).length,
+    }))
+    .filter((x) => x.overlap > 0)
+    .sort((a, b) => {
+      if (b.overlap !== a.overlap) return b.overlap - a.overlap;
+      return b.post.date.localeCompare(a.post.date);
+    })
+    .slice(0, 5)
+    .map((x) => x.post);
 }
 
-// Get previous and next post
-export async function getPrevNextPost(currentSlug: string): Promise<{ prev?: api.Post; next?: api.Post }> {
-  const response = await api.getPosts({ limit: 1000 }); // Get all posts
+// Get posts near a given date
+export async function getNearbyPostsByDate(
+  currentSlug: string,
+  currentDate: string,
+  limit: number = 5
+): Promise<api.Post[]> {
+  const response = await api.getPosts({ limit: 1000 });
   const posts = response.posts;
-  const index = posts.findIndex(p => p.slug === currentSlug);
-  
-  if (index === -1) return {};
-  
-  return {
-    prev: posts[index + 1], // Older post
-    next: posts[index - 1], // Newer post
-  };
+  const currentTs = parseISO(currentDate).getTime();
+
+  return posts
+    .filter((p) => p.slug !== currentSlug)
+    .map((p) => ({
+      post: p,
+      distance: Math.abs(parseISO(p.date).getTime() - currentTs),
+    }))
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, limit)
+    .map((x) => x.post);
 }
 
 // Get all tags

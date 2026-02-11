@@ -3,7 +3,7 @@ export interface Post {
   title: string;
   date: string; // YYYY-MM-DD
   tags: string[];
-  visibility: "public" | "private" | "encrypted";
+  visibility: "public" | "masked" | "encrypted";
   masked: boolean;
   excerpt: string;
   content: string;
@@ -190,7 +190,7 @@ console.log("Hello World");
     title: "Secret Diary",
     date: "2024-02-20",
     tags: ["Private"],
-    visibility: "private",
+    visibility: "encrypted",
     masked: false,
     excerpt: "You shouldn't see this.",
     content: "This is top secret.",
@@ -246,7 +246,7 @@ console.log("Hello World");
     title: "Philosophy Tag Intro",
     date: "2023-01-01",
     tags: [],
-    visibility: "private", // Helper post
+    visibility: "masked", // Helper post
     masked: true,
     excerpt: "",
     content: "Philosophy is the study of general and fundamental questions, such as those about existence, reason, knowledge, values, mind, and language.",

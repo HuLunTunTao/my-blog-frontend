@@ -1,29 +1,24 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { getPostBySlug, Post } from "@/lib/posts";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import EncryptedGate from "@/components/EncryptedGate";
 import AlsoOnMyBlog from "@/components/AlsoOnMyBlog";
 import TagBadge from "@/components/TagBadge";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import { decodeSlugFromPath } from "@/lib/postSlug";
 
 export default function PostPage() {
-  const { slug } = useParams();
-  const navigate = useNavigate();
+  const params = useParams();
+  const slug = decodeSlugFromPath(params["*"]);
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [unlocked, setUnlocked] = useState(false);
 
-  useEffect(() => {
-    // Load post when slug changes
-    setUnlocked(false);
-    loadPost();
-  }, [slug]);
-
-  const loadPost = async () => {
+  const loadPost = useCallback(async () => {
     if (!slug) return;
     
     setLoading(true);
@@ -40,7 +35,24 @@ export default function PostPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug]);
+
+  useEffect(() => {
+    // Load post when slug changes
+    setUnlocked(false);
+    void loadPost();
+  }, [loadPost]);
+
+  const handleUnlock = useCallback(async (password: string): Promise<boolean> => {
+    if (!slug) return false;
+    const data = await getPostBySlug(slug, password);
+    if (!data || data.locked) {
+      return false;
+    }
+    setPost(data);
+    setUnlocked(true);
+    return true;
+  }, [slug]);
 
   if (loading) {
     return (
@@ -96,14 +108,14 @@ export default function PostPage() {
       </header>
 
       {isEncrypted ? (
-        <EncryptedGate post={post} onUnlock={() => setUnlocked(true)} />
+        <EncryptedGate onUnlock={handleUnlock} />
       ) : (
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-             <MarkdownRenderer content={post.content} />
+             <MarkdownRenderer content={post.content ?? ""} />
         </motion.div>
       )}
 

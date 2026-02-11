@@ -1,8 +1,12 @@
-import type { LucideProps } from "lucide-react";
+import type { CSSProperties } from "react";
 
-type XiaohongshuIconProps = LucideProps;
+interface XiaohongshuIconProps {
+  size?: string | number;
+  className?: string;
+  style?: CSSProperties;
+}
 
-export function XiaohongshuIcon({ size = 20, className, style, ...props }: XiaohongshuIconProps) {
+export function XiaohongshuIcon({ size = 20, className, style }: XiaohongshuIconProps) {
   return (
     <img
       src="/assets/xiaohongshu.png"
@@ -20,7 +24,6 @@ export function XiaohongshuIcon({ size = 20, className, style, ...props }: Xiaoh
       }}
       className={className}
       aria-hidden="true"
-      {...props}
     />
   );
 }

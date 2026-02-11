@@ -1,9 +1,10 @@
 // src/components/TimelineSidebar.tsx
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import type { Post } from "@/lib/posts";
 
 interface TimelineSidebarProps {
-  groups: Record<string, Record<string, any[]>>; // year -> month -> posts
+  groups: Record<string, Record<string, Post[]>>; // year -> month -> posts
   activeYear?: string;
   onSelectYear: (year: string) => void;
 }

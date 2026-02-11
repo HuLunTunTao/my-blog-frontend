@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { siteConfig } from "@/config/site.config";
 
 export default function Header() {
   return (

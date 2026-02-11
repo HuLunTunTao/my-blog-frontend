@@ -60,7 +60,7 @@ export function buildFolderTree(): FolderNode {
         folder.description = post.content;
       } else {
         // This is a regular post
-        if (post.visibility !== 'private' && !post.masked) {
+        if (!post.masked) {
           folder.posts.push(post);
         }
       }
@@ -121,15 +121,15 @@ export function getVisiblePosts(): Post[] {
     (post) =>
       post.visibility === "public" ||
       post.visibility === "encrypted" ||
-      (post.masked && post.visibility !== "private")
+      post.masked
   ).filter(post => !post.masked); // Timeline usually hides masked posts unless specifically asked, but guide says "public + encrypted + masked visible"
   // Guide says: "public + encrypted + masked visible". Wait.
-  // "3️⃣ Timeline Grouping: public + encrypted + masked visible; private invisible"
-  // So I should return all except private.
+  // "3️⃣ Timeline Grouping: public + encrypted + masked visible"
+  // So I should return all posts.
 }
 
 export function getTimelinePosts(): Post[] { 
-    return getAllPosts().filter(p => p.visibility !== 'private');
+    return getAllPosts();
 }
 
 export function getPostBySlug(slug: string): Post | undefined {
