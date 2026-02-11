@@ -1,9 +1,42 @@
-import { buildFolderTree } from "@/lib/posts";
+import { buildFolderTree, FolderNode } from "@/lib/posts";
 import FolderTree from "@/components/FolderTree";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function FoldersPage() {
-  const folderTree = buildFolderTree();
+  const [folderTree, setFolderTree] = useState<FolderNode | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadTree() {
+      try {
+        const tree = await buildFolderTree();
+        setFolderTree(tree);
+      } catch (error) {
+        console.error("Failed to load folder tree:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadTree();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+      </div>
+    );
+  }
+
+  if (!folderTree) {
+    return (
+      <div className="max-w-4xl mx-auto py-12 text-center text-stone-500">
+        加载文件夹树失败。
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -65,27 +98,31 @@ export default function FoldersPage() {
 }
 
 // Helper functions
-function countFolders(node: any): number {
+function countFolders(node: FolderNode): number {
+  if (!node || !node.children) return 0;
   let count = node.children.length;
-  node.children.forEach((child: any) => {
+  node.children.forEach((child) => {
     count += countFolders(child);
   });
   return count;
 }
 
-function countPosts(node: any): number {
-  let count = node.posts.length;
-  node.children.forEach((child: any) => {
-    count += countPosts(child);
-  });
+function countPosts(node: FolderNode): number {
+  if (!node) return 0;
+  let count = (node.posts || []).length;
+  if (node.children) {
+    node.children.forEach((child) => {
+      count += countPosts(child);
+    });
+  }
   return count;
 }
 
-function getMaxDepth(node: any, currentDepth: number = 0): number {
-  if (node.children.length === 0) {
+function getMaxDepth(node: FolderNode, currentDepth: number = 0): number {
+  if (!node || !node.children || node.children.length === 0) {
     return currentDepth;
   }
-  const depths = node.children.map((child: any) => 
+  const depths = node.children.map((child) => 
     getMaxDepth(child, currentDepth + 1)
   );
   return Math.max(...depths);

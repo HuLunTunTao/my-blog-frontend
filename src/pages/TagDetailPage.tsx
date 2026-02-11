@@ -1,15 +1,59 @@
 import { useParams, Link } from "react-router-dom";
-import { getPostsByTag, getTagIntro } from "@/lib/posts";
+import { getPostsByTag, getAllTags, Post, Tag } from "@/lib/posts";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { format, parseISO } from "date-fns";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function TagDetailPage() {
   const { tag } = useParams();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [tagInfo, setTagInfo] = useState<Tag | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    if (tag) {
+      loadData();
+    }
+  }, [tag, page]);
+
+  const loadData = async () => {
+    if (!tag) return;
+    
+    setLoading(true);
+    try {
+      // Parallel fetch posts and tag info
+      const [postsResponse, tagsResponse] = await Promise.all([
+        getPostsByTag(tag, page, 20),
+        getAllTags()
+      ]);
+      
+      setPosts(postsResponse.posts);
+      setTotalPages(postsResponse.totalPages);
+      
+      const currentTag = tagsResponse.find(t => t.name === tag);
+      if (currentTag) {
+        setTagInfo(currentTag);
+      }
+    } catch (error) {
+      console.error("Failed to load data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!tag) return null;
 
-  const posts = getPostsByTag(tag);
-  const intro = getTagIntro(tag);
+  if (loading && posts.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -18,17 +62,15 @@ export default function TagDetailPage() {
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="space-y-12"
     >
-      <header className="text-center space-y-4">
+      <header className="text-center space-y-4 max-w-2xl mx-auto">
         <span className="text-xs uppercase tracking-widest text-subtle">Tag</span>
         <h1 className="text-3xl font-serif">#{tag}</h1>
+        {tagInfo?.description && (
+          <p className="text-stone-500 font-serif leading-relaxed">
+            {tagInfo.description}
+          </p>
+        )}
       </header>
-    
-      {intro && (
-        <div className="bg-neutral-50 p-6 rounded-lg text-sm text-subtle italic border border-border">
-            <MarkdownRenderer content={intro} />
-            <div className="mt-2 text-right text-xs">— Tag Description</div>
-        </div>
-      )}
 
       <div className="space-y-8">
         {posts.map((post) => (
@@ -59,6 +101,29 @@ export default function TagDetailPage() {
             <p className="text-center text-subtle">No posts found with this tag.</p>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-8">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 border rounded disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="px-4 py-2">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-4 py-2 border rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { FolderNode } from "@/data/mockData";
+import { FolderNode } from "@/lib/posts";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -12,7 +12,8 @@ interface FolderTreeItemProps {
 function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
   const [isOpen, setIsOpen] = useState(level === 0);
   const hasChildren = folder.children.length > 0;
-  const hasContent = folder.posts.length > 0 || folder.description;
+  // Fix: Use postCount instead of posts.length, as posts array might be empty (lazy loaded)
+  const hasContent = (folder.postCount ?? 0) > 0 || !!folder.description;
 
   return (
     <div className="select-none">
@@ -68,7 +69,11 @@ function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
           >
             {folder.name}
             <span className="ml-2 text-xs text-stone-400">
-              ({folder.posts.length})
+               {/* Display direct/total if different, or just total if direct is 0 or same */}
+               {folder.directPostCount && folder.directPostCount !== folder.postCount 
+                  ? `(${folder.directPostCount}/${folder.postCount})`
+                  : `(${folder.postCount ?? 0})`
+               }
             </span>
           </Link>
         ) : (

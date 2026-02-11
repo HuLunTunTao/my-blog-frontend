@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { getPostBySlug } from "@/lib/posts";
+import { getPostBySlug, Post } from "@/lib/posts";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import EncryptedGate from "@/components/EncryptedGate";
 import AlsoOnMyBlog from "@/components/AlsoOnMyBlog";
@@ -8,17 +8,47 @@ import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 export default function PostPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const post = getPostBySlug(slug || "");
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
   const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {
-    // Reset unlock state when slug changes
+    // Load post when slug changes
     setUnlocked(false);
+    loadPost();
   }, [slug]);
+
+  const loadPost = async () => {
+    if (!slug) return;
+    
+    setLoading(true);
+    try {
+      const data = await getPostBySlug(slug);
+      if (data) {
+        setPost(data);
+      } else {
+        setPost(null);
+      }
+    } catch (error) {
+      console.error("Failed to load post:", error);
+      setPost(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+      </div>
+    );
+  }
 
   if (!post) {
     return (

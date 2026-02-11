@@ -1,9 +1,9 @@
-import { getTimelinePosts, groupPostsByYearMonth } from "@/lib/posts";
+import { getTimelinePosts, groupPostsByYearMonth, Post } from "@/lib/posts";
 import { parseISO, format } from "date-fns";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Github, Twitter, ExternalLink, BookOpen, Link as LinkIcon } from "lucide-react";
+import { Github, Twitter, ExternalLink, BookOpen, Link as LinkIcon, Loader2 } from "lucide-react";
 import TimelineSidebar from "./TimelineSidebar";
 import { useState, useEffect } from "react";
 import { siteConfig } from "@/config/site.config";
@@ -24,11 +24,40 @@ const item = {
 };
 
 export default function TimelineView() {
-  const posts = getTimelinePosts();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [activeYear, setActiveYear] = useState<string>("");
+
   const grouped = groupPostsByYearMonth(posts);
   const years = Object.keys(grouped).sort((a, b) => Number(b) - Number(a));
-  
-  const [activeYear, setActiveYear] = useState(years[0]);
+
+  // 加载文章
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  // 设置初始年份
+  useEffect(() => {
+    if (years.length > 0 && !activeYear) {
+      setActiveYear(years[0]);
+    }
+  }, [years]);
+
+  const loadPosts = async () => {
+    setLoading(true);
+    try {
+      // 一次性加载所有文章（后端已经做了过滤）
+      const newPosts = await getTimelinePosts(1, 1000);
+      setPosts(newPosts);
+      setHasMore(false); // 已加载全部
+    } catch (error) {
+      console.error("Failed to load posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Simple scroll spy-like effect for active year (optional refinement)
   useEffect(() => {
@@ -52,7 +81,13 @@ export default function TimelineView() {
 
   return (
     <>
-      <TimelineSidebar groups={grouped} activeYear={activeYear} onSelectYear={setActiveYear} />
+      {loading && posts.length === 0 ? (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+        </div>
+      ) : (
+        <>
+          <TimelineSidebar groups={grouped} activeYear={activeYear} onSelectYear={setActiveYear} />
       
       <motion.div 
         variants={container}
@@ -187,5 +222,7 @@ export default function TimelineView() {
         ))}
       </motion.div>
     </>
+  )}
+</>
   );
 }

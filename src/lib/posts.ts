@@ -1,83 +1,51 @@
-import { Post, mockPosts, FolderNode } from "@/data/mockData";
-import { compareDesc, format, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
+import * as api from "./api";
 
-// Helper function to check if a post is a folder description
-function isFolderDescription(post: Post): boolean {
-  return post.slug.startsWith('_folder_');
+// Re-export types from API
+export type { Post, Tag, Folder, PostListResponse } from "./api";
+
+// 兼容旧的 FolderNode 类型
+export interface FolderNode {
+  name: string;
+  path: string;
+  description?: string;
+  children: FolderNode[];
+  posts: api.Post[];
+  postCount?: number;
+  directPostCount?: number; // 新增
 }
 
-// Build folder tree structure from posts
-export function buildFolderTree(): FolderNode {
+// 将 API Folder 转换为 FolderNode（兼容旧代码）
+function convertFolderToNode(folder: api.Folder): FolderNode {
+  return {
+    name: folder.name,
+    path: folder.path,
+    description: folder.description,
+    children: (folder.children || []).map(convertFolderToNode),
+    posts: [],
+    postCount: folder.postCount,
+    directPostCount: folder.directPostCount // 映射
+  };
+}
+
+// Build folder tree structure from API
+export async function buildFolderTree(): Promise<FolderNode> {
+  const folders = await api.getFolders();
+  
   const root: FolderNode = {
     name: '根目录',
     path: '',
-    children: [],
-    posts: []
+    children: folders.map(convertFolderToNode),
+    posts: [],
+    postCount: 0
   };
-
-  const folderMap = new Map<string, FolderNode>();
-  folderMap.set('', root);
-
-  // First pass: create all folders
-  mockPosts.forEach(post => {
-    const path = post.path || '';
-    if (!path) return;
-
-    const parts = path.split('/');
-    let currentPath = '';
-
-    parts.forEach(part => {
-      const parentPath = currentPath;
-      currentPath = currentPath ? `${currentPath}/${part}` : part;
-
-      if (!folderMap.has(currentPath)) {
-        const newFolder: FolderNode = {
-          name: part,
-          path: currentPath,
-          children: [],
-          posts: []
-        };
-
-        folderMap.set(currentPath, newFolder);
-        
-        // Add to parent
-        const parent = folderMap.get(parentPath);
-        if (parent) {
-          parent.children.push(newFolder);
-        }
-      }
-    });
-  });
-
-  // Second pass: assign posts and descriptions to folders
-  mockPosts.forEach(post => {
-    const path = post.path || '';
-    const folder = folderMap.get(path);
-
-    if (folder) {
-      if (isFolderDescription(post)) {
-        // This is a folder description
-        folder.description = post.content;
-      } else {
-        // This is a regular post
-        if (post.visibility !== 'private' && !post.masked) {
-          folder.posts.push(post);
-        }
-      }
-    }
-  });
-
-  // Sort posts in each folder by date
-  folderMap.forEach(folder => {
-    folder.posts.sort((a, b) => compareDesc(parseISO(a.date), parseISO(b.date)));
-  });
 
   return root;
 }
 
 // Get a specific folder by path
-export function getFolderByPath(path: string): FolderNode | undefined {
-  const tree = buildFolderTree();
+export async function getFolderByPath(path: string): Promise<FolderNode | undefined> {
+  const tree = await buildFolderTree();
   
   if (!path || path === '') {
     return tree;
@@ -95,71 +63,49 @@ export function getFolderByPath(path: string): FolderNode | undefined {
 }
 
 // Get all posts under a folder (including subfolders)
-export function getAllPostsInFolder(path: string, includeSubfolders: boolean = false): Post[] {
-  const folder = getFolderByPath(path);
-  if (!folder) return [];
+export async function getAllPostsInFolder(
+  path: string, 
+  includeSubfolders: boolean = false,
+  page: number = 1,
+  limit: number = 100
+): Promise<api.PostListResponse> {
+  return api.getPosts({ path, includeSubfolders, page, limit });
+}
 
-  let posts = [...folder.posts];
+// Get all posts (with pagination)
+export async function getAllPosts(page: number = 1, limit: number = 100): Promise<api.PostListResponse> {
+  return api.getPosts({ page, limit });
+}
 
-  if (includeSubfolders) {
-    const collectPosts = (node: FolderNode) => {
-      posts.push(...node.posts);
-      node.children.forEach(collectPosts);
-    };
-    folder.children.forEach(collectPosts);
+// Get visible posts for timeline
+export async function getTimelinePosts(page: number = 1, limit: number = 100): Promise<api.Post[]> {
+  const response = await api.getPosts({ page, limit });
+  return response.posts;
+}
+
+// Get post by slug
+export async function getPostBySlug(slug: string, password?: string): Promise<api.Post | undefined> {
+  try {
+    return await api.getPostBySlug(slug, password);
+  } catch (error) {
+    console.error("Failed to fetch post:", error);
+    return undefined;
   }
-
-  return posts.sort((a, b) => compareDesc(parseISO(a.date), parseISO(b.date)));
 }
 
-export function getAllPosts(): Post[] {
-  return mockPosts.sort((a, b) => compareDesc(parseISO(a.date), parseISO(b.date)));
+// Get posts by tag (with pagination)
+export async function getPostsByTag(tag: string, page: number = 1, limit: number = 100): Promise<api.PostListResponse> {
+  return api.getPosts({ tag, page, limit });
 }
 
-export function getVisiblePosts(): Post[] {
-  return getAllPosts().filter(
-    (post) =>
-      post.visibility === "public" ||
-      post.visibility === "encrypted" ||
-      (post.masked && post.visibility !== "private")
-  ).filter(post => !post.masked); // Timeline usually hides masked posts unless specifically asked, but guide says "public + encrypted + masked visible"
-  // Guide says: "public + encrypted + masked visible". Wait.
-  // "3️⃣ Timeline Grouping: public + encrypted + masked visible; private invisible"
-  // So I should return all except private.
+// Search posts
+export async function searchPosts(query: string): Promise<api.Post[]> {
+  return api.searchPosts(query);
 }
 
-export function getTimelinePosts(): Post[] { 
-    return getAllPosts().filter(p => p.visibility !== 'private');
-}
-
-export function getPostBySlug(slug: string): Post | undefined {
-  return mockPosts.find((p) => p.slug === slug);
-}
-
-export function getTagIntro(tag: string): string | undefined {
-  const introSlug = `_tag_${tag.toLowerCase()}`;
-  const post = mockPosts.find((p) => p.slug === introSlug);
-  return post ? post.content.slice(0, 200) : undefined;
-}
-
-export function getPostsByTag(tag: string): Post[] {
-  return getVisiblePosts().filter((p) =>
-    p.tags.some((t) => t.toLowerCase() === tag.toLowerCase())
-  );
-}
-
-export function searchPosts(query: string): Post[] {
-  const lowerQuery = query.toLowerCase();
-  return getVisiblePosts().filter(
-    (p) =>
-      p.title.toLowerCase().includes(lowerQuery) ||
-      p.content.toLowerCase().includes(lowerQuery) ||
-      p.tags.some((t) => t.toLowerCase().includes(lowerQuery))
-  );
-}
-
-export function groupPostsByYearMonth(posts: Post[]) {
-  const groups: Record<string, Record<string, Post[]>> = {};
+// Group posts by year and month
+export function groupPostsByYearMonth(posts: api.Post[]) {
+  const groups: Record<string, Record<string, api.Post[]>> = {};
 
   posts.forEach((post) => {
     const date = parseISO(post.date);
@@ -175,20 +121,32 @@ export function groupPostsByYearMonth(posts: Post[]) {
   return groups;
 }
 
-export function getRelatedPostsByTags(currentSlug: string, tags: string[]): Post[] {
-    return getVisiblePosts()
-        .filter(p => p.slug !== currentSlug && p.tags.some(t => tags.includes(t)))
-        .slice(0, 5);
+// Get related posts by tags
+export async function getRelatedPostsByTags(currentSlug: string, tags: string[]): Promise<api.Post[]> {
+  if (tags.length === 0) return [];
+  
+  // Get posts for the first tag and filter
+  const response = await api.getPosts({ tag: tags[0], limit: 20 });
+  return response.posts
+    .filter(p => p.slug !== currentSlug && p.tags.some(t => tags.includes(t)))
+    .slice(0, 5);
 }
 
-export function getPrevNextPost(currentSlug: string): { prev?: Post; next?: Post } {
-    const posts = getVisiblePosts();
-    const index = posts.findIndex(p => p.slug === currentSlug);
-    
-    if (index === -1) return {};
-    
-    return {
-        prev: posts[index + 1], // Older post
-        next: posts[index - 1], // Newer post
-    };
+// Get previous and next post
+export async function getPrevNextPost(currentSlug: string): Promise<{ prev?: api.Post; next?: api.Post }> {
+  const response = await api.getPosts({ limit: 1000 }); // Get all posts
+  const posts = response.posts;
+  const index = posts.findIndex(p => p.slug === currentSlug);
+  
+  if (index === -1) return {};
+  
+  return {
+    prev: posts[index + 1], // Older post
+    next: posts[index - 1], // Newer post
+  };
+}
+
+// Get all tags
+export async function getAllTags(): Promise<api.Tag[]> {
+  return api.getTags();
 }

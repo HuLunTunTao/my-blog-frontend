@@ -1,18 +1,35 @@
 import { Link } from "react-router-dom";
-import { getVisiblePosts } from "@/lib/posts";
+import { getAllTags, Tag } from "@/lib/posts";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function AllTagsPage() {
-  const posts = getVisiblePosts();
-  const tagCounts: Record<string, number> = {};
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  posts.forEach((post) => {
-    post.tags.forEach((tag) => {
-      tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-    });
-  });
+  useEffect(() => {
+    loadTags();
+  }, []);
 
-  const tags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]);
+  const loadTags = async () => {
+    try {
+      const data = await getAllTags();
+      setTags(data.sort((a, b) => b.count - a.count));
+    } catch (error) {
+      console.error("Failed to load tags:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -22,17 +39,24 @@ export default function AllTagsPage() {
         className="space-y-8"
     >
       <h2 className="text-xl font-serif">All Tags</h2>
-      <div className="flex flex-wrap gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {tags.map((tag) => (
           <Link
-            key={tag}
-            to={`/tags/${tag}`}
-            className="group flex items-center gap-2 border border-border px-3 py-2 rounded hover:border-black transition-colors"
+            key={tag.name}
+            to={`/tags/${tag.name}`}
+            className="group flex flex-col p-4 border border-stone-200/60 rounded-lg hover:border-stone-300 hover:shadow-sm transition-all bg-white/50"
           >
-            <span className="font-sans font-medium">#{tag}</span>
-            <span className="bg-neutral-100 text-subtle text-xs px-1.5 py-0.5 rounded group-hover:bg-neutral-200">
-              {tagCounts[tag]}
-            </span>
+            <div className="flex items-center justify-between mb-2">
+                <span className="font-serif font-medium text-lg">#{tag.name}</span>
+                <span className="bg-neutral-100 text-subtle text-xs px-2 py-1 rounded-full group-hover:bg-neutral-200 transition-colors">
+                {tag.count}
+                </span>
+            </div>
+            {tag.description && (
+                <p className="text-sm text-stone-500 line-clamp-2">
+                    {tag.description}
+                </p>
+            )}
           </Link>
         ))}
       </div>

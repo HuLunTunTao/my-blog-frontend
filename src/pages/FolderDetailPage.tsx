@@ -1,8 +1,10 @@
 import { useParams, Link } from "react-router-dom";
-import { getFolderByPath } from "@/lib/posts";
+import { getFolderByPath, getAllPostsInFolder, Post, FolderNode } from "@/lib/posts";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { format, parseISO } from "date-fns";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 const container = {
   hidden: { opacity: 0 },
@@ -22,7 +24,40 @@ const item = {
 export default function FolderDetailPage() {
   const { path } = useParams<{ path: string }>();
   const decodedPath = path ? decodeURIComponent(path) : '';
-  const folder = getFolderByPath(decodedPath);
+  const [folder, setFolder] = useState<FolderNode | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadFolder();
+  }, [decodedPath]);
+
+  const loadFolder = async () => {
+    setLoading(true);
+    try {
+      const folderData = await getFolderByPath(decodedPath);
+      setFolder(folderData || null);
+      
+      if (folderData) {
+        // Load posts in this folder
+        const postsResponse = await getAllPostsInFolder(decodedPath, false, 1, 100);
+        setPosts(postsResponse.posts);
+      }
+    } catch (error) {
+      console.error("Failed to load folder:", error);
+      setFolder(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+      </div>
+    );
+  }
 
   if (!folder) {
     return (
@@ -106,7 +141,7 @@ export default function FolderDetailPage() {
             子文件夹
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {folder.children.map((subfolder) => (
+            {folder.children.map((subfolder: FolderNode) => (
               <Link
                 key={subfolder.path}
                 to={`/folders/${encodeURIComponent(subfolder.path)}`}
@@ -131,7 +166,12 @@ export default function FolderDetailPage() {
                       {subfolder.name}
                     </h3>
                     <p className="text-xs text-stone-500 mt-0.5">
-                      {subfolder.posts.length} 篇文章
+                      {subfolder.postCount ?? 0} 篇文章
+                      {subfolder.directPostCount && subfolder.directPostCount > 0 && subfolder.directPostCount !== subfolder.postCount && (
+                        <span className="opacity-70 ml-1">
+                          (直接: {subfolder.directPostCount})
+                        </span>
+                      )}
                     </p>
                   </div>
                   <svg
@@ -150,7 +190,7 @@ export default function FolderDetailPage() {
       )}
 
       {/* Posts in this folder */}
-      {folder.posts.length > 0 && (
+      {posts.length > 0 && (
         <motion.section
           variants={item}
         >
@@ -171,7 +211,7 @@ export default function FolderDetailPage() {
             initial="hidden"
             animate="show"
           >
-            {folder.posts.map((post) => (
+            {posts.map((post) => (
               <motion.article
                 key={post.slug}
                 variants={item}
@@ -208,7 +248,7 @@ export default function FolderDetailPage() {
       )}
 
       {/* Empty state */}
-      {folder.children.length === 0 && folder.posts.length === 0 && !folder.description && (
+      {folder.children.length === 0 && posts.length === 0 && !folder.description && (
         <motion.p variants={item} className="text-stone-500 italic text-center py-12">
           该文件夹暂时没有内容
         </motion.p>

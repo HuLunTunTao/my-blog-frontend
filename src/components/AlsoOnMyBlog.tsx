@@ -1,14 +1,33 @@
 import { Link } from "react-router-dom";
-import { type Post } from "@/data/mockData";
+import { type Post } from "@/lib/posts";
 import { getRelatedPostsByTags, getPrevNextPost } from "@/lib/posts";
+import { useState, useEffect } from "react";
 
 interface Props {
   currentPost: Post;
 }
 
 export default function AlsoOnMyBlog({ currentPost }: Props) {
-  const related = getRelatedPostsByTags(currentPost.slug, currentPost.tags);
-  const { prev, next } = getPrevNextPost(currentPost.slug);
+  const [related, setRelated] = useState<Post[]>([]);
+  const [prev, setPrev] = useState<Post | undefined>();
+  const [next, setNext] = useState<Post | undefined>();
+
+  useEffect(() => {
+    loadRelated();
+  }, [currentPost.slug]);
+
+  const loadRelated = async () => {
+    try {
+      const relatedPosts = await getRelatedPostsByTags(currentPost.slug, currentPost.tags);
+      setRelated(relatedPosts);
+
+      const { prev: prevPost, next: nextPost } = await getPrevNextPost(currentPost.slug);
+      setPrev(prevPost);
+      setNext(nextPost);
+    } catch (error) {
+      console.error("Failed to load related posts:", error);
+    }
+  };
 
   return (
     <div className="mt-24 pt-12 border-t border-border space-y-12">

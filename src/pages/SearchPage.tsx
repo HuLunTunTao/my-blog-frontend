@@ -1,13 +1,35 @@
 import { useSearchParams, Link } from "react-router-dom";
-import { searchPosts } from "@/lib/posts";
+import { searchPosts, Post } from "@/lib/posts";
 import { format, parseISO } from "date-fns";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
+  const [results, setResults] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const results = query ? searchPosts(query) : [];
+  useEffect(() => {
+    if (query) {
+      performSearch();
+    } else {
+      setResults([]);
+    }
+  }, [query]);
+
+  const performSearch = async () => {
+    setLoading(true);
+    try {
+      const data = await searchPosts(query);
+      setResults(data);
+    } catch (error) {
+      console.error("Search failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -51,7 +73,12 @@ export default function SearchPage() {
           />
       </div>
 
-      <div className="space-y-8">
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
+        </div>
+      ) : (
+        <div className="space-y-8">
         {query && results.length === 0 && (
             <p className="text-subtle text-center py-12">No results found for "{query}".</p>
         )}
@@ -90,6 +117,7 @@ export default function SearchPage() {
           </article>
         ))}
       </div>
+    )}
     </motion.div>
   );
 }

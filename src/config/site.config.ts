@@ -8,6 +8,7 @@ export interface SocialLink {
 export interface SiteConfig {
   title: string;
   logo: string;
+  apiBaseUrl: string; // 后端 API 地址
   author: {
     name: string;
     avatar: string; // URL
@@ -20,6 +21,7 @@ export interface SiteConfig {
 export const siteConfig: SiteConfig = {
   title: "囫囵吞桃的个人博客",
   logo: "🍑",
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
   author: {
     name: "囫囵吞桃🍑",
     avatar: "https://avatars.githubusercontent.com/u/34204332?v=4", 
