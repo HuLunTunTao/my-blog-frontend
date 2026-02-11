@@ -58,6 +58,32 @@ export default function TimelineView() {
         animate="show"
         className="space-y-24 relative"
       >
+        {/* Hero Section */}
+        <motion.section variants={item} className="py-16 md:py-24 flex flex-col md:flex-row items-center gap-8 md:gap-12 md:pl-4 border-b border-stone-200/50 pb-24 mb-12">
+            <div className="relative shrink-0">
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-stone-200/50 flex items-center justify-center overflow-hidden border border-stone-300">
+                   {/* Replace with your image */}
+                   <span className="text-4xl grayscale opacity-50">👤</span>
+                </div>
+                {/* Decorative circle behind */}
+                <div className="absolute inset-0 border border-dashed border-stone-300 rounded-full scale-125 animate-spin-slow opacity-30 pointer-events-none"></div>
+            </div>
+            
+            <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
+                <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground tracking-tight">
+                    Author Name
+                </h1>
+                <div className="text-sm md:text-base text-stone-500 leading-relaxed max-w-md font-sans">
+                    <p>Developer & Designer. Writing about code, art, and life.</p>
+                </div>
+                <div className="pt-2">
+                    <span className="text-xs font-serif italic text-stone-400 border-t border-stone-200 pt-2 px-2 md:px-0 md:border-t-0 md:border-l md:pl-3 block md:inline-block">
+                        "Nulla dies sine linea."
+                    </span>
+                </div>
+            </div>
+        </motion.section>
+
         {years.map((year) => (
           <div key={year} id={`year-${year}`} className="relative scroll-mt-32">
              {/* Year Marker - More prominent now */}
@@ -81,7 +107,7 @@ export default function TimelineView() {
                   return (
                     <motion.div variants={item} key={month} className="space-y-6">
                       <div className="flex items-center gap-4">
-                        <h3 className="text-sm font-sans font-bold text-foreground uppercase tracking-widest">
+                        <h3 className="text-sm font-serif font-bold text-foreground uppercase tracking-widest">
                             {monthName}
                         </h3>
                         <div className="h-px bg-border flex-1" />

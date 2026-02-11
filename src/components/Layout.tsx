@@ -1,20 +1,27 @@
 import Header from "./Header";
-import ModeTabs from "./ModeTabs";
+import Sidebar from "./Sidebar";
 import { Outlet, ScrollRestoration } from "react-router-dom";
 
 export default function Layout() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center">
-      <div className="w-full max-w-prose px-6 md:px-0 flex flex-col min-h-screen">
-        <Header />
-        <ModeTabs />
-        <main className="flex-1 py-12 animate-in fade-in duration-500">
-          <Outlet />
-        </main>
-        <footer className="py-12 text-center text-xs text-subtle border-t border-border mt-auto">
-          &copy; {new Date().getFullYear()} My Blog. All rights reserved.
+    <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row">
+      <Sidebar />
+      <Header />
+      
+      {/* Main Content Area */}
+      {/* Added left margin for sidebar offset on desktop */}
+      <main className="flex-1 md:ml-20 lg:ml-48 min-h-screen relative w-full">
+        {/* Container for content - aligned slightly left or center, breathy */}
+        <div className="w-full max-w-4xl mx-auto px-6 py-12 md:py-20 md:px-12 lg:px-24">
+            <Outlet />
+        </div>
+        
+        <footer className="py-12 text-center text-[10px] text-stone-300 md:hidden">
+          &copy; {new Date().getFullYear()} My Blog.
         </footer>
-      </div>
+      </main>
+      
+      {/* Global Scroll Restoration */}
       <ScrollRestoration />
     </div>
   );

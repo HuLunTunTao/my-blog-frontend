@@ -7,32 +7,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "#FAFAFA",
-        foreground: "#111111", 
-        muted: "#444444",
-        subtle: "#888888",
-        border: "#E5E5E5",
+        background: "#F2F0E9", // Rice paper nuance
+        paper: "#FDFBF7",      // Lighter area
+        foreground: "#1C1C1C", // Ink black
+        muted: "#57534E",      // Stone gray
+        subtle: "#A8A29E",     // Light wash
+        border: "#E7E5E4",     // Stone 200
+        accent: "#1C1C1C",     // Replaced Seal Red with Ink Black for monochrome request
       },
       fontFamily: {
         sans: [
-          "-apple-system", 
-          "BlinkMacSystemFont", 
-          "Segoe UI", 
-          "Roboto", 
-          "Helvetica", 
-          "Arial", 
-          "sans-serif"
+          "Gill Sans", "Gill Sans MT", "Calibri", "sans-serif"
         ],
         serif: [
-          "Georgia",
-          "Cambria",
-          "Times New Roman",
-          "Times",
-          "serif"
+          "Songti SC", "Noto Serif SC", "SimSun", "Times New Roman", "serif"
         ]
       },
       maxWidth: {
-        'prose': '720px',
+        'prose': '65ch', // Optimization for reading
       }
     },
   },

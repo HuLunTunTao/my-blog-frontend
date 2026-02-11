@@ -13,14 +13,16 @@ export default function TimelineSidebar({ groups, activeYear, onSelectYear }: Ti
 
   return (
     <motion.aside 
-      initial={{ opacity: 0, x: -10 }}
+      initial={{ opacity: 0, x: 10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.8, delay: 0.5 }}
-      className="hidden 2xl:flex fixed left-12 top-1/2 -translate-y-1/2 flex-col items-center gap-4 z-50"
+      // Moved to RIGHT side, visible on larger screens
+      className="hidden xl:flex fixed right-12 top-1/2 -translate-y-1/2 flex-col items-center gap-4 z-40 w-12"
     >
-      <div className="h-12 w-px bg-gradient-to-b from-transparent to-border" />
+      {/* Top Decor Line (Vertical) */}
+      <div className="h-16 w-px bg-stone-300 opacity-50" />
       
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-4">
         {years.map((year) => (
           <li key={year} className="relative flex items-center justify-center">
             <button
@@ -30,25 +32,26 @@ export default function TimelineSidebar({ groups, activeYear, onSelectYear }: Ti
                  el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
               className={cn(
-                "text-xs font-sans tracking-widest transition-all duration-300",
+                "writing-vertical-rl text-sm tracking-[0.3em] font-serif transition-all duration-500 py-4 font-medium",
                 activeYear === year 
-                    ? "text-foreground font-semibold scale-110" 
-                    : "text-neutral-300 hover:text-neutral-500"
+                    ? "text-foreground font-bold scale-110" 
+                    : "text-stone-400 hover:text-foreground"
               )}
             >
-              {year}
+              <span className={cn(activeYear === year ? "border-l-4 border-foreground pl-2" : "")}>
+                {year}
+              </span>
             </button>
-            {activeYear === year && (
-                <motion.div 
-                    layoutId="active-year-dot"
-                    className="absolute -right-3 w-1 h-1 bg-foreground rounded-full"
-                />
-            )}
           </li>
         ))}
       </ul>
       
-      <div className="h-12 w-px bg-gradient-to-t from-transparent to-border" />
+      {/* Bottom Decor Line */}
+      <div className="h-16 w-px bg-stone-300 opacity-50" />
+      
+      <div className="writing-vertical-rl text-[9px] text-stone-200 mt-2">
+        年表
+      </div>
     </motion.aside>
   );
 }

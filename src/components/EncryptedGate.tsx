@@ -16,7 +16,6 @@ export default function EncryptedGate({ post, onUnlock }: { post: Post; onUnlock
 
   return (
     <div className="flex flex-col items-center justify-center p-12 border border-dashed border-border rounded-lg bg-neutral-50/50">
-      <div className="text-4xl mb-4">🔒</div>
       <h3 className="text-lg font-serif mb-4">This post is encrypted</h3>
       <form onSubmit={handleSubmit} className="flex flex-col items-center space-y-4">
         <input

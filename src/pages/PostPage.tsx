@@ -47,7 +47,7 @@ export default function PostPage() {
         <h1 className="text-3xl md:text-4xl font-serif font-medium leading-tight">
           {post.title}
         </h1>
-        <time className="block text-sm text-subtle font-sans">
+        <time className="block text-sm text-subtle font-serif">
             {format(parseISO(post.date), "MMMM d, yyyy")}
         </time>
       </header>
