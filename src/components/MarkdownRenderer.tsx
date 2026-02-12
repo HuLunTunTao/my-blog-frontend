@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import { defaultUrlTransform } from "react-markdown";
@@ -9,6 +9,21 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import mermaid from "mermaid";
 import { Link } from "react-router-dom";
+import {
+  AlertOctagon,
+  AlertTriangle,
+  Bug,
+  CheckCircle2,
+  ClipboardList,
+  FileText,
+  FlaskConical,
+  HelpCircle,
+  Info,
+  Lightbulb,
+  ListTodo,
+  Quote,
+  type LucideIcon,
+} from "lucide-react";
 import CopyButton from "./CopyButton";
 import { getPostBySlug } from "@/lib/api";
 import { toPostRoute } from "@/lib/postSlug";
@@ -185,13 +200,82 @@ const CALLOUT_STYLES: Record<string, string> = {
   note: "border-l-blue-400 bg-blue-50/50",
   tip: "border-l-emerald-500 bg-emerald-50/55",
   info: "border-l-cyan-500 bg-cyan-50/55",
+  success: "border-l-lime-500 bg-lime-50/60",
+  question: "border-l-sky-500 bg-sky-50/60",
   warning: "border-l-amber-500 bg-amber-50/55",
+  failure: "border-l-orange-500 bg-orange-50/60",
   danger: "border-l-rose-500 bg-rose-50/55",
+  bug: "border-l-red-500 bg-red-50/60",
   quote: "border-l-stone-500 bg-stone-100/70",
   summary: "border-l-indigo-500 bg-indigo-50/55",
   abstract: "border-l-violet-500 bg-violet-50/55",
   example: "border-l-teal-500 bg-teal-50/55",
+  todo: "border-l-fuchsia-500 bg-fuchsia-50/60",
 };
+
+const CALLOUT_META: Record<string, { icon: LucideIcon; titleClassName: string }> = {
+  note: { icon: FileText, titleClassName: "text-blue-700" },
+  tip: { icon: Lightbulb, titleClassName: "text-emerald-700" },
+  info: { icon: Info, titleClassName: "text-cyan-700" },
+  success: { icon: CheckCircle2, titleClassName: "text-lime-700" },
+  question: { icon: HelpCircle, titleClassName: "text-sky-700" },
+  warning: { icon: AlertTriangle, titleClassName: "text-amber-700" },
+  failure: { icon: AlertTriangle, titleClassName: "text-orange-700" },
+  danger: { icon: AlertOctagon, titleClassName: "text-rose-700" },
+  bug: { icon: Bug, titleClassName: "text-red-700" },
+  quote: { icon: Quote, titleClassName: "text-stone-700" },
+  summary: { icon: ClipboardList, titleClassName: "text-indigo-700" },
+  abstract: { icon: ClipboardList, titleClassName: "text-violet-700" },
+  example: { icon: FlaskConical, titleClassName: "text-teal-700" },
+  todo: { icon: ListTodo, titleClassName: "text-fuchsia-700" },
+};
+
+const CALLOUT_TYPE_ALIASES: Record<string, string> = {
+  abstract: "summary",
+  tldr: "summary",
+  hint: "tip",
+  important: "tip",
+  check: "success",
+  done: "success",
+  help: "question",
+  faq: "question",
+  caution: "warning",
+  attention: "warning",
+  fail: "failure",
+  missing: "failure",
+  error: "danger",
+  cite: "quote",
+};
+
+function resolveCalloutType(rawType: string): string {
+  const normalized = rawType.toLowerCase();
+  return CALLOUT_TYPE_ALIASES[normalized] || normalized;
+}
+
+function calloutDefaultTitle(type: string): string {
+  return type.slice(0, 1).toUpperCase() + type.slice(1);
+}
+
+function renderTextWithSoftBreaks(text: string) {
+  const lines = text.split("\n");
+  return lines.map((line, idx) => (
+    <Fragment key={`${line}-${idx}`}>
+      {idx > 0 ? <br /> : null}
+      {line}
+    </Fragment>
+  ));
+}
+
+function renderCalloutTitle(type: string, title: string) {
+  const meta = CALLOUT_META[type] || CALLOUT_META.note;
+  const Icon = meta.icon;
+  return (
+    <div className={`mb-2 flex items-center gap-2 text-sm tracking-wide font-sans font-semibold ${meta.titleClassName}`}>
+      <Icon size={18} strokeWidth={2.2} aria-hidden="true" />
+      <span>{title}</span>
+    </div>
+  );
+}
 
 function normalizeAssetSrc(src?: string): string | undefined {
   if (!src) return src;
@@ -296,20 +380,43 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       );
     },
     blockquote({ children }) {
-      const childList = Array.isArray(children) ? children : [children];
+      const childList = (Array.isArray(children) ? children : [children]).filter(
+        (child) => !(typeof child === "string" && child.trim() === ""),
+      );
       const first = childList[0];
       const firstText = getPlainText(first).trim();
-      const match = /^\[!([a-zA-Z]+)\]\s*(.*)$/.exec(firstText);
+      const [firstLine, ...restLines] = firstText.split("\n");
+      const match = /^\[!([a-zA-Z0-9_-]+)\]([+-])?\s*(.*)$/.exec((firstLine || "").trim());
       if (!match) {
         return <blockquote>{children}</blockquote>;
       }
 
-      const type = match[1].toLowerCase();
-      const title = match[2] || type.toUpperCase();
+      const type = resolveCalloutType(match[1]);
+      const foldMarker = match[2] as "+" | "-" | undefined;
+      const title = (match[3] || "").trim() || calloutDefaultTitle(type);
+      const inlineBody = restLines.join("\n").trim();
+      const body = (
+        <div className="prose prose-neutral max-w-none">
+          {inlineBody ? <p>{renderTextWithSoftBreaks(inlineBody)}</p> : null}
+          {childList.slice(1)}
+        </div>
+      );
+
+      if (foldMarker) {
+        return (
+          <details open={foldMarker === "+"} className={`my-6 border-l-4 px-5 py-4 rounded-r-sm ${CALLOUT_STYLES[type] || CALLOUT_STYLES.note}`}>
+            <summary className="mb-2 cursor-pointer select-none marker:content-none">
+              {renderCalloutTitle(type, title)}
+            </summary>
+            {body}
+          </details>
+        );
+      }
+
       return (
         <div className={`my-6 border-l-4 px-5 py-4 rounded-r-sm ${CALLOUT_STYLES[type] || CALLOUT_STYLES.note}`}>
-          <div className="text-xs uppercase tracking-widest font-sans text-stone-600 mb-2">{title}</div>
-          <div className="prose prose-neutral max-w-none">{childList.slice(1)}</div>
+          {renderCalloutTitle(type, title)}
+          {body}
         </div>
       );
     },
