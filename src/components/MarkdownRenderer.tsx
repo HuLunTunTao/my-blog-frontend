@@ -485,7 +485,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       const match = /^\[!([a-zA-Z0-9_-]+)\]([+-])?\s*(.*)$/.exec((firstLine || "").trim());
       if (!match) {
         return (
-          <blockquote className="my-6 whitespace-pre-line border-l-[6px] border-stone-300/90 bg-background/50 px-5 py-4 rounded-r-sm text-stone-600 before:content-none after:content-none [&>p]:my-4 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0 [&>p]:whitespace-pre-line [&>p:first-of-type]:before:content-none [&>p:last-of-type]:after:content-none">
+          <blockquote className="my-6 border-l-[6px] border-stone-300/90 bg-background/50 px-5 py-4 rounded-r-sm text-stone-600 before:content-none after:content-none [&>p]:my-4 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0 [&>p]:whitespace-pre-line [&>p:first-of-type]:before:content-none [&>p:last-of-type]:after:content-none [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1 [&_li_p]:my-0 [&_strong]:font-semibold">
 
             {children}
           </blockquote>
@@ -534,7 +534,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       prose-code:before:content-none prose-code:after:content-none
       prose-strong:font-black prose-strong:text-foreground
       prose-a:text-foreground prose-a:decoration-1 prose-a:underline-offset-4 prose-a:font-bold
-      prose-blockquote:border-l-[6px] prose-blockquote:border-stone-300/90 prose-blockquote:bg-background/50 prose-blockquote:py-4 prose-blockquote:px-5 prose-blockquote:rounded-r-sm prose-blockquote:font-sans prose-blockquote:not-italic prose-blockquote:shadow-none prose-blockquote:text-stone-600 prose-blockquote:whitespace-pre-line prose-blockquote:before:content-none prose-blockquote:after:content-none [&_blockquote_p:first-of-type]:before:content-none [&_blockquote_p:last-of-type]:after:content-none
+      prose-blockquote:border-l-[6px] prose-blockquote:border-stone-300/90 prose-blockquote:bg-background/50 prose-blockquote:py-4 prose-blockquote:px-5 prose-blockquote:rounded-r-sm prose-blockquote:font-sans prose-blockquote:not-italic prose-blockquote:shadow-none prose-blockquote:text-stone-600 prose-blockquote:before:content-none prose-blockquote:after:content-none [&_blockquote_p]:whitespace-pre-line [&_blockquote_p:first-of-type]:before:content-none [&_blockquote_p:last-of-type]:after:content-none [&_blockquote_ul]:my-2 [&_blockquote_ol]:my-2 [&_blockquote_li]:my-1 [&_blockquote_li_p]:my-0 [&_blockquote_strong]:font-semibold
       prose-li:marker:text-stone-400 prose-ul:list-disc prose-ol:list-decimal
       prose-pre:bg-transparent prose-pre:p-0"
     >
