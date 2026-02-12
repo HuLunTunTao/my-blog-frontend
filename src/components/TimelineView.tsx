@@ -187,35 +187,36 @@ export default function TimelineView() {
                       
                       <div className="space-y-4 pl-2">
                         {monthPosts.map((post) => (
-                          <article key={post.slug} className="group relative py-4 px-6 transition-all duration-300 hover:translate-x-1">
-                            {/* Individual Paper Layer */}
-                            <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] rounded-none" 
-                                 style={{
-                                   backgroundImage: `url("/assets/paperGrain-128.svg")`
-                                 }}
-                            />
+                          <Link key={post.slug} to={toPostRoute(post.slug)} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/70">
+                            <article className="relative py-4 px-6 transition-all duration-300 hover:translate-x-1">
+                              {/* Individual Paper Layer */}
+                              <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] rounded-none" 
+                                   style={{
+                                     backgroundImage: `url("/assets/paperGrain-128.svg")`
+                                   }}
+                              />
 
-                            <header className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-1">
-                              <Link 
-                                  to={toPostRoute(post.slug)}
-                                  className={cn(
-                                      "text-xl font-medium decoration-1 underline-offset-4 hover:underline",
-                                      post.visibility === 'encrypted' && "font-mono text-base text-neutral-600"
-                                  )}
-                              >
-                                {post.visibility === 'encrypted' && <span className="mr-2">🔒</span>}
-                                {post.title}
-                              </Link>
-                              <span className="text-xs text-subtle font-sans mt-1 md:mt-0">
-                                {format(parseISO(post.date), "dd")}
-                              </span>
-                            </header>
-                            {post.excerpt && (
-                              <p className="text-neutral-500 font-serif text-sm leading-relaxed line-clamp-2 max-w-lg">
-                                  {post.visibility === 'encrypted' ? "********" : post.excerpt}
-                              </p>
-                            )}
-                          </article>
+                              <header className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-1">
+                                <span
+                                    className={cn(
+                                        "text-xl font-medium decoration-1 underline-offset-4 group-hover:underline",
+                                        post.visibility === 'encrypted' && "font-mono text-base text-neutral-600"
+                                    )}
+                                >
+                                  {post.visibility === 'encrypted' && <span className="mr-2">🔒</span>}
+                                  {post.title}
+                                </span>
+                                <span className="text-xs text-subtle font-sans mt-1 md:mt-0">
+                                  {format(parseISO(post.date), "dd")}
+                                </span>
+                              </header>
+                              {post.excerpt && (
+                                <p className="text-neutral-500 font-serif text-sm leading-relaxed line-clamp-2 max-w-lg">
+                                    {post.visibility === 'encrypted' ? "********" : post.excerpt}
+                                </p>
+                              )}
+                            </article>
+                          </Link>
                         ))}
                       </div>
                     </motion.div>
