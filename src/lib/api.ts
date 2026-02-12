@@ -8,6 +8,7 @@ export interface Post {
   tags: string[];
   visibility: "public" | "masked" | "encrypted";
   excerpt: string;
+  commentId?: string;
   path: string;
   content?: string;
   locked?: boolean;

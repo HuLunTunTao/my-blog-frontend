@@ -3,6 +3,7 @@ import { getPostBySlug, Post } from "@/lib/posts";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import EncryptedGate from "@/components/EncryptedGate";
 import AlsoOnMyBlog from "@/components/AlsoOnMyBlog";
+import GiscusComments, { warmupGiscusResources } from "@/components/GiscusComments";
 import TagBadge from "@/components/TagBadge";
 import { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
@@ -40,6 +41,7 @@ export default function PostPage() {
   useEffect(() => {
     // Load post when slug changes
     setUnlocked(false);
+    warmupGiscusResources();
     void loadPost();
   }, [loadPost]);
 
@@ -120,6 +122,7 @@ export default function PostPage() {
       )}
 
       {!isEncrypted && <AlsoOnMyBlog currentPost={post} />}
+      {!isEncrypted && <GiscusComments commentId={post.commentId} />}
     </motion.article>
   );
 }

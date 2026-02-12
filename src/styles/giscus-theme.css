@@ -1,0 +1,156 @@
+main {
+  --color-prettylights-syntax-comment: #6b7280;
+  --color-prettylights-syntax-constant: #b45309;
+  --color-prettylights-syntax-entity: #0f4c81;
+  --color-prettylights-syntax-storage-modifier-import: #6b7280;
+  --color-prettylights-syntax-entity-tag: #166534;
+  --color-prettylights-syntax-keyword: #9a3412;
+  --color-prettylights-syntax-string: #14532d;
+  --color-prettylights-syntax-variable: #7c2d12;
+  --color-prettylights-syntax-brackethighlighter-unmatched: #b91c1c;
+  --color-prettylights-syntax-invalid-illegal-text: #111827;
+  --color-prettylights-syntax-invalid-illegal-bg: #fee2e2;
+  --color-prettylights-syntax-carriage-return-text: #111827;
+  --color-prettylights-syntax-carriage-return-bg: #fee2e2;
+  --color-prettylights-syntax-string-regexp: #166534;
+  --color-prettylights-syntax-markup-list: #7c2d12;
+  --color-prettylights-syntax-markup-heading: #0f4c81;
+  --color-prettylights-syntax-markup-italic: #374151;
+  --color-prettylights-syntax-markup-bold: #111827;
+  --color-prettylights-syntax-markup-deleted-text: #991b1b;
+  --color-prettylights-syntax-markup-deleted-bg: #fef2f2;
+  --color-prettylights-syntax-markup-inserted-text: #166534;
+  --color-prettylights-syntax-markup-inserted-bg: #f0fdf4;
+  --color-prettylights-syntax-markup-changed-text: #92400e;
+  --color-prettylights-syntax-markup-changed-bg: #fffbeb;
+  --color-prettylights-syntax-markup-ignored-text: #111827;
+  --color-prettylights-syntax-markup-ignored-bg: #dbeafe;
+  --color-prettylights-syntax-meta-diff-range: #334155;
+  --color-prettylights-syntax-brackethighlighter-angle: #6b7280;
+  --color-prettylights-syntax-sublimelinter-gutter-mark: #9ca3af;
+  --color-prettylights-syntax-constant-other-reference-link: #0f4c81;
+
+  --color-btn-text: #44403c;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #e7e5e4;
+  --color-btn-shadow: 0 0 #0000;
+  --color-btn-inset-shadow: 0 0 #0000;
+  --color-btn-hover-bg: #fafaf9;
+  --color-btn-hover-border: #d6d3d1;
+  --color-btn-active-bg: #f5f5f4;
+  --color-btn-active-border: #d6d3d1;
+  --color-btn-selected-bg: #f5f5f4;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #9a3412;
+  --color-btn-primary-border: #7c2d12;
+  --color-btn-primary-shadow: 0 0 #0000;
+  --color-btn-primary-inset-shadow: 0 0 #0000;
+  --color-btn-primary-hover-bg: #7c2d12;
+  --color-btn-primary-hover-border: #7c2d12;
+  --color-btn-primary-selected-bg: #7c2d12;
+  --color-btn-primary-selected-shadow: 0 0 #0000;
+  --color-btn-primary-disabled-text: #ffffff99;
+  --color-btn-primary-disabled-bg: #9a341299;
+  --color-btn-primary-disabled-border: #7c2d1299;
+
+  --color-action-list-item-default-hover-bg: #fafaf9;
+  --color-segmented-control-bg: #ffffff;
+  --color-segmented-control-button-bg: #ffffff;
+  --color-segmented-control-button-selected-border: #e7e5e4;
+
+  --color-fg-default: #292524;
+  --color-fg-muted: #78716c;
+  --color-fg-subtle: #a8a29e;
+  --color-canvas-default: #ffffff;
+  --color-canvas-overlay: #ffffff;
+  --color-canvas-inset: #ffffff;
+  --color-canvas-subtle: #fafaf9;
+  --color-border-default: #e7e5e4;
+  --color-border-muted: #f1f5f9;
+  --color-neutral-muted: #d6d3d180;
+  --color-accent-fg: #0f4c81;
+  --color-accent-emphasis: #0b3c66;
+  --color-accent-muted: #0f4c8166;
+  --color-accent-subtle: #0f4c8114;
+  --color-success-fg: #166534;
+  --color-attention-fg: #b45309;
+  --color-attention-muted: #b4530940;
+  --color-attention-subtle: #b4530914;
+  --color-danger-fg: #b91c1c;
+  --color-danger-muted: #b91c1c40;
+  --color-danger-subtle: #b91c1c14;
+  --color-primer-shadow-inset: 0 0 #0000;
+  --color-scale-gray-7: #f5f5f4;
+  --color-scale-blue-8: #0f4c81;
+
+  --color-social-reaction-bg-hover: var(--color-scale-gray-7);
+  --color-social-reaction-bg-reacted-hover: #eaf2f8;
+}
+
+main .gsc-timeline {
+  flex-direction: column-reverse;
+}
+
+main .gsc-comments > .gsc-header {
+  order: 1;
+}
+
+main .gsc-comments > .gsc-comment-box {
+  margin-bottom: 1rem;
+  order: 2;
+}
+
+main .gsc-comments > .gsc-timeline {
+  order: 3;
+}
+
+main .gsc-homepage-bg {
+  background-color: #ffffff;
+}
+
+main .gsc-main,
+main .gsc-comment-box,
+main .gsc-comment,
+main .gsc-reply-box,
+main .gsc-social-reaction-summary-item {
+  border-radius: 0 !important;
+}
+
+main .gsc-comment-box,
+main .gsc-comment,
+main .gsc-reply-box {
+  border: 1px solid #e7e5e4 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* Remove the inner GitHub card to avoid double borders in each comment item. */
+main .gsc-comment > .color-bg-primary {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+main .gsc-comment .color-box-border-info {
+  border-color: #e7e5e4 !important;
+}
+
+main .gsc-comment-box-textarea,
+main .gsc-reply-box-textarea {
+  background: #ffffff !important;
+  border-color: #f1f5f9 !important;
+}
+
+main .gsc-comment-box-tabs,
+main .gsc-reply-box-tabs {
+  background: #fafaf9 !important;
+  border-bottom-color: #e7e5e4 !important;
+}
+
+main .gsc-reply-box button {
+  border-radius: 0 !important;
+  border-color: #e7e5e4 !important;
+  background: #ffffff !important;
+}
