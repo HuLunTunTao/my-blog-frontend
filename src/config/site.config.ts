@@ -25,8 +25,8 @@ export const siteConfig: SiteConfig = {
   author: {
     name: "囫囵吞桃🍑",
     avatar: "https://avatars.githubusercontent.com/u/34204332?v=4", 
-    bio: "Developer & Designer. Writing about code, art, and life.",
-    motto: "Nulla dies sine linea." // No day without a line
+    bio: "Undergraduate majoring in Computer Science.",
+    motto: "爱人者，人恒爱之。" // No day without a line
   },
   socialLinks: [
     {
