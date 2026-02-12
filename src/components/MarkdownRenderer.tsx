@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import CopyButton from "./CopyButton";
 import { getPostBySlug } from "@/lib/api";
 import { toPostRoute } from "@/lib/postSlug";
-import { siteConfig } from "@/config/site.config";
+import { buildBackendUrl } from "@/config/backend.config";
 import {
   decodeObsidianEmbedHref,
   extractObsidianFragment,
@@ -196,7 +196,7 @@ const CALLOUT_STYLES: Record<string, string> = {
 function normalizeAssetSrc(src?: string): string | undefined {
   if (!src) return src;
   if (src.startsWith("/api/")) {
-    return `${siteConfig.apiBaseUrl}${src}`;
+    return buildBackendUrl(src);
   }
   return src;
 }

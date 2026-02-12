@@ -1,4 +1,4 @@
-import { siteConfig } from "@/config/site.config";
+import { apiBaseUrl } from "@/config/backend.config";
 import { encodeSlugForPath } from "./postSlug";
 
 export interface Post {
@@ -35,7 +35,7 @@ export interface Folder {
   children?: Folder[];
   postCount: number;  directPostCount?: number;}
 
-const API_BASE = siteConfig.apiBaseUrl + "/api";
+const API_BASE = apiBaseUrl;
 
 // 获取文章列表
 export async function getPosts(params?: {

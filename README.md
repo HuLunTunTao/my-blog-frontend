@@ -26,10 +26,15 @@ npm run dev
 通过环境变量配置后端地址：
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=https://api.blog.hltt.online
 ```
 
-代码入口：`src/config/site.config.ts`
+说明：
+
+- 键（Key）：`VITE_API_BASE_URL`
+- 值（Value）：`https://api.blog.hltt.online`（推荐带 `https://`）
+
+代码入口：`/Users/hltt/projects/my_blog/frontend/src/config/backend.config.ts`
 
 ## 4. 当前实现说明
 
