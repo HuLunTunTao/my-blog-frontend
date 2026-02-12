@@ -122,7 +122,7 @@ export default function PostPage() {
       )}
 
       {!isEncrypted && <AlsoOnMyBlog currentPost={post} />}
-      {!isEncrypted && <GiscusComments commentId={post.commentId} />}
+      {!isEncrypted && <GiscusComments commentId={post.commentId} slug={post.slug} />}
     </motion.article>
   );
 }

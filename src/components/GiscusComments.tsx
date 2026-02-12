@@ -3,6 +3,7 @@ import giscusThemeCss from "@/styles/giscus-theme.css?raw";
 
 interface GiscusCommentsProps {
   commentId?: string;
+  slug?: string;
 }
 
 const GISCUS_SCRIPT_SRC = "https://giscus.app/client.js";
@@ -34,16 +35,16 @@ export function warmupGiscusResources(): void {
 
   ensureHeadLink("dns-prefetch", "//giscus.app");
   ensureHeadLink("preconnect", "https://giscus.app", "anonymous");
-  ensureHeadLink("preload", GISCUS_SCRIPT_SRC, "anonymous", "script");
   warmedUp = true;
 }
 
-export default function GiscusComments({ commentId }: GiscusCommentsProps) {
+export default function GiscusComments({ commentId, slug }: GiscusCommentsProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const discussionTerm = (commentId || slug || "").trim();
 
   useEffect(() => {
     warmupGiscusResources();
-    if (!commentId || !containerRef.current) {
+    if (!discussionTerm || !containerRef.current) {
       return;
     }
 
@@ -60,7 +61,7 @@ export default function GiscusComments({ commentId }: GiscusCommentsProps) {
     script.setAttribute("data-category", "Announcements");
     script.setAttribute("data-category-id", "DIC_kwDOROYfPM4C2Q05");
     script.setAttribute("data-mapping", "specific");
-    script.setAttribute("data-term", commentId);
+    script.setAttribute("data-term", discussionTerm);
     script.setAttribute("data-strict", "0");
     script.setAttribute("data-reactions-enabled", "1");
     script.setAttribute("data-emit-metadata", "0");
@@ -74,9 +75,9 @@ export default function GiscusComments({ commentId }: GiscusCommentsProps) {
     return () => {
       container.innerHTML = "";
     };
-  }, [commentId]);
+  }, [discussionTerm]);
 
-  if (!commentId) {
+  if (!discussionTerm) {
     return null;
   }
 

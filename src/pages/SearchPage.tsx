@@ -2,15 +2,18 @@ import { useSearchParams, Link } from "react-router-dom";
 import { searchPosts, Post } from "@/lib/posts";
 import { format, parseISO } from "date-fns";
 import { motion } from "framer-motion";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { toPostRoute } from "@/lib/postSlug";
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
+  const [inputValue, setInputValue] = useState(query);
   const [results, setResults] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
+  const isComposingRef = useRef(false);
+  const debounceTimerRef = useRef<number | null>(null);
 
   const performSearch = useCallback(async () => {
     setLoading(true);
@@ -32,13 +35,63 @@ export default function SearchPage() {
     }
   }, [query, performSearch]);
 
+  useEffect(() => {
+    setInputValue(query);
+  }, [query]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current !== null) {
+        window.clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  const updateQueryParam = useCallback(
+    (value: string) => {
+      if (value) {
+        setSearchParams({ q: value }, { replace: true });
+      } else {
+        setSearchParams({}, { replace: true });
+      }
+    },
+    [setSearchParams],
+  );
+
+  const scheduleQueryUpdate = useCallback(
+    (value: string) => {
+      if (debounceTimerRef.current !== null) {
+        window.clearTimeout(debounceTimerRef.current);
+      }
+      debounceTimerRef.current = window.setTimeout(() => {
+        updateQueryParam(value);
+      }, 300);
+    },
+    [updateQueryParam],
+  );
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (value) {
-      setSearchParams({ q: value }, { replace: true });
-    } else {
-      setSearchParams({}, { replace: true });
+    setInputValue(value);
+
+    if (isComposingRef.current) {
+      return;
     }
+    scheduleQueryUpdate(value);
+  };
+
+  const handleCompositionStart = () => {
+    isComposingRef.current = true;
+    if (debounceTimerRef.current !== null) {
+      window.clearTimeout(debounceTimerRef.current);
+    }
+  };
+
+  const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement>) => {
+    isComposingRef.current = false;
+    const value = e.currentTarget.value;
+    setInputValue(value);
+    scheduleQueryUpdate(value);
   };
 
   // Helper to highlight text
@@ -66,8 +119,10 @@ export default function SearchPage() {
       <div className="sticky top-16 bg-background pt-4 pb-4 z-10">
           <input
             type="text"
-            value={query}
+            value={inputValue}
             onChange={handleSearch}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
             placeholder="Search posts..."
             autoFocus
             className="w-full text-2xl font-serif border-b-2 border-border focus:border-black outline-none py-2 bg-transparent placeholder:text-neutral-300 transition-colors"
