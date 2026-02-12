@@ -19,7 +19,7 @@ export function XiaohongshuIcon({ size = 20, className, style }: XiaohongshuIcon
         objectFit: "contain",
         verticalAlign: "middle",
         filter: "grayscale(1) brightness(1)", // lighten to match other gray icons
-        transform: "translateY(-5.5px)",
+        transform: "translateY(-6.3px)",
         ...style
       }}
       className={className}
