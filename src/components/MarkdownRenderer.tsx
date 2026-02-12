@@ -302,6 +302,91 @@ function normalizeAssetSrc(src?: string): string | undefined {
   return src;
 }
 
+function encodeAssetPath(path: string): string {
+  return path
+    .split("/")
+    .filter(Boolean)
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}
+
+function extractApiAssetPath(src?: string): string | null {
+  if (!src) return null;
+  const marker = "/api/assets/";
+  const idx = src.indexOf(marker);
+  if (idx === -1) return null;
+  const raw = src.slice(idx + marker.length).replace(/^\/+/, "");
+  if (!raw) return null;
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
+function joinPath(base: string, leaf: string): string {
+  if (!base) return leaf;
+  return `${base.replace(/\/+$/, "")}/${leaf.replace(/^\/+/, "")}`;
+}
+
+function sourceDirFromSlug(sourceSlug?: string): string {
+  if (!sourceSlug) return "";
+  const parts = sourceSlug.split("/").filter(Boolean);
+  if (parts.length <= 1) return "";
+  parts.pop();
+  return parts.join("/");
+}
+
+function buildObsidianAssetCandidates(src?: string, sourceSlug?: string): string[] {
+  const normalized = normalizeAssetSrc(src);
+  if (!normalized) return [];
+
+  const assetPath = extractApiAssetPath(normalized);
+  if (!assetPath) return [normalized];
+
+  const paths = new Set<string>();
+  paths.add(assetPath);
+
+  const fileName = assetPath.split("/").filter(Boolean).pop() || "";
+  const sourceDir = sourceDirFromSlug(sourceSlug);
+  if (fileName) {
+    // Obsidian supports shortest-path wikilinks. For bare names, try note-local and attachment dirs.
+    if (sourceDir) {
+      paths.add(joinPath(sourceDir, fileName));
+      paths.add(joinPath(joinPath(sourceDir, "附件"), fileName));
+      paths.add(joinPath(joinPath(sourceDir, "attachment"), fileName));
+    }
+    // Common default attachment folders in many vaults.
+    paths.add(joinPath("附件", fileName));
+    paths.add(joinPath("attachment", fileName));
+  }
+
+  return Array.from(paths).map((p) => buildBackendUrl(`/api/assets/${encodeAssetPath(p)}`));
+}
+
+function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: string; title?: string; sourceSlug?: string }) {
+  const width = getImageWidthFromTitle(title);
+  const candidates = useMemo(() => buildObsidianAssetCandidates(src, sourceSlug), [src, sourceSlug]);
+  const [candidateIndex, setCandidateIndex] = useState(0);
+
+  useEffect(() => {
+    setCandidateIndex(0);
+  }, [candidates]);
+
+  return (
+    <img
+      src={candidates[candidateIndex]}
+      alt={alt || ""}
+      loading="lazy"
+      style={width ? { width: `${width}px`, maxWidth: "100%" } : { maxWidth: "100%" }}
+      className="my-6 border border-stone-300/60 bg-paper"
+      onError={() => {
+        setCandidateIndex((curr) => (curr + 1 < candidates.length ? curr + 1 : curr));
+      }}
+    />
+  );
+}
+
 export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: MarkdownRendererProps) {
   const processedContent = useMemo(() => preprocessMarkdown(content), [content]);
   const urlTransform = useCallback((url: string) => {
@@ -388,16 +473,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       );
     },
     img({ src, alt, title }) {
-      const width = getImageWidthFromTitle(title);
-      return (
-        <img
-          src={normalizeAssetSrc(src)}
-          alt={alt || ""}
-          loading="lazy"
-          style={width ? { width: `${width}px`, maxWidth: "100%" } : { maxWidth: "100%" }}
-          className="my-6 border border-stone-300/60 bg-paper"
-        />
-      );
+      return <ResilientImage src={src} alt={alt} title={title} sourceSlug={sourceSlug} />;
     },
     blockquote({ children }) {
       const childList = (Array.isArray(children) ? children : [children]).filter(
