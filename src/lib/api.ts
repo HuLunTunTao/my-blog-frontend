@@ -37,6 +37,20 @@ export interface Folder {
 
 const API_BASE = apiBaseUrl;
 
+function normalizePost(post: Post): Post {
+  return {
+    ...post,
+    tags: Array.isArray(post.tags) ? post.tags : [],
+  };
+}
+
+function normalizePostListResponse(response: PostListResponse): PostListResponse {
+  return {
+    ...response,
+    posts: Array.isArray(response.posts) ? response.posts.map(normalizePost) : [],
+  };
+}
+
 // 获取文章列表
 export async function getPosts(params?: {
   page?: number;
@@ -58,7 +72,8 @@ export async function getPosts(params?: {
     throw new Error("Failed to fetch posts");
   }
 
-  return response.json();
+  const data = await response.json();
+  return normalizePostListResponse(data);
 }
 
 // 获取文章详情
@@ -72,7 +87,8 @@ export async function getPostBySlug(slug: string, password?: string): Promise<Po
     throw new Error("Post not found");
   }
 
-  return response.json();
+  const data = await response.json();
+  return normalizePost(data);
 }
 
 // 获取所有标签
@@ -82,7 +98,8 @@ export async function getTags(): Promise<Tag[]> {
     throw new Error("Failed to fetch tags");
   }
 
-  return response.json();
+  const data = await response.json();
+  return Array.isArray(data) ? data : [];
 }
 
 // 获取文件夹结构
@@ -102,7 +119,8 @@ export async function searchPosts(query: string): Promise<Post[]> {
     throw new Error("Search failed");
   }
 
-  return response.json();
+  const data = await response.json();
+  return Array.isArray(data) ? data.map(normalizePost) : [];
 }
 
 // 刷新索引（用于开发）
