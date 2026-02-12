@@ -1,6 +1,7 @@
 import { toPostRoute } from "./postSlug";
 
 const OBSIDIAN_EMBED_SCHEME = "obsidian-embed://";
+const OBSIDIAN_DETAILS_SCHEME = "obsidian-details://";
 const OBSIDIAN_WIDTH_TITLE_PREFIX = "obsidian-width=";
 
 type RefParts = {
@@ -135,6 +136,35 @@ export function convertObsidianEmbeds(content: string): string {
   );
 }
 
+type DetailsBlock = {
+  summary: string;
+  body: string;
+};
+
+function encodeDetailsBlock(payload: DetailsBlock): string {
+  return `${OBSIDIAN_DETAILS_SCHEME}${encodeURIComponent(JSON.stringify(payload))}`;
+}
+
+function extractSummaryText(raw: string): string {
+  return raw.replace(/<[^>]+>/g, "").trim();
+}
+
+export function convertHtmlDetailsBlocks(content: string): string {
+  return replaceOutsideCode(content, (text) =>
+    text.replace(/<details\b[^>]*>([\s\S]*?)<\/details>/gi, (full, inner: string) => {
+      const summaryMatch = /<summary\b[^>]*>([\s\S]*?)<\/summary>/i.exec(inner);
+      if (!summaryMatch) return full;
+
+      const summary = extractSummaryText(summaryMatch[1]);
+      const body = inner.replace(summaryMatch[0], "").trim();
+      if (!summary || !body) return full;
+
+      const href = encodeDetailsBlock({ summary, body });
+      return `[${summary}](${href})`;
+    }),
+  );
+}
+
 export function parseWikiLinks(content: string): string {
   return replaceOutsideCode(content, (text) =>
     text.replace(/(?<!!)\[\[([^\]]+)\]\]/g, (_, inner: string) => {
@@ -175,7 +205,8 @@ export function parseHashTags(content: string): string {
 export function preprocessMarkdown(content: string): string {
   const noComments = removeObsidianComments(content);
   const withEmbeds = convertObsidianEmbeds(noComments);
-  const withLinks = parseWikiLinks(withEmbeds);
+  const withDetails = convertHtmlDetailsBlocks(withEmbeds);
+  const withLinks = parseWikiLinks(withDetails);
   return parseHashTags(withLinks);
 }
 
@@ -185,6 +216,24 @@ export function isObsidianEmbedHref(href?: string): boolean {
 
 export function decodeObsidianEmbedHref(href: string): string {
   return decodeURIComponent(href.replace(OBSIDIAN_EMBED_SCHEME, ""));
+}
+
+export function isObsidianDetailsHref(href?: string): boolean {
+  return Boolean(href && href.startsWith(OBSIDIAN_DETAILS_SCHEME));
+}
+
+export function decodeObsidianDetailsHref(href: string): DetailsBlock | null {
+  try {
+    const decoded = decodeURIComponent(href.replace(OBSIDIAN_DETAILS_SCHEME, ""));
+    const parsed = JSON.parse(decoded) as Partial<DetailsBlock>;
+    if (!parsed.summary || !parsed.body) return null;
+    return {
+      summary: parsed.summary,
+      body: parsed.body,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export function getImageWidthFromTitle(title?: string): number | null {
