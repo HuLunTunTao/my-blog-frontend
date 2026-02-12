@@ -3,6 +3,8 @@ import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import mermaid from "mermaid";
@@ -209,9 +211,10 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
   }, []);
 
   const components: Components = {
-    code({ className, children }) {
+    code({ className, children, node, ...props }) {
       const match = /language-(\w+)/.exec(className || "");
       const codeText = String(children).replace(/\n$/, "");
+      const isInline = (node?.position?.start.line ?? 0) === (node?.position?.end.line ?? 0) && !codeText.includes("\n");
       if (match?.[1]?.toLowerCase() === "mermaid") {
         return <MermaidBlock code={codeText} />;
       }
@@ -236,9 +239,31 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
           </SyntaxHighlighter>
         </div>
       ) : (
-        <code className={`${className} bg-neutral-200/60 px-1.5 py-0.5 rounded font-mono text-sm border border-neutral-300/50 text-foreground`}>
-          {children}
-        </code>
+        isInline ? (
+          <code className={`${className} bg-neutral-200/60 px-1.5 py-0.5 rounded font-mono text-sm border border-neutral-300/50 text-foreground`} {...props}>
+            {children}
+          </code>
+        ) : (
+          <div className="relative group my-10">
+            <CopyButton text={codeText} />
+            <SyntaxHighlighter
+              style={oneLight as any}
+              language="text"
+              PreTag="div"
+              useInlineStyles={true}
+              customStyle={{
+                background: "#FBFBFA",
+                padding: "2rem",
+                borderRadius: "0",
+                fontSize: "0.875rem",
+                border: "1px solid #D6D3D1",
+                margin: 0,
+              }}
+            >
+              {codeText}
+            </SyntaxHighlighter>
+          </div>
+        )
       );
     },
     a({ href, children, ...props }) {
@@ -305,7 +330,12 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       prose-li:marker:text-stone-400 prose-ul:list-disc prose-ol:list-decimal
       prose-pre:bg-transparent prose-pre:p-0"
     >
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components} urlTransform={urlTransform}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex]}
+        components={components}
+        urlTransform={urlTransform}
+      >
         {processedContent}
       </ReactMarkdown>
     </div>
