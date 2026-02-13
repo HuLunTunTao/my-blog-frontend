@@ -6,7 +6,7 @@ export interface Post {
   title: string;
   date: string;
   tags: string[];
-  visibility: "public" | "masked" | "encrypted" | "hidden";
+  visibility: "public" | "encrypted" | "hidden";
   excerpt: string;
   commentId?: string;
   path: string;

@@ -3,8 +3,7 @@ export interface Post {
   title: string;
   date: string; // YYYY-MM-DD
   tags: string[];
-  visibility: "public" | "masked" | "encrypted" | "hidden";
-  masked: boolean;
+  visibility: "public" | "encrypted" | "hidden";
   excerpt: string;
   content: string;
   encryptedPassword?: string;
@@ -27,7 +26,6 @@ export const mockPosts: Post[] = [
     date: "2024-03-05",
     tags: ["Tech", "Art", "随笔"],
     visibility: "public",
-    masked: false,
     excerpt: "当算法遇上韵律，数字世界里的墨色晕染。",
     content: `
 # 代码与诗歌的边界
@@ -75,7 +73,6 @@ console.log(inkWash(3));
     date: "2024-03-02",
     tags: ["Test", "Markdown"],
     visibility: "public",
-    masked: false,
     excerpt: "全面测试 Markdown 渲染器的能力：图片、代码、引用、列表。",
     content: `
 # Markdown 渲染全面测试
@@ -145,7 +142,6 @@ fn main() {
     date: "2024-03-01",
     tags: ["Life", "Tech"],
     visibility: "public",
-    masked: false,
     excerpt: "The start of something new.",
     content: `
 # Hello World
@@ -169,7 +165,6 @@ console.log("Hello World");
     date: "2024-02-28",
     tags: ["Philosophy"],
     visibility: "public",
-    masked: false,
     excerpt: "Exploring the depths.",
     content: "The answer is 42. See also [[Deep Thought]].",
     path: ""
@@ -180,7 +175,6 @@ console.log("Hello World");
     date: "2024-02-27",
     tags: ["SciFi", "Philosophy"],
     visibility: "public",
-    masked: false,
     excerpt: "Computers thinking deep thoughts.",
     content: "Calculating... Please wait.",
     path: ""
@@ -191,7 +185,6 @@ console.log("Hello World");
     date: "2024-02-20",
     tags: ["Private"],
     visibility: "encrypted",
-    masked: false,
     excerpt: "You shouldn't see this.",
     content: "This is top secret.",
     path: ""
@@ -202,7 +195,6 @@ console.log("Hello World");
     date: "2024-02-15",
     tags: ["Thoughts"],
     visibility: "public",
-    masked: true,
     excerpt: "Hidden behind a mask.",
     content: "You cannot see me on the timeline easily.",
     path: ""
@@ -213,7 +205,6 @@ console.log("Hello World");
     date: "2024-01-10",
     tags: ["Security"],
     visibility: "encrypted",
-    masked: false,
     excerpt: "Password required.",
     content: "The secret code is: BANANA",
     encryptedPassword: "123",
@@ -225,7 +216,6 @@ console.log("Hello World");
     date: "2023-12-25",
     tags: ["Productivity", "Tech"],
     visibility: "public",
-    masked: false,
     excerpt: "How I use Obsidian.",
     content: "I use [[Double Brackets]] for linking and #Tags for organizing.",
     path: ""
@@ -236,7 +226,6 @@ console.log("Hello World");
     date: "2023-11-11",
     tags: ["Life"],
     visibility: "public",
-    masked: false,
     excerpt: "Achieving peace.",
     content: "Just breathe. And maybe read [[Hello World|my first post]].",
     path: ""
@@ -246,8 +235,7 @@ console.log("Hello World");
     title: "Philosophy Tag Intro",
     date: "2023-01-01",
     tags: [],
-    visibility: "masked", // Helper post
-    masked: true,
+    visibility: "public", // Helper post
     excerpt: "",
     content: "Philosophy is the study of general and fundamental questions, such as those about existence, reason, knowledge, values, mind, and language.",
     path: ""
@@ -258,7 +246,6 @@ console.log("Hello World");
     date: "2023-10-01",
     tags: ["Music", "Life"],
     visibility: "public",
-    masked: false,
     excerpt: "We don't need no education.",
     content: "Pink Floyd is great.",
     path: ""
@@ -270,7 +257,6 @@ console.log("Hello World");
     date: "2024-01-01",
     tags: [],
     visibility: "public",
-    masked: false,
     excerpt: "技术相关文章的集合",
     content: `# 技术专栏
 
@@ -285,7 +271,6 @@ console.log("Hello World");
     date: "2024-02-10",
     tags: ["Tech", "React"],
     visibility: "public",
-    masked: false,
     excerpt: "深入理解 React Hooks 的原理和最佳实践",
     content: `# React Hooks 完全指南
 
@@ -304,7 +289,6 @@ Hooks 让函数组件拥有了状态管理的能力。`,
     date: "2024-01-15",
     tags: [],
     visibility: "public",
-    masked: false,
     excerpt: "前端技术专题",
     content: `# 前端开发专栏
 
@@ -321,7 +305,6 @@ Hooks 让函数组件拥有了状态管理的能力。`,
     date: "2024-02-05",
     tags: ["Tech", "TypeScript"],
     visibility: "public",
-    masked: false,
     excerpt: "掌握 TypeScript 的高级类型系统",
     content: `# TypeScript 高级类型
 
@@ -340,7 +323,6 @@ function getProperty<T, K extends keyof T>(obj: T, key: K) {
     date: "2024-01-20",
     tags: ["Tech", "Node.js"],
     visibility: "public",
-    masked: false,
     excerpt: "构建可靠的 Node.js 应用",
     content: `# Node.js 最佳实践
 
@@ -355,7 +337,6 @@ function getProperty<T, K extends keyof T>(obj: T, key: K) {
     date: "2024-01-10",
     tags: [],
     visibility: "public",
-    masked: false,
     excerpt: "后端技术专题",
     content: `# 后端开发专栏
 
@@ -372,7 +353,6 @@ function getProperty<T, K extends keyof T>(obj: T, key: K) {
     date: "2024-01-18",
     tags: ["Tech", "Database"],
     visibility: "public",
-    masked: false,
     excerpt: "理解索引原理，提升查询性能",
     content: `# 数据库索引优化
 
@@ -389,7 +369,6 @@ function getProperty<T, K extends keyof T>(obj: T, key: K) {
     date: "2024-01-01",
     tags: [],
     visibility: "public",
-    masked: false,
     excerpt: "记录生活的点滴",
     content: `# 生活随笔
 
@@ -402,7 +381,6 @@ function getProperty<T, K extends keyof T>(obj: T, key: K) {
     date: "2023-12-20",
     tags: ["Life", "Travel"],
     visibility: "public",
-    masked: false,
     excerpt: "在古都感受时光的沉淀",
     content: `# 京都之旅
 
@@ -417,7 +395,6 @@ function getProperty<T, K extends keyof T>(obj: T, key: K) {
     date: "2023-12-01",
     tags: [],
     visibility: "public",
-    masked: false,
     excerpt: "世界那么大",
     content: `# 旅行记录
 
@@ -430,7 +407,6 @@ function getProperty<T, K extends keyof T>(obj: T, key: K) {
     date: "2023-11-15",
     tags: ["Life", "Book"],
     visibility: "public",
-    masked: false,
     excerpt: "重新认识人类的历史",
     content: `# 《人类简史》读后感
 
