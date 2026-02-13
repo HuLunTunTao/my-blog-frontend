@@ -56,7 +56,7 @@ export default function FoldersPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.07, duration: 0.13 }}
-        className="bg-white/50 rounded-lg border border-stone-200/60 p-6"
+        className="bg-white/50 rounded-none border border-stone-200/60 p-6"
       >
         <FolderTree root={folderTree} />
       </motion.div>
@@ -68,7 +68,7 @@ export default function FoldersPage() {
         transition={{ delay: 0.13, duration: 0.13 }}
         className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-4"
       >
-        <div className="p-4 bg-stone-50/50 rounded-lg border border-stone-200/40">
+        <div className="p-4 bg-stone-50/50 rounded-none border border-stone-200/40">
           <div className="text-2xl font-serif text-foreground mb-1">
             {countFolders(folderTree)}
           </div>
@@ -76,7 +76,7 @@ export default function FoldersPage() {
             文件夹数量
           </div>
         </div>
-        <div className="p-4 bg-stone-50/50 rounded-lg border border-stone-200/40">
+        <div className="p-4 bg-stone-50/50 rounded-none border border-stone-200/40">
           <div className="text-2xl font-serif text-foreground mb-1">
             {folderTree.postCount ?? 0}
           </div>
@@ -84,7 +84,7 @@ export default function FoldersPage() {
             文章总数
           </div>
         </div>
-        <div className="p-4 bg-stone-50/50 rounded-lg border border-stone-200/40 col-span-2 md:col-span-1">
+        <div className="p-4 bg-stone-50/50 rounded-none border border-stone-200/40 col-span-2 md:col-span-1">
           <div className="text-2xl font-serif text-foreground mb-1">
             {getMaxDepth(folderTree)}
           </div>

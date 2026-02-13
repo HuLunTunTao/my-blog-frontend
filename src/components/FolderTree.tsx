@@ -20,7 +20,7 @@ function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
       <div
         className={cn(
           "flex items-center gap-2 py-1.5 group cursor-pointer",
-          level > 0 && "hover:bg-stone-50/50 rounded px-2 -mx-2"
+          level > 0 && "hover:bg-stone-50/50 px-2 -mx-2"
         )}
         style={{ paddingLeft: `${level * 1}rem` }}
       >

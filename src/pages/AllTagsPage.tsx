@@ -44,11 +44,11 @@ export default function AllTagsPage() {
           <Link
             key={tag.name}
             to={`/tags/${tag.name}`}
-            className="group flex flex-col p-4 border border-stone-200/60 rounded-lg hover:border-stone-300 hover:shadow-sm transition-all bg-white/50"
+            className="group flex flex-col p-4 border border-stone-200/60 rounded-none hover:border-stone-300 hover:shadow-sm transition-all bg-white/50"
           >
             <div className="flex items-center justify-between mb-2">
                 <span className="font-serif font-medium text-lg">#{tag.name}</span>
-                <span className="bg-neutral-100 text-subtle text-xs px-2 py-1 rounded-full group-hover:bg-neutral-200 transition-colors">
+                <span className="bg-neutral-100 text-subtle text-xs px-2 py-1 rounded-none group-hover:bg-neutral-200 transition-colors">
                 {tag.count}
                 </span>
             </div>

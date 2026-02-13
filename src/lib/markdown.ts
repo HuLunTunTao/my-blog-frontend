@@ -256,13 +256,29 @@ export function parseHashTags(content: string): string {
   );
 }
 
+function applyObsidianLineBreaks(content: string): string {
+  return replaceOutsideCode(content, (text) => {
+    const lines = text.split("\n");
+    for (let i = 0; i < lines.length - 1; i++) {
+      const curr = lines[i];
+      const next = lines[i + 1];
+      // Obsidian with non-strict line breaks keeps single newline visible.
+      if (curr.trim() === "" || next.trim() === "") continue;
+      if (curr.endsWith("  ")) continue;
+      lines[i] = `${curr}  `;
+    }
+    return lines.join("\n");
+  });
+}
+
 export function preprocessMarkdown(content: string): string {
   const noComments = removeObsidianComments(content);
   const withEmbeds = convertObsidianEmbeds(noComments);
   const withDetails = convertHtmlDetailsBlocks(withEmbeds);
   const withLinks = parseWikiLinks(withDetails);
   const normalizedAssets = normalizeApiAssetMarkdownLinks(withLinks);
-  return parseHashTags(normalizedAssets);
+  const withObsidianBreaks = applyObsidianLineBreaks(normalizedAssets);
+  return parseHashTags(withObsidianBreaks);
 }
 
 export function isObsidianEmbedHref(href?: string): boolean {

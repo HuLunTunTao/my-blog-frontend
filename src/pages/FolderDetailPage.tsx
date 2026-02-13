@@ -124,7 +124,7 @@ export default function FolderDetailPage() {
       {folder.description && (
         <motion.div
           variants={item}
-          className="prose prose-stone max-w-none bg-stone-50/30 rounded-lg p-6 border border-stone-200/50"
+          className="prose prose-stone max-w-none bg-stone-50/30 rounded-none p-6 border border-stone-200/50"
         >
           <MarkdownRenderer content={folder.description} />
         </motion.div>
@@ -151,7 +151,7 @@ export default function FolderDetailPage() {
               <Link
                 key={subfolder.path}
                 to={`/folders/${encodeURIComponent(subfolder.path)}`}
-                className="group p-4 border border-stone-200/60 rounded-lg hover:border-stone-300 hover:shadow-sm transition-all bg-white/50"
+                className="group p-4 border border-stone-200/60 rounded-none hover:border-stone-300 hover:shadow-sm transition-all bg-white/50"
               >
                 <div className="flex items-center gap-3">
                   <svg
