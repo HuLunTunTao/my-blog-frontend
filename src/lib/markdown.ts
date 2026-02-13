@@ -32,6 +32,34 @@ function normalizeAssetPath(path: string): string {
     .replace(/^\/+/, "");
 }
 
+function encodeAssetApiPath(path: string): string {
+  return path
+    .split("/")
+    .filter(Boolean)
+    .map((segment) => {
+      try {
+        return encodeURIComponent(decodeURIComponent(segment));
+      } catch {
+        return encodeURIComponent(segment);
+      }
+    })
+    .join("/");
+}
+
+function encodeApiAssetHref(href: string): string {
+  const marker = "/api/assets/";
+  if (!href.startsWith(marker)) return href;
+  const rest = href.slice(marker.length);
+  const queryPos = rest.indexOf("?");
+  const hashPos = rest.indexOf("#");
+  let cut = rest.length;
+  if (queryPos >= 0) cut = Math.min(cut, queryPos);
+  if (hashPos >= 0) cut = Math.min(cut, hashPos);
+  const pathPart = rest.slice(0, cut);
+  const suffix = rest.slice(cut);
+  return `${marker}${encodeAssetApiPath(pathPart)}${suffix}`;
+}
+
 function extractInlineCodeSpan(content: string, start: number): { end: number } | null {
   let run = 0;
   while (content[start + run] === "`") run++;
@@ -124,14 +152,40 @@ export function convertObsidianEmbeds(content: string): string {
       if (isImagePath(ref.slug)) {
         const assetPath = normalizeAssetPath(ref.slug);
         const alt = assetPath.split("/").pop() || "image";
+        const encodedHref = `/api/assets/${encodeAssetApiPath(assetPath)}`;
         const width = ref.option && /^\d+(?:px)?$/i.test(ref.option) ? parseInt(ref.option, 10) : undefined;
         if (width && width > 0) {
-          return `![${alt}](/api/assets/${assetPath} "${OBSIDIAN_WIDTH_TITLE_PREFIX}${width}")`;
+          return `![${alt}](${encodedHref} "${OBSIDIAN_WIDTH_TITLE_PREFIX}${width}")`;
         }
-        return `![${alt}](/api/assets/${assetPath})`;
+        return `![${alt}](${encodedHref})`;
       }
 
       return `[嵌入引用](${OBSIDIAN_EMBED_SCHEME}${encodeURIComponent(inner.trim())})`;
+    }),
+  );
+}
+
+export function normalizeApiAssetMarkdownLinks(content: string): string {
+  return replaceOutsideCode(content, (text) =>
+    text.replace(/(!?\[[^\]]*\]\()([^)\n]+)(\))/g, (whole, prefix: string, destinationRaw: string, suffix: string) => {
+      let destination = destinationRaw.trim();
+      let titlePart = "";
+
+      // Keep optional markdown title (e.g. "... \"obsidian-width=560\"") untouched.
+      if (destination.endsWith(`"`)) {
+        const splitPos = destination.lastIndexOf(` "`);
+        if (splitPos > 0) {
+          titlePart = destination.slice(splitPos);
+          destination = destination.slice(0, splitPos);
+        }
+      }
+
+      if (!destination.startsWith("/api/assets/")) {
+        return whole;
+      }
+
+      const encoded = encodeApiAssetHref(destination);
+      return `${prefix}${encoded}${titlePart}${suffix}`;
     }),
   );
 }
@@ -207,7 +261,8 @@ export function preprocessMarkdown(content: string): string {
   const withEmbeds = convertObsidianEmbeds(noComments);
   const withDetails = convertHtmlDetailsBlocks(withEmbeds);
   const withLinks = parseWikiLinks(withDetails);
-  return parseHashTags(withLinks);
+  const normalizedAssets = normalizeApiAssetMarkdownLinks(withLinks);
+  return parseHashTags(normalizedAssets);
 }
 
 export function isObsidianEmbedHref(href?: string): boolean {
