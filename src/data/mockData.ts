@@ -3,7 +3,7 @@ export interface Post {
   title: string;
   date: string; // YYYY-MM-DD
   tags: string[];
-  visibility: "public" | "masked" | "encrypted";
+  visibility: "public" | "masked" | "encrypted" | "hidden";
   masked: boolean;
   excerpt: string;
   content: string;

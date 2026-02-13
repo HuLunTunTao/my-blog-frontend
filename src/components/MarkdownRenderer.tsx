@@ -111,7 +111,7 @@ function ObsidianEmbed({ reference, depth, sourceSlug }: { reference: string; de
         const post = await getPostBySlug(targetSlug, pwd);
         setTitle(post.title || targetSlug);
         setResolvedSlug(post.slug || targetSlug);
-        if (post.locked || post.visibility === "encrypted") {
+        if (post.locked || post.visibility === "encrypted" || post.visibility === "hidden") {
           setLocked(Boolean(post.locked));
           if (post.locked) {
             setSnippet("");

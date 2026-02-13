@@ -6,7 +6,7 @@ export interface Post {
   title: string;
   date: string;
   tags: string[];
-  visibility: "public" | "masked" | "encrypted";
+  visibility: "public" | "masked" | "encrypted" | "hidden";
   excerpt: string;
   commentId?: string;
   path: string;
@@ -34,6 +34,11 @@ export interface Folder {
   description?: string;
   children?: Folder[];
   postCount: number;  directPostCount?: number;}
+
+export interface RelatedPostsResponse {
+  sameTags: Post[];
+  nearby: Post[];
+}
 
 const API_BASE = apiBaseUrl;
 
@@ -89,6 +94,19 @@ export async function getPostBySlug(slug: string, password?: string): Promise<Po
 
   const data = await response.json();
   return normalizePost(data);
+}
+
+export async function getRelatedPosts(slug: string, limit: number = 5): Promise<RelatedPostsResponse> {
+  const encodedSlug = encodeSlugForPath(slug);
+  const response = await fetch(`${API_BASE}/related/${encodedSlug}?limit=${limit}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch related posts");
+  }
+  const data = (await response.json()) as RelatedPostsResponse;
+  return {
+    sameTags: Array.isArray(data.sameTags) ? data.sameTags.map(normalizePost) : [],
+    nearby: Array.isArray(data.nearby) ? data.nearby.map(normalizePost) : [],
+  };
 }
 
 // 获取所有标签

@@ -73,7 +73,7 @@ export default function PostPage() {
     );
   }
 
-  const isEncrypted = post.visibility === "encrypted" && !unlocked;
+  const isProtected = (post.visibility === "encrypted" || post.visibility === "hidden") && !unlocked;
 
   return (
     <motion.article 
@@ -109,7 +109,7 @@ export default function PostPage() {
         </div>
       </header>
 
-      {isEncrypted ? (
+      {isProtected ? (
         <EncryptedGate onUnlock={handleUnlock} />
       ) : (
         <motion.div 
@@ -121,8 +121,8 @@ export default function PostPage() {
         </motion.div>
       )}
 
-      {!isEncrypted && <AlsoOnMyBlog currentPost={post} />}
-      {!isEncrypted && <GiscusComments commentId={post.commentId} slug={post.slug} />}
+      {!isProtected && post.visibility !== "hidden" && <AlsoOnMyBlog currentPost={post} />}
+      {!isProtected && <GiscusComments commentId={post.commentId} slug={post.slug} />}
     </motion.article>
   );
 }
