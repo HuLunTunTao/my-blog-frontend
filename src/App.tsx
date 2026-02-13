@@ -28,8 +28,6 @@ const router = createBrowserRouter([
 
 function App() {
   useEffect(() => {
-    document.title = siteConfig.title;
-    
     // Update Favicon (Browser Tab Logo)
     const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     if (link) {
