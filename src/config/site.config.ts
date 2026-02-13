@@ -29,7 +29,7 @@ export const siteConfig: SiteConfig = {
   socialLinks: [
     {
       platform: "github",
-      url: "https://github.com/hltt",
+      url: "https://github.com/HuLunTunTao",
       label: "GitHub"
     },
     {
