@@ -1,5 +1,5 @@
 // src/components/TimelineSidebar.tsx
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { Post } from "@/lib/posts";
 
@@ -13,7 +13,8 @@ export default function TimelineSidebar({ groups, activeYear, onSelectYear }: Ti
   const years = Object.keys(groups).sort((a, b) => Number(b) - Number(a));
 
   return (
-    <motion.aside 
+    <LazyMotion features={domAnimation}>
+      <m.aside
       initial={{ opacity: 0, x: 10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}
@@ -53,6 +54,7 @@ export default function TimelineSidebar({ groups, activeYear, onSelectYear }: Ti
       <div className="writing-vertical-rl text-[9px] text-stone-200 mt-2">
         年表
       </div>
-    </motion.aside>
+      </m.aside>
+    </LazyMotion>
   );
 }

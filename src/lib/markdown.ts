@@ -139,11 +139,11 @@ function replaceOutsideCode(content: string, replacer: (text: string) => string)
   return transformed.replace(/__CODE_CHUNK_(\d+)__/g, (_, idx) => chunks[Number(idx)] ?? "");
 }
 
-export function removeObsidianComments(content: string): string {
+function removeObsidianComments(content: string): string {
   return replaceOutsideCode(content, (text) => text.replace(/%%[\s\S]*?%%/g, ""));
 }
 
-export function convertObsidianEmbeds(content: string): string {
+function convertObsidianEmbeds(content: string): string {
   return replaceOutsideCode(content, (text) =>
     text.replace(/!\[\[([^\]]+)\]\]/g, (_, inner: string) => {
       const ref = parseRefParts(inner);
@@ -165,7 +165,7 @@ export function convertObsidianEmbeds(content: string): string {
   );
 }
 
-export function normalizeApiAssetMarkdownLinks(content: string): string {
+function normalizeApiAssetMarkdownLinks(content: string): string {
   return replaceOutsideCode(content, (text) =>
     text.replace(/(!?\[[^\]]*\]\()([^)\n]+)(\))/g, (whole, prefix: string, destinationRaw: string, suffix: string) => {
       let destination = destinationRaw.trim();
@@ -203,7 +203,7 @@ function extractSummaryText(raw: string): string {
   return raw.replace(/<[^>]+>/g, "").trim();
 }
 
-export function convertHtmlDetailsBlocks(content: string): string {
+function convertHtmlDetailsBlocks(content: string): string {
   return replaceOutsideCode(content, (text) =>
     text.replace(/<details\b[^>]*>([\s\S]*?)<\/details>/gi, (full, inner: string) => {
       const summaryMatch = /<summary\b[^>]*>([\s\S]*?)<\/summary>/i.exec(inner);
@@ -219,7 +219,7 @@ export function convertHtmlDetailsBlocks(content: string): string {
   );
 }
 
-export function parseWikiLinks(content: string): string {
+function parseWikiLinks(content: string): string {
   return replaceOutsideCode(content, (text) =>
     text.replace(/(?<!!)\[\[([^\]]+)\]\]/g, (_, inner: string) => {
       const [targetRaw, aliasRaw] = inner.split("|", 2);
@@ -248,7 +248,7 @@ export function parseWikiLinks(content: string): string {
   );
 }
 
-export function parseHashTags(content: string): string {
+function parseHashTags(content: string): string {
   return replaceOutsideCode(content, (text) =>
     text.replace(/(^|\s|>)#([a-zA-Z0-9\u4e00-\u9fa5]+)/g, (_, prefix: string, tag: string) => {
       return `${prefix}[#${tag}](/tags/${tag})`;

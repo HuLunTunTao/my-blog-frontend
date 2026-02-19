@@ -2,7 +2,7 @@ import { format, parseISO } from "date-fns";
 import * as api from "./api";
 
 // Re-export types from API
-export type { Post, Tag, Folder, PostListResponse } from "./api";
+export type { Post, Tag } from "./api";
 
 // 兼容旧的 FolderNode 类型
 export interface FolderNode {
@@ -70,11 +70,6 @@ export async function getAllPostsInFolder(
   limit: number = 100
 ): Promise<api.PostListResponse> {
   return api.getPosts({ path, includeSubfolders, page, limit });
-}
-
-// Get all posts (with pagination)
-export async function getAllPosts(page: number = 1, limit: number = 100): Promise<api.PostListResponse> {
-  return api.getPosts({ page, limit });
 }
 
 // Get visible posts for timeline

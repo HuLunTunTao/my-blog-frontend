@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { getFolderByPath, getAllPostsInFolder, Post, FolderNode } from "@/lib/posts";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { format, parseISO } from "date-fns";
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { toPostRoute } from "@/lib/postSlug";
@@ -75,14 +75,15 @@ export default function FolderDetailPage() {
   const pathParts = decodedPath.split('/').filter(Boolean);
 
   return (
-    <motion.div 
+    <LazyMotion features={domAnimation}>
+      <m.div
       variants={container}
       initial="hidden"
       animate="show"
       className="max-w-4xl mx-auto space-y-12"
     >
       {/* Breadcrumb */}
-      <motion.nav variants={item} className="text-sm text-stone-500 flex items-center gap-2 flex-wrap">
+      <m.nav variants={item} className="text-sm text-stone-500 flex items-center gap-2 flex-wrap">
         <Link to="/folders" className="hover:text-foreground transition-colors">
           文件夹
         </Link>
@@ -105,34 +106,34 @@ export default function FolderDetailPage() {
             </span>
           );
         })}
-      </motion.nav>
+      </m.nav>
 
       {/* Folder Title */}
       <div className="flex items-baseline gap-4 mb-2">
-        <motion.h1
+        <m.h1
           variants={item}
           className="text-4xl font-serif text-foreground"
         >
           {folder.name}
-        </motion.h1>
-        <motion.span variants={item} className="text-stone-500 text-lg">
+        </m.h1>
+        <m.span variants={item} className="text-stone-500 text-lg">
            ({folder.directPostCount ?? 0} / {folder.postCount ?? 0})
-        </motion.span>
+        </m.span>
       </div>
 
       {/* Folder Description */}
       {folder.description && (
-        <motion.div
+        <m.div
           variants={item}
           className="prose prose-stone max-w-none bg-stone-50/30 rounded-none p-6 border border-stone-200/50"
         >
           <MarkdownRenderer content={folder.description} />
-        </motion.div>
+        </m.div>
       )}
 
       {/* Subfolders */}
       {folder.children.length > 0 && (
-        <motion.section
+        <m.section
           variants={item}
         >
           <h2 className="text-2xl font-serif mb-6 text-foreground flex items-center gap-2">
@@ -187,12 +188,12 @@ export default function FolderDetailPage() {
               </Link>
             ))}
           </div>
-        </motion.section>
+        </m.section>
       )}
 
       {/* Posts in this folder */}
       {posts.length > 0 && (
-        <motion.section
+        <m.section
           variants={item}
         >
           <h2 className="text-2xl font-serif mb-6 text-foreground flex items-center gap-2">
@@ -206,14 +207,14 @@ export default function FolderDetailPage() {
             </svg>
             文章列表
           </h2>
-          <motion.div 
+          <m.div 
             className="space-y-4 pl-2"
             variants={container}
             initial="hidden"
             animate="show"
           >
             {posts.map((post) => (
-              <motion.article
+              <m.article
                 key={post.slug}
                 variants={item}
                 className="group relative py-4 px-6 transition-all duration-300 hover:translate-x-1"
@@ -242,18 +243,19 @@ export default function FolderDetailPage() {
                     {post.excerpt}
                   </p>
                 )}
-              </motion.article>
+              </m.article>
             ))}
-          </motion.div>
-        </motion.section>
+          </m.div>
+        </m.section>
       )}
 
       {/* Empty state */}
       {folder.children.length === 0 && posts.length === 0 && !folder.description && (
-        <motion.p variants={item} className="text-stone-500 italic text-center py-12">
+        <m.p variants={item} className="text-stone-500 italic text-center py-12">
           该文件夹暂时没有内容
-        </motion.p>
+        </m.p>
       )}
-    </motion.div>
+      </m.div>
+    </LazyMotion>
   );
 }

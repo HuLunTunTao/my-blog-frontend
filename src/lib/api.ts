@@ -35,7 +35,7 @@ export interface Folder {
   children?: Folder[];
   postCount: number;  directPostCount?: number;}
 
-export interface RelatedPostsResponse {
+interface RelatedPostsResponse {
   sameTags: Post[];
   nearby: Post[];
 }
@@ -139,12 +139,4 @@ export async function searchPosts(query: string): Promise<Post[]> {
 
   const data = await response.json();
   return Array.isArray(data) ? data.map(normalizePost) : [];
-}
-
-// 刷新索引（用于开发）
-export async function refreshIndex(): Promise<void> {
-  const response = await fetch(`${API_BASE}/refresh`, { method: "POST" });
-  if (!response.ok) {
-    throw new Error("Failed to refresh index");
-  }
 }

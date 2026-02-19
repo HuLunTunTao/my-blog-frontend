@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { getAllTags, Tag } from "@/lib/posts";
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -32,32 +32,34 @@ export default function AllTagsPage() {
   }
 
   return (
-    <motion.div 
+    <LazyMotion features={domAnimation}>
+      <m.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
         className="space-y-8"
-    >
-      <h2 className="text-xl font-serif">All Tags</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {tags.map((tag) => (
-          <Link
-            key={tag.name}
-            to={`/tags/${tag.name}`}
-            className="group flex h-22 flex-col p-4 border border-stone-200/60 rounded-none hover:border-stone-300 hover:shadow-sm transition-all bg-white/50"
-          >
-            <div className="flex items-center justify-between mb-2">
+      >
+        <h2 className="text-xl font-serif">All Tags</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {tags.map((tag) => (
+            <Link
+              key={tag.name}
+              to={`/tags/${tag.name}`}
+              className="group flex h-22 flex-col p-4 border border-stone-200/60 rounded-none hover:border-stone-300 hover:shadow-sm transition-all bg-white/50"
+            >
+              <div className="flex items-center justify-between mb-2">
                 <span className="font-serif font-medium text-lg line-clamp-1">#{tag.name}</span>
                 <span className="bg-neutral-100 text-subtle text-xs px-2 py-1 rounded-none group-hover:bg-neutral-200 transition-colors">
-                {tag.count}
+                  {tag.count}
                 </span>
-            </div>
-            <p className="text-sm text-stone-500 line-clamp-2 min-h-[2.75rem]">
-              {tag.description || ""}
-            </p>
-          </Link>
-        ))}
-      </div>
-    </motion.div>
+              </div>
+              <p className="text-sm text-stone-500 line-clamp-2 min-h-[2.75rem]">
+                {tag.description || ""}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </m.div>
+    </LazyMotion>
   );
 }

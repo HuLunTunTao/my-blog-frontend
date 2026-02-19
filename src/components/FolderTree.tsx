@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FolderNode } from "@/lib/posts";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { LazyMotion, domAnimation, m, AnimatePresence } from "framer-motion";
 
 interface FolderTreeItemProps {
   folder: FolderNode;
@@ -82,7 +82,7 @@ function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
       {/* Children */}
       <AnimatePresence>
         {isOpen && hasChildren && (
-          <motion.div
+          <m.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -92,7 +92,7 @@ function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
             {folder.children.map((child) => (
               <FolderTreeItem key={child.path} folder={child} level={level + 1} />
             ))}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>
@@ -105,14 +105,16 @@ interface FolderTreeProps {
 
 export default function FolderTree({ root }: FolderTreeProps) {
   return (
-    <div className="space-y-1">
-      {root.children.length > 0 ? (
-        root.children.map((folder) => (
-          <FolderTreeItem key={folder.path} folder={folder} level={0} />
-        ))
-      ) : (
-        <p className="text-sm text-stone-400 italic">暂无文件夹</p>
-      )}
-    </div>
+    <LazyMotion features={domAnimation}>
+      <div className="space-y-1">
+        {root.children.length > 0 ? (
+          root.children.map((folder) => (
+            <FolderTreeItem key={folder.path} folder={folder} level={0} />
+          ))
+        ) : (
+          <p className="text-sm text-stone-400 italic">暂无文件夹</p>
+        )}
+      </div>
+    </LazyMotion>
   );
 }

@@ -1,6 +1,6 @@
 import { buildFolderTree, FolderNode } from "@/lib/posts";
 import FolderTree from "@/components/FolderTree";
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -39,8 +39,9 @@ export default function FoldersPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <motion.div
+    <LazyMotion features={domAnimation}>
+      <div className="max-w-4xl mx-auto">
+        <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.13 }}
@@ -50,19 +51,19 @@ export default function FoldersPage() {
         <p className="text-stone-600">
           按文件夹层次浏览文章，探索不同主题的内容。
         </p>
-      </motion.div>
+        </m.div>
 
-      <motion.div
+        <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.07, duration: 0.13 }}
         className="bg-white/50 rounded-none border border-stone-200/60 p-6"
       >
         <FolderTree root={folderTree} />
-      </motion.div>
+        </m.div>
 
-      {/* Stats */}
-      <motion.div
+        {/* Stats */}
+        <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.13, duration: 0.13 }}
@@ -92,8 +93,9 @@ export default function FoldersPage() {
             最大层级
           </div>
         </div>
-      </motion.div>
-    </div>
+        </m.div>
+      </div>
+    </LazyMotion>
   );
 }
 

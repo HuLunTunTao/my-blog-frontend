@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import { defaultUrlTransform } from "react-markdown";
@@ -51,7 +51,7 @@ let mermaidInitialized = false;
 function MermaidBlock({ code }: { code: string }) {
   const [svg, setSvg] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const id = useMemo(() => `mermaid-${Math.random().toString(36).slice(2)}`, []);
+  const idRef = useRef(`mermaid-${Math.random().toString(36).slice(2)}`);
 
   useEffect(() => {
     let active = true;
@@ -61,7 +61,7 @@ function MermaidBlock({ code }: { code: string }) {
           mermaid.initialize({ startOnLoad: false, theme: "neutral", securityLevel: "loose" });
           mermaidInitialized = true;
         }
-        const rendered = await mermaid.render(id, code);
+        const rendered = await mermaid.render(idRef.current, code);
         if (active) setSvg(rendered.svg);
       } catch (e) {
         if (active) setError(e instanceof Error ? e.message : "Mermaid render failed");
@@ -70,7 +70,7 @@ function MermaidBlock({ code }: { code: string }) {
     return () => {
       active = false;
     };
-  }, [code, id]);
+  }, [code]);
 
   if (error) {
     return (
@@ -84,50 +84,107 @@ function MermaidBlock({ code }: { code: string }) {
     return <div className="text-xs text-subtle">Mermaid rendering...</div>;
   }
 
-  return <div className="my-6 overflow-x-auto border border-stone-300/60 bg-paper p-4" dangerouslySetInnerHTML={{ __html: svg }} />;
+  return (
+    <img
+      src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`}
+      alt="Mermaid diagram"
+      className="my-6 block max-w-full border border-stone-300/60 bg-paper p-4"
+      loading="lazy"
+    />
+  );
+}
+
+type EmbedState = {
+  snippet: string;
+  title: string;
+  resolvedSlug: string;
+  loading: boolean;
+  locked: boolean;
+  password: string;
+  error: string | null;
+};
+
+type EmbedAction =
+  | { type: "start_loading" }
+  | { type: "set_error"; error: string }
+  | { type: "set_locked"; locked: boolean }
+  | { type: "set_loaded"; snippet: string; title: string; resolvedSlug: string }
+  | { type: "set_password"; password: string };
+
+function createEmbedInitialState(slug: string): EmbedState {
+  return {
+    snippet: "",
+    title: slug || "嵌入",
+    resolvedSlug: slug,
+    loading: true,
+    locked: false,
+    password: "",
+    error: null,
+  };
+}
+
+function embedReducer(state: EmbedState, action: EmbedAction): EmbedState {
+  switch (action.type) {
+    case "start_loading":
+      return { ...state, loading: true, error: null };
+    case "set_error":
+      return { ...state, loading: false, error: action.error };
+    case "set_locked":
+      return { ...state, loading: false, locked: action.locked, snippet: action.locked ? "" : state.snippet };
+    case "set_loaded":
+      return {
+        ...state,
+        snippet: action.snippet,
+        title: action.title,
+        resolvedSlug: action.resolvedSlug,
+        loading: false,
+        locked: false,
+        error: null,
+      };
+    case "set_password":
+      return { ...state, password: action.password };
+    default:
+      return state;
+  }
 }
 
 function ObsidianEmbed({ reference, depth, sourceSlug }: { reference: string; depth: number; sourceSlug?: string }) {
   const parsedRef = useMemo(() => parseObsidianRef(reference), [reference]);
-  const [snippet, setSnippet] = useState<string>("");
-  const [title, setTitle] = useState<string>(parsedRef.slug || "嵌入");
-  const [resolvedSlug, setResolvedSlug] = useState<string>(parsedRef.slug || sourceSlug || "");
-  const [loading, setLoading] = useState(true);
-  const [locked, setLocked] = useState(false);
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [state, dispatch] = useReducer(embedReducer, parsedRef.slug || sourceSlug || "", createEmbedInitialState);
 
   const loadReference = useCallback(
     async (pwd?: string) => {
       const targetSlug = parsedRef.slug || sourceSlug;
       if (!targetSlug) {
-        setError("无效引用");
-        setLoading(false);
+        dispatch({ type: "set_error", error: "无效引用" });
         return;
       }
-      setLoading(true);
-      setError(null);
+      dispatch({ type: "start_loading" });
       try {
         const post = await getPostBySlug(targetSlug, pwd);
-        setTitle(post.title || targetSlug);
-        setResolvedSlug(post.slug || targetSlug);
+        if (!post) {
+          dispatch({ type: "set_error", error: "引用内容加载失败" });
+          return;
+        }
+        const nextTitle = post?.title || targetSlug;
+        const nextSlug = post?.slug || targetSlug;
         if (post.locked || post.visibility === "encrypted" || post.visibility === "hidden") {
-          setLocked(Boolean(post.locked));
           if (post.locked) {
-            setSnippet("");
-            setLoading(false);
+            dispatch({ type: "set_locked", locked: true });
             return;
           }
         }
 
         const rawContent = post.content || "";
         const extracted = extractObsidianFragment(rawContent, parsedRef.fragment);
-        setSnippet(extracted || rawContent || "_未找到引用内容_");
-        setLocked(false);
+        dispatch({
+          type: "set_loaded",
+          snippet: extracted || rawContent || "_未找到引用内容_",
+          title: nextTitle,
+          resolvedSlug: nextSlug,
+        });
       } catch {
-        setError("引用内容加载失败");
-      } finally {
-        setLoading(false);
+        dispatch({ type: "set_error", error: "引用内容加载失败" });
       }
     },
     [parsedRef.fragment, parsedRef.slug, sourceSlug],
@@ -141,36 +198,30 @@ function ObsidianEmbed({ reference, depth, sourceSlug }: { reference: string; de
     return <span className="text-xs text-subtle">[已达到最大引用深度]</span>;
   }
 
-  if (loading) {
+  if (state.loading) {
     return <span className="text-xs text-subtle">加载引用中...</span>;
   }
 
-  if (error) {
-    return <span className="text-xs text-red-500">{error}</span>;
+  if (state.error) {
+    return <span className="text-xs text-red-500">{state.error}</span>;
   }
 
-  if (locked) {
+  if (state.locked) {
     return (
       <div className="border border-stone-300/70 bg-stone-50/60 p-4 my-3 rounded-sm">
         <p className="text-sm font-serif mb-3">该引用来自加密文章，输入密码后可查看。</p>
-        <form
-          className="flex items-center gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void loadReference(password);
-          }}
-        >
+        <div className="flex items-center gap-2">
           <input
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={state.password}
+            onChange={(e) => dispatch({ type: "set_password", password: e.target.value })}
             className="border border-stone-300 bg-white/70 px-2 py-1 text-sm"
             placeholder="输入密码"
           />
-          <button type="submit" className="px-3 py-1 text-xs border border-stone-400 hover:bg-stone-100">
+          <button type="button" onClick={() => void loadReference(state.password)} className="px-3 py-1 text-xs border border-stone-400 hover:bg-stone-100">
             解锁引用
           </button>
-        </form>
+        </div>
       </div>
     );
   }
@@ -179,11 +230,11 @@ function ObsidianEmbed({ reference, depth, sourceSlug }: { reference: string; de
     <div className="border-l-2 border-stone-300 pl-4 my-4 bg-stone-50/40 py-3 pr-3">
       <div className="mb-2 text-xs uppercase tracking-widest text-subtle">
         引用自{" "}
-        <Link className="underline underline-offset-2" to={toPostRoute(resolvedSlug)}>
-          {title}
+        <Link className="underline underline-offset-2" to={toPostRoute(state.resolvedSlug)}>
+          {state.title}
         </Link>
       </div>
-      <MarkdownRenderer content={snippet} depth={depth + 1} sourceSlug={resolvedSlug} />
+      <MarkdownRenderer content={state.snippet} depth={depth + 1} sourceSlug={state.resolvedSlug} />
     </div>
   );
 }
@@ -273,17 +324,7 @@ function calloutDefaultTitle(type: string): string {
   return type.slice(0, 1).toUpperCase() + type.slice(1);
 }
 
-function renderTextWithSoftBreaks(text: string) {
-  const lines = text.split("\n");
-  return lines.map((line, idx) => (
-    <Fragment key={`${line}-${idx}`}>
-      {idx > 0 ? <br /> : null}
-      {line}
-    </Fragment>
-  ));
-}
-
-function renderCalloutTitle(type: string, title: string) {
+function CalloutTitle({ type, title }: { type: string; title: string }) {
   const meta = CALLOUT_META[type] || CALLOUT_META.note;
   const Icon = meta.icon;
   return (
@@ -291,6 +332,24 @@ function renderCalloutTitle(type: string, title: string) {
       <Icon size={18} strokeWidth={2.2} aria-hidden="true" />
       <span>{title}</span>
     </div>
+  );
+}
+
+function SoftBreakText({ text }: { text: string }) {
+  const lines = text.split("\n");
+  let cursor = 0;
+  return (
+    <>
+      {lines.map((line) => {
+        const key = `${cursor}-${line.length}`;
+        cursor += line.length + 1;
+        return (
+          <p key={key} className="my-0">
+            {line}
+          </p>
+        );
+      })}
+    </>
   );
 }
 
@@ -369,10 +428,6 @@ function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: s
   const candidates = useMemo(() => buildObsidianAssetCandidates(src, sourceSlug), [src, sourceSlug]);
   const [candidateIndex, setCandidateIndex] = useState(0);
 
-  useEffect(() => {
-    setCandidateIndex(0);
-  }, [candidates]);
-
   return (
     <img
       src={candidates[candidateIndex]}
@@ -408,7 +463,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
         <div className="relative group my-10">
           <CopyButton text={codeText} />
           <SyntaxHighlighter
-            style={oneLight as any}
+            style={oneLight}
             language={match[1]}
             PreTag="div"
             useInlineStyles={true}
@@ -433,7 +488,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
           <div className="relative group my-10">
             <CopyButton text={codeText} />
             <SyntaxHighlighter
-              style={oneLight as any}
+              style={oneLight}
               language="text"
               PreTag="div"
               useInlineStyles={true}
@@ -473,7 +528,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       );
     },
     img({ src, alt, title }) {
-      return <ResilientImage src={src} alt={alt} title={title} sourceSlug={sourceSlug} />;
+      return <ResilientImage key={`${src ?? ""}::${sourceSlug ?? ""}`} src={src} alt={alt} title={title} sourceSlug={sourceSlug} />;
     },
     blockquote({ children }) {
       const childList = (Array.isArray(children) ? children : [children]).filter(
@@ -498,7 +553,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       const inlineBody = restLines.join("\n").trim();
       const body = (
         <div className="prose prose-neutral max-w-none">
-          {inlineBody ? <p>{renderTextWithSoftBreaks(inlineBody)}</p> : null}
+          {inlineBody ? <SoftBreakText text={inlineBody} /> : null}
           {childList.slice(1)}
         </div>
       );
@@ -507,7 +562,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
         return (
           <details open={foldMarker === "+"} className={`my-6 border-l-4 px-5 py-4 rounded-r-sm ${CALLOUT_STYLES[type] || CALLOUT_STYLES.note}`}>
             <summary className="mb-2 cursor-pointer select-none marker:content-none">
-              {renderCalloutTitle(type, title)}
+              <CalloutTitle type={type} title={title} />
             </summary>
             {body}
           </details>
@@ -516,7 +571,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
 
       return (
         <div className={`my-6 border-l-4 px-5 py-4 rounded-r-sm ${CALLOUT_STYLES[type] || CALLOUT_STYLES.note}`}>
-          {renderCalloutTitle(type, title)}
+          <CalloutTitle type={type} title={title} />
           {body}
         </div>
       );

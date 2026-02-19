@@ -2,7 +2,7 @@ import { getTimelinePosts, groupPostsByYearMonth, Post } from "@/lib/posts";
 import { parseISO, format } from "date-fns";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { Github, Twitter, Link as LinkIcon, Loader2 } from "lucide-react";
 import TimelineSidebar from "./TimelineSidebar";
 import { CnblogsIcon } from "./icons/CnblogsIcon";
@@ -77,13 +77,13 @@ export default function TimelineView() {
             }
         }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [years]);
 
 
   return (
-    <>
+    <LazyMotion features={domAnimation}>
       {loading && posts.length === 0 ? (
         <div className="flex items-center justify-center min-h-[400px]">
           <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
@@ -92,14 +92,14 @@ export default function TimelineView() {
         <>
           <TimelineSidebar groups={grouped} activeYear={activeYear} onSelectYear={setActiveYear} />
       
-      <motion.div 
+      <m.div 
         variants={container}
         initial="hidden"
         animate="show"
         className="space-y-24 relative"
       >
         {/* Hero Section */}
-        <motion.section variants={item} className="py-16 md:py-24 flex flex-col md:flex-row items-center gap-8 md:gap-16 md:pl-4 border-b border-stone-200/50 pb-24 mb-12">
+        <m.section variants={item} className="py-16 md:py-24 flex flex-col md:flex-row items-center gap-8 md:gap-16 md:pl-4 border-b border-stone-200/50 pb-24 mb-12">
             <div className="relative shrink-0">
                 <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-stone-200/50 flex items-center justify-center overflow-hidden border border-stone-300 shadow-inner">
                    {siteConfig.author.avatar ? (
@@ -154,7 +154,7 @@ export default function TimelineView() {
                     })}
                 </div>
             </div>
-        </motion.section>
+        </m.section>
 
         {years.map((year) => (
           <div key={year} id={`year-${year}`} className="relative scroll-mt-32">
@@ -177,7 +177,7 @@ export default function TimelineView() {
                   const monthName = format(parseISO(`${year}-${month}-01`), "MMMM");
 
                   return (
-                    <motion.div variants={item} key={month} className="space-y-6">
+                    <m.div variants={item} key={month} className="space-y-6">
                       <div className="flex items-center gap-4">
                         <h3 className="text-sm font-serif font-bold text-foreground uppercase tracking-widest">
                             {monthName}
@@ -219,15 +219,15 @@ export default function TimelineView() {
                           </Link>
                         ))}
                       </div>
-                    </motion.div>
+                    </m.div>
                   );
                 })}
             </div>
           </div>
         ))}
-      </motion.div>
+      </m.div>
     </>
   )}
-</>
+    </LazyMotion>
   );
 }

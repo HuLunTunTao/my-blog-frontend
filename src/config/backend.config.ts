@@ -17,7 +17,7 @@ function normalizeBackendOrigin(rawValue?: string): string {
   return trimTrailingSlash(`${scheme}://${value}`);
 }
 
-export const backendOrigin = normalizeBackendOrigin(import.meta.env.VITE_API_BASE_URL);
+const backendOrigin = normalizeBackendOrigin(import.meta.env.VITE_API_BASE_URL);
 export const apiBaseUrl = `${backendOrigin}/api`;
 
 export function buildBackendUrl(path: string): string {

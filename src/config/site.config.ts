@@ -1,11 +1,11 @@
 
-export interface SocialLink {
+interface SocialLink {
   platform: 'github' | 'twitter' | 'cnblogs' | 'xiaohongshu' | 'other';
     url: string;
     label?: string;
 }
 
-export interface SiteConfig {
+interface SiteConfig {
   title: string;
   logo: string;
   author: {

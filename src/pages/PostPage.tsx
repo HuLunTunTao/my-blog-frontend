@@ -8,7 +8,7 @@ import TagBadge from "@/components/TagBadge";
 import { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, m } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { decodeSlugFromPath } from "@/lib/postSlug";
 
@@ -76,7 +76,8 @@ export default function PostPage() {
   const isProtected = (post.visibility === "encrypted" || post.visibility === "hidden") && !unlocked;
 
   return (
-    <motion.article 
+    <LazyMotion features={domAnimation}>
+      <m.article
       key={slug}
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
@@ -112,17 +113,18 @@ export default function PostPage() {
       {isProtected ? (
         <EncryptedGate onUnlock={handleUnlock} />
       ) : (
-        <motion.div 
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
              <MarkdownRenderer content={post.content ?? ""} sourceSlug={post.slug} />
-        </motion.div>
+        </m.div>
       )}
 
       {!isProtected && post.visibility !== "hidden" && <AlsoOnMyBlog currentPost={post} />}
       {!isProtected && <GiscusComments commentId={post.commentId} slug={post.slug} />}
-    </motion.article>
+      </m.article>
+    </LazyMotion>
   );
 }
