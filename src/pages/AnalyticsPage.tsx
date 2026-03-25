@@ -56,7 +56,7 @@ function toDateTimeLocalValue(date: Date) {
 
 function ScrollTitle({ title, slug }: { title: string; slug: string }) {
   return (
-    <div className="max-w-[18rem] border border-stone-200 bg-stone-50/80 px-3 py-2">
+    <div className="flex min-h-[4.75rem] w-[18rem] max-w-[18rem] flex-col justify-between border border-stone-200 bg-stone-50/80 px-3 py-2">
       <div className="overflow-x-auto whitespace-nowrap text-sm font-medium text-stone-900 themed-scrollbar">{title}</div>
       <div className="mt-1 overflow-x-auto whitespace-nowrap font-mono text-[11px] text-stone-500 themed-scrollbar">{slug}</div>
     </div>
@@ -325,9 +325,9 @@ function AnalyticsMapsLoading() {
 
 function FilterBadge({ label, value, onClear }: { label: string; value: string; onClear: () => void }) {
   return (
-    <div className="inline-flex items-center gap-2 border border-stone-300 bg-white px-3 py-1.5 text-xs text-stone-700">
+    <div className="inline-flex min-h-[2.25rem] min-w-[14rem] items-center gap-2 border border-stone-300 bg-white px-3 py-1.5 text-xs text-stone-700">
       <span className="uppercase tracking-[0.2em] text-stone-500">{label}</span>
-      <span className="font-mono text-[11px]">{value}</span>
+      <span className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-[11px] themed-scrollbar">{value}</span>
       <button type="button" onClick={onClear} className="border-l border-stone-200 pl-2 text-stone-500 hover:text-stone-900">
         clear
       </button>
@@ -348,6 +348,24 @@ function InlineCopyButton({ text }: { text: string }) {
     <button type="button" onClick={() => void handleCopy()} className="border border-stone-300 bg-white px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:bg-stone-50">
       copy
     </button>
+  );
+}
+
+function FilterBadgeSlot({
+  active,
+  label,
+  value,
+  onClear,
+}: {
+  active: boolean;
+  label: string;
+  value: string;
+  onClear: () => void;
+}) {
+  return (
+    <div className="min-h-[2.25rem] min-w-[14rem]">
+      {active ? <FilterBadge label={label} value={value} onClear={onClear} /> : <div className="h-[2.25rem] border border-transparent" />}
+    </div>
   );
 }
 
@@ -855,7 +873,11 @@ export default function AnalyticsPage() {
         </div>
       </Panel>
 
-      <Panel title="Article Performance" subtitle="Dedicated post view. Long titles stay inside a horizontally scrollable pill instead of stretching the table.">
+      <Panel
+        title="Article Performance"
+        subtitle="Dedicated post view with fixed-size article cards, so varying title length no longer changes row rhythm or table density."
+        action={<FilterBadgeSlot active={Boolean(filters.slug)} label="active post" value={filters.slug} onClear={clearSlugFilter} />}
+      >
         <div className="mb-4 flex flex-wrap gap-3">
           <SortButton label="Reads" active={postSortKey === "successfulReads"} direction={postSortDirection} onClick={() => togglePostSort("successfulReads")} />
           <SortButton label="Requests" active={postSortKey === "totalRequests"} direction={postSortDirection} onClick={() => togglePostSort("totalRequests")} />
@@ -876,9 +898,22 @@ export default function AnalyticsPage() {
             post.failedReads,
             post.uniqueIps,
             formatDateTime(post.latestAccessAt),
-            <button type="button" onClick={() => applySlugFilter(post.slug)} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
-              filter
-            </button>,
+            <div className="grid min-w-[7.5rem] grid-cols-1 gap-2">
+              <button type="button" onClick={() => applySlugFilter(post.slug)} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
+                filter
+              </button>
+              <button
+                type="button"
+                onClick={clearSlugFilter}
+                disabled={filters.slug !== post.slug}
+                className={cn(
+                  "border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em]",
+                  filters.slug === post.slug ? "text-stone-600 hover:bg-stone-50" : "pointer-events-none opacity-0",
+                )}
+              >
+                clear
+              </button>
+            </div>,
           ])}
         />
         <Pagination page={pagedPosts.page} totalPages={pagedPosts.totalPages} onChange={setPostPage} />
@@ -887,7 +922,7 @@ export default function AnalyticsPage() {
       <Panel
         title="IP Observation Deck"
         subtitle="Dedicated IP view with quick self-IP filtering support and top-post context per address."
-        action={filters.ip ? <FilterBadge label="active ip" value={filters.ip} onClear={clearIpFilter} /> : undefined}
+        action={<FilterBadgeSlot active={Boolean(filters.ip)} label="active ip" value={filters.ip} onClear={clearIpFilter} />}
       >
         <div className="mb-4 flex flex-wrap gap-3">
           <SortButton label="Requests" active={ipSortKey === "totalRequests"} direction={ipSortDirection} onClick={() => toggleIpSort("totalRequests")} />
@@ -900,7 +935,7 @@ export default function AnalyticsPage() {
         <DataTable
           columns={["IP", "Requests", "Reads", "Failed", "Unique Posts", "Top Posts", "Actions"]}
           rows={pagedIps.items.map((ip) => [
-            <div className="space-y-2">
+            <div className="min-w-[9.5rem] space-y-2">
               <button type="button" onClick={() => applyIpFilter(ip.ip)} className="space-y-1 text-left">
                 <div className="font-mono text-xs text-stone-900">{ip.ip}</div>
                 <div className="text-xs text-stone-500">Last seen {formatDateTime(ip.lastSeenAt)}</div>
@@ -912,15 +947,21 @@ export default function AnalyticsPage() {
             ip.failedReads,
             ip.uniquePosts,
             <div className="max-w-[16rem] overflow-x-auto whitespace-nowrap text-xs text-stone-500 themed-scrollbar">{(ip.topPosts ?? []).join(" • ") || "-"}</div>,
-            <div className="flex gap-2">
+            <div className="grid min-w-[11rem] grid-cols-1 gap-2">
               <button type="button" onClick={() => applyIpFilter(ip.ip)} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
                 filter
               </button>
-              {filters.ip === ip.ip ? (
-                <button type="button" onClick={clearIpFilter} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
-                  clear
-                </button>
-              ) : null}
+              <button
+                type="button"
+                onClick={clearIpFilter}
+                disabled={filters.ip !== ip.ip}
+                className={cn(
+                  "border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em]",
+                  filters.ip === ip.ip ? "text-stone-600 hover:bg-stone-50" : "pointer-events-none opacity-0",
+                )}
+              >
+                clear
+              </button>
               <button type="button" onClick={() => { setIgnoredIp(ip.ip); setIgnoredLabel("self"); }} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
                 ignore
               </button>
