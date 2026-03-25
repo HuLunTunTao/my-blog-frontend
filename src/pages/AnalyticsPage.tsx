@@ -375,16 +375,28 @@ function Pagination({
 function HorizontalBarChart({ items }: { items: AnalyticsPostStat[] }) {
   const maxValue = Math.max(1, ...items.map((item) => item.successfulReads));
   return (
-    <div className="space-y-4">
+    <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1 themed-scrollbar">
       {items.length === 0 ? <div className="text-sm text-stone-500">No recent hot posts.</div> : null}
       {items.map((item) => (
-        <div key={item.slug} className="space-y-2">
-          <div className="flex items-center justify-between gap-4">
-            <ScrollTitle title={item.title} slug={item.slug} />
-            <div className="min-w-16 text-right text-sm text-stone-600">{item.successfulReads}</div>
+        <div key={item.slug} className="border border-stone-200 bg-stone-50/70 p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1 border border-stone-200 bg-white px-3 py-2">
+              <div className="overflow-x-auto whitespace-nowrap text-sm font-medium text-stone-900 themed-scrollbar">{item.title}</div>
+              <div className="mt-1 overflow-x-auto whitespace-nowrap font-mono text-[11px] text-stone-500 themed-scrollbar">{item.slug}</div>
+            </div>
+            <div className="w-20 border border-stone-200 bg-white px-2 py-2 text-right">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-stone-500">Reads</div>
+              <div className="mt-1 text-lg font-serif text-stone-900">{item.successfulReads}</div>
+            </div>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-stone-100">
-            <div className="h-full rounded-full bg-gradient-to-r from-stone-900 via-amber-700 to-amber-500" style={{ width: `${(item.successfulReads / maxValue) * 100}%` }} />
+          <div className="mt-2 border border-stone-200 bg-white p-2">
+            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-stone-500">
+              <span>Heat</span>
+              <span>{item.totalRequests} requests</span>
+            </div>
+            <div className="h-2 bg-stone-100">
+              <div className="h-full bg-gradient-to-r from-stone-900 via-amber-700 to-amber-500" style={{ width: `${(item.successfulReads / maxValue) * 100}%` }} />
+            </div>
           </div>
         </div>
       ))}
