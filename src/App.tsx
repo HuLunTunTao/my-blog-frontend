@@ -7,6 +7,7 @@ import SearchPage from "./pages/SearchPage";
 import PostPage from "./pages/PostPage";
 import FoldersPage from "./pages/FoldersPage";
 import FolderDetailPage from "./pages/FolderDetailPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import { useEffect } from "react";
 import { siteConfig } from "./config/site.config";
 
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
       { path: "posts/*", element: <PostPage /> },
       { path: "folders", element: <FoldersPage /> },
       { path: "folders/:path", element: <FolderDetailPage /> },
+      { path: "ops/analytics", element: <AnalyticsPage /> },
     ],
   },
 ]);

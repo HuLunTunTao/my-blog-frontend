@@ -35,6 +35,75 @@ export interface Folder {
   children?: Folder[];
   postCount: number;  directPostCount?: number;}
 
+export interface AnalyticsOverview {
+  totalRequests: number;
+  successfulReads: number;
+  failedReads: number;
+  uniqueIps: number;
+  uniquePosts: number;
+  requestsLast24h: number;
+  successfulLast24: number;
+}
+
+export interface AnalyticsPostStat {
+  slug: string;
+  title: string;
+  path: string;
+  totalRequests: number;
+  successfulReads: number;
+  failedReads: number;
+  uniqueIps: number;
+  latestAccessAt?: string;
+}
+
+export interface AnalyticsIPStat {
+  ip: string;
+  totalRequests: number;
+  successfulReads: number;
+  failedReads: number;
+  uniquePosts: number;
+  lastSeenAt?: string;
+  topPosts?: string[];
+}
+
+export interface AnalyticsTimeBucket {
+  label: string;
+  totalRequests: number;
+  successfulReads: number;
+  failedReads: number;
+}
+
+export interface AnalyticsReferrerStat {
+  referrer: string;
+  host: string;
+  totalRequests: number;
+  successfulReads: number;
+  failedReads: number;
+}
+
+export interface PostViewEvent {
+  slug: string;
+  title: string;
+  path: string;
+  visibility: string;
+  ip: string;
+  userAgent: string;
+  referrer: string;
+  accessedAt: string;
+  accessGranted: boolean;
+}
+
+export interface AnalyticsResponse {
+  generatedAt: string;
+  overview: AnalyticsOverview;
+  posts: AnalyticsPostStat[];
+  ips: AnalyticsIPStat[];
+  daily: AnalyticsTimeBucket[];
+  hourly: AnalyticsTimeBucket[];
+  referrers: AnalyticsReferrerStat[];
+  recentEvents: PostViewEvent[];
+}
+
 interface RelatedPostsResponse {
   sameTags: Post[];
   nearby: Post[];
@@ -139,4 +208,35 @@ export async function searchPosts(query: string): Promise<Post[]> {
 
   const data = await response.json();
   return Array.isArray(data) ? data.map(normalizePost) : [];
+}
+
+export async function getAnalytics(
+  password: string,
+  params?: {
+    slug?: string;
+    ip?: string;
+    from?: string;
+    to?: string;
+  },
+): Promise<AnalyticsResponse> {
+  const queryParams = new URLSearchParams();
+  if (params?.slug) queryParams.append("slug", params.slug);
+  if (params?.ip) queryParams.append("ip", params.ip);
+  if (params?.from) queryParams.append("from", params.from);
+  if (params?.to) queryParams.append("to", params.to);
+
+  const url = `${API_BASE}/admin/stats${queryParams.size ? `?${queryParams.toString()}` : ""}`;
+  const response = await fetch(url, {
+    headers: {
+      "X-Password": password,
+    },
+  });
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error("Unauthorized");
+    }
+    throw new Error("Failed to fetch analytics");
+  }
+
+  return response.json();
 }
