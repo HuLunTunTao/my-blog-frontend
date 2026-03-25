@@ -43,6 +43,10 @@ export interface AnalyticsOverview {
   uniquePosts: number;
   requestsLast24h: number;
   successfulLast24: number;
+  ignoredRequests: number;
+  activeIgnoredIps: number;
+  filteredUniqueIps: number;
+  filteredUniquePosts: number;
 }
 
 export interface AnalyticsPostStat {
@@ -81,6 +85,21 @@ export interface AnalyticsReferrerStat {
   failedReads: number;
 }
 
+export interface AnalyticsLocationStat {
+  code: string;
+  name: string;
+  region?: string;
+  totalRequests: number;
+  successfulReads: number;
+  failedReads: number;
+}
+
+export interface IgnoredIPEntry {
+  ip: string;
+  label?: string;
+  createdAt: string;
+}
+
 export interface PostViewEvent {
   slug: string;
   title: string;
@@ -89,6 +108,10 @@ export interface PostViewEvent {
   ip: string;
   userAgent: string;
   referrer: string;
+  countryCode?: string;
+  countryName?: string;
+  region?: string;
+  city?: string;
   accessedAt: string;
   accessGranted: boolean;
 }
@@ -97,11 +120,20 @@ export interface AnalyticsResponse {
   generatedAt: string;
   overview: AnalyticsOverview;
   posts: AnalyticsPostStat[];
+  recentHotPosts: AnalyticsPostStat[];
   ips: AnalyticsIPStat[];
   daily: AnalyticsTimeBucket[];
   hourly: AnalyticsTimeBucket[];
   referrers: AnalyticsReferrerStat[];
+  countryLocations: AnalyticsLocationStat[];
+  chinaLocations: AnalyticsLocationStat[];
   recentEvents: PostViewEvent[];
+  ignoredIps: IgnoredIPEntry[];
+}
+
+export interface AdminLoginResponse {
+  token: string;
+  expiresAt: string;
 }
 
 interface RelatedPostsResponse {
@@ -210,13 +242,34 @@ export async function searchPosts(query: string): Promise<Post[]> {
   return Array.isArray(data) ? data.map(normalizePost) : [];
 }
 
+export async function adminLogin(password: string): Promise<AdminLoginResponse> {
+  const response = await fetch(`${API_BASE}/admin/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ password }),
+  });
+  if (!response.ok) {
+    throw new Error(response.status === 401 ? "Unauthorized" : "Login failed");
+  }
+  return response.json();
+}
+
+function authHeaders(token: string): HeadersInit {
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 export async function getAnalytics(
-  password: string,
+  token: string,
   params?: {
     slug?: string;
     ip?: string;
     from?: string;
     to?: string;
+    excludeIgnored?: boolean;
   },
 ): Promise<AnalyticsResponse> {
   const queryParams = new URLSearchParams();
@@ -224,12 +277,11 @@ export async function getAnalytics(
   if (params?.ip) queryParams.append("ip", params.ip);
   if (params?.from) queryParams.append("from", params.from);
   if (params?.to) queryParams.append("to", params.to);
+  if (params?.excludeIgnored === false) queryParams.append("exclude_ignored", "false");
 
   const url = `${API_BASE}/admin/stats${queryParams.size ? `?${queryParams.toString()}` : ""}`;
   const response = await fetch(url, {
-    headers: {
-      "X-Password": password,
-    },
+    headers: authHeaders(token),
   });
   if (!response.ok) {
     if (response.status === 401) {
@@ -239,4 +291,46 @@ export async function getAnalytics(
   }
 
   return response.json();
+}
+
+export async function getIgnoredIps(token: string): Promise<IgnoredIPEntry[]> {
+  const response = await fetch(`${API_BASE}/admin/ignored-ips`, {
+    headers: authHeaders(token),
+  });
+  if (!response.ok) {
+    if (response.status === 401) throw new Error("Unauthorized");
+    throw new Error("Failed to fetch ignored IPs");
+  }
+  const data = await response.json();
+  return Array.isArray(data.ignoredIps) ? data.ignoredIps : [];
+}
+
+export async function addIgnoredIp(token: string, ip: string, label?: string): Promise<IgnoredIPEntry[]> {
+  const response = await fetch(`${API_BASE}/admin/ignored-ips`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(token),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ip, label }),
+  });
+  if (!response.ok) {
+    if (response.status === 401) throw new Error("Unauthorized");
+    throw new Error("Failed to add ignored IP");
+  }
+  const data = await response.json();
+  return Array.isArray(data.ignoredIps) ? data.ignoredIps : [];
+}
+
+export async function deleteIgnoredIp(token: string, ip: string): Promise<IgnoredIPEntry[]> {
+  const response = await fetch(`${API_BASE}/admin/ignored-ips?ip=${encodeURIComponent(ip)}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!response.ok) {
+    if (response.status === 401) throw new Error("Unauthorized");
+    throw new Error("Failed to delete ignored IP");
+  }
+  const data = await response.json();
+  return Array.isArray(data.ignoredIps) ? data.ignoredIps : [];
 }
