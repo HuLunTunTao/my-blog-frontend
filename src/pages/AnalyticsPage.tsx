@@ -3,7 +3,6 @@ import {
   adminLogin,
   deleteIgnoredIp,
   getAnalytics,
-  type AnalyticsLocationStat,
   type AnalyticsPostStat,
   type AnalyticsResponse,
   type AnalyticsTimeBucket,
@@ -12,13 +11,8 @@ import {
 import { clearAdminSession, loadAdminSession, saveAdminSession, type AdminSession } from "@/lib/adminSession";
 import { cn } from "@/lib/utils";
 import { format, subDays } from "date-fns";
-import { useEffect, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { Activity, ArrowDown, ArrowUp, ArrowUpDown, BarChart3, Download, Globe2, LockKeyhole, LogOut, MapPinned, RefreshCw, Shield, Trash2 } from "lucide-react";
-import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import { feature } from "topojson-client";
-import worldAtlas from "world-atlas/countries-110m.json";
-import chinaMapGeo from "china-map-geojson/lib/china";
-import type { Feature, FeatureCollection, Geometry } from "geojson";
 
 type FilterState = {
   slug: string;
@@ -47,49 +41,7 @@ const RANGE_PRESETS = [
 ];
 
 const PAGE_SIZE = 10;
-
-const worldIsoNumericToAlpha2: Record<string, string> = {
-  "036": "AU",
-  "036.0": "AU",
-  "124": "CA",
-  "156": "CN",
-  "250": "FR",
-  "276": "DE",
-  "344": "HK",
-  "356": "IN",
-  "392": "JP",
-  "410": "KR",
-  "458": "MY",
-  "528": "NL",
-  "643": "RU",
-  "702": "SG",
-  "764": "TH",
-  "158": "TW",
-  "826": "GB",
-  "840": "US",
-};
-
-function normalizeChinaRegionName(raw: string): string {
-  const value = raw.trim();
-  const map: Record<string, string> = {
-    Beijing: "北京",
-    Shanghai: "上海",
-    Guangdong: "广东",
-    Zhejiang: "浙江",
-    Jiangsu: "江苏",
-    Sichuan: "四川",
-    Fujian: "福建",
-    Hubei: "湖北",
-    Hunan: "湖南",
-    Shandong: "山东",
-    Henan: "河南",
-    Hebei: "河北",
-    Shaanxi: "陕西",
-    Liaoning: "辽宁",
-    InnerMongolia: "内蒙古",
-  };
-  return map[value] || value.replace(/省|市|自治区|特别行政区/g, "");
-}
+const AnalyticsGeoMapsSection = lazy(() => import("@/components/AnalyticsGeoMaps"));
 
 function formatDateTime(value?: string) {
   if (!value) return "-";
@@ -104,7 +56,7 @@ function toDateTimeLocalValue(date: Date) {
 
 function ScrollTitle({ title, slug }: { title: string; slug: string }) {
   return (
-    <div className="max-w-[18rem] rounded-full border border-stone-200 bg-stone-50/80 px-3 py-2">
+    <div className="max-w-[18rem] border border-stone-200 bg-stone-50/80 px-3 py-2">
       <div className="overflow-x-auto whitespace-nowrap text-sm font-medium text-stone-900 themed-scrollbar">{title}</div>
       <div className="mt-1 overflow-x-auto whitespace-nowrap font-mono text-[11px] text-stone-500 themed-scrollbar">{slug}</div>
     </div>
@@ -270,23 +222,6 @@ function analyticsToCsv(stats: AnalyticsResponse) {
   return sections.join("\n");
 }
 
-function clampOpacity(value: number) {
-  return Math.max(0.18, Math.min(0.92, value));
-}
-
-type MapFeature = Feature<Geometry, { name?: string; id?: string | number }>;
-type MapFeatureCollection = FeatureCollection<Geometry, { name?: string; id?: string | number }>;
-
-const worldGeographies = feature(
-  worldAtlas as unknown as {
-    type: "Topology";
-    objects: { countries: { type: string } };
-    arcs: number[][][];
-    transform: { scale: [number, number]; translate: [number, number] };
-  },
-  (worldAtlas as unknown as { objects: { countries: { type: string } } }).objects.countries,
-) as MapFeatureCollection;
-
 function sortPosts(items: AnalyticsPostStat[], key: PostSortKey, direction: SortDirection) {
   const sorted = [...items].sort((a, b) => {
     const multiplier = direction === "asc" ? 1 : -1;
@@ -372,6 +307,50 @@ function Pagination({
   );
 }
 
+function AnalyticsMapsLoading() {
+  return (
+    <div className="grid gap-6 xl:grid-cols-2">
+      {["Global IP Origins", "China Region Origins"].map((title) => (
+        <section key={title} className="border border-stone-200/70 bg-white/88 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]">
+          <div className="mb-4">
+            <h2 className="text-lg font-serif text-stone-900">{title}</h2>
+            <p className="mt-1 text-sm text-stone-500">Loading geo visualization...</p>
+          </div>
+          <div className="h-[420px] animate-pulse border border-stone-200 bg-stone-100/80" />
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function FilterBadge({ label, value, onClear }: { label: string; value: string; onClear: () => void }) {
+  return (
+    <div className="inline-flex items-center gap-2 border border-stone-300 bg-white px-3 py-1.5 text-xs text-stone-700">
+      <span className="uppercase tracking-[0.2em] text-stone-500">{label}</span>
+      <span className="font-mono text-[11px]">{value}</span>
+      <button type="button" onClick={onClear} className="border-l border-stone-200 pl-2 text-stone-500 hover:text-stone-900">
+        clear
+      </button>
+    </div>
+  );
+}
+
+function InlineCopyButton({ text }: { text: string }) {
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (error) {
+      console.error("Failed to copy text", error);
+    }
+  };
+
+  return (
+    <button type="button" onClick={() => void handleCopy()} className="border border-stone-300 bg-white px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:bg-stone-50">
+      copy
+    </button>
+  );
+}
+
 function HorizontalBarChart({ items }: { items: AnalyticsPostStat[] }) {
   const maxValue = Math.max(1, ...items.map((item) => item.successfulReads));
   return (
@@ -400,94 +379,6 @@ function HorizontalBarChart({ items }: { items: AnalyticsPostStat[] }) {
           </div>
         </div>
       ))}
-    </div>
-  );
-}
-
-function WorldMap({ items }: { items: AnalyticsLocationStat[] }) {
-  const valueMap = new Map(items.map((item) => [item.code, item]));
-  const maxValue = Math.max(1, ...items.map((item) => item.totalRequests), 1);
-  return (
-    <div className="space-y-4">
-      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-[radial-gradient(circle_at_30%_30%,rgba(245,158,11,0.10),transparent_35%),linear-gradient(180deg,#fafaf9_0%,#f5f5f4_100%)]">
-        <ComposableMap projection="geoMercator" projectionConfig={{ scale: 135 }} width={860} height={400} style={{ width: "100%", height: "auto" }}>
-          <Geographies geography={worldGeographies}>
-            {({ geographies }: { geographies: MapFeature[] }) =>
-              geographies.map((geo: MapFeature, index: number) => {
-                const rawId = String(geo.id ?? geo.properties?.id ?? "");
-                const alpha2 = worldIsoNumericToAlpha2[rawId.padStart(3, "0")] || worldIsoNumericToAlpha2[rawId];
-                const item = alpha2 ? valueMap.get(alpha2) : undefined;
-                const fill = item ? `rgba(180, 83, 9, ${clampOpacity(item.totalRequests / maxValue)})` : "#f5f5f4";
-                return (
-                  <Geography
-                    key={`world-${rawId || index}`}
-                    geography={geo}
-                    style={{
-                      default: { fill, stroke: item?.code === "CN" ? "#7c2d12" : "#d6d3d1", strokeWidth: item?.code === "CN" ? 1.2 : 0.7, outline: "none" },
-                      hover: { fill, stroke: "#7c2d12", strokeWidth: 1.2, outline: "none" },
-                      pressed: { fill, stroke: "#7c2d12", strokeWidth: 1.2, outline: "none" },
-                    }}
-                  >
-                    <title>{item ? `${item.name}: ${item.totalRequests}` : (geo.properties?.name ?? rawId)}</title>
-                  </Geography>
-                );
-              })
-            }
-          </Geographies>
-        </ComposableMap>
-      </div>
-      <div className="grid gap-2 md:grid-cols-2">
-        {items.slice(0, 8).map((item) => (
-          <div key={item.code} className="flex items-center justify-between rounded-lg border border-stone-200 bg-stone-50/70 px-3 py-2 text-sm">
-            <span>{item.name}</span>
-            <span className="font-medium text-stone-700">{item.totalRequests}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ChinaGridMap({ items }: { items: AnalyticsLocationStat[] }) {
-  const normalized = items.map((item) => ({ ...item, normalizedName: normalizeChinaRegionName(item.name || item.code) }));
-  const valueMap = new Map(normalized.map((item) => [item.normalizedName, item]));
-  const maxValue = Math.max(1, ...normalized.map((item) => item.totalRequests), 1);
-  return (
-    <div className="space-y-4">
-      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50/80 p-3">
-        <ComposableMap projection="geoMercator" projectionConfig={{ center: [104, 36], scale: 540 }} width={700} height={430} style={{ width: "100%", height: "auto" }}>
-          <Geographies geography={chinaMapGeo as unknown as MapFeatureCollection}>
-            {({ geographies }: { geographies: MapFeature[] }) =>
-              geographies.map((geo: MapFeature, index: number) => {
-                const name = normalizeChinaRegionName(String(geo.properties?.name ?? geo.id ?? ""));
-                const item = valueMap.get(name);
-                const fill = item ? `rgba(180, 83, 9, ${clampOpacity(item.totalRequests / maxValue)})` : "#f5f5f4";
-                return (
-                  <Geography
-                    key={`china-${name || index}`}
-                    geography={geo}
-                    style={{
-                      default: { fill, stroke: item ? "#92400e" : "#d6d3d1", strokeWidth: 0.8, outline: "none" },
-                      hover: { fill, stroke: "#7c2d12", strokeWidth: 1.1, outline: "none" },
-                      pressed: { fill, stroke: "#7c2d12", strokeWidth: 1.1, outline: "none" },
-                    }}
-                  >
-                    <title>{`${name}: ${item?.totalRequests ?? 0}`}</title>
-                  </Geography>
-                );
-              })
-            }
-          </Geographies>
-        </ComposableMap>
-      </div>
-      <div className="grid gap-2 md:grid-cols-2">
-        {normalized.slice(0, 10).map((item) => (
-          <div key={item.code} className="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm">
-            <span>{item.normalizedName}</span>
-            <span className="font-medium text-stone-700">{item.totalRequests}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -627,6 +518,40 @@ export default function AnalyticsPage() {
       from: toDateTimeLocalValue(subDays(new Date(), days)),
       to: toDateTimeLocalValue(new Date()),
     }));
+  };
+
+  const resetFilters = () => {
+    setFilters(defaultFilters);
+    if (!session) return;
+    void loadDashboard(session, defaultFilters);
+  };
+
+  const applySlugFilter = (slug: string) => {
+    const nextFilters = { ...filters, slug };
+    setFilters(nextFilters);
+    if (!session) return;
+    void loadDashboard(session, nextFilters);
+  };
+
+  const applyIpFilter = (ip: string) => {
+    const nextFilters = { ...filters, ip };
+    setFilters(nextFilters);
+    if (!session) return;
+    void loadDashboard(session, nextFilters);
+  };
+
+  const clearSlugFilter = () => {
+    const nextFilters = { ...filters, slug: "" };
+    setFilters(nextFilters);
+    if (!session) return;
+    void loadDashboard(session, nextFilters);
+  };
+
+  const clearIpFilter = () => {
+    const nextFilters = { ...filters, ip: "" };
+    setFilters(nextFilters);
+    if (!session) return;
+    void loadDashboard(session, nextFilters);
   };
 
   async function loadDashboard(activeSession: AdminSession, nextFilters: FilterState) {
@@ -859,9 +784,14 @@ export default function AnalyticsPage() {
               <input type="checkbox" checked={filters.excludeIgnored} onChange={(event) => setFilters((current) => ({ ...current, excludeIgnored: event.target.checked }))} className="h-4 w-4 accent-stone-900" />
               Exclude ignored IPs
             </label>
-            <button type="button" onClick={() => void handleRefresh()} className="bg-stone-900 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white hover:bg-stone-800" disabled={loading}>
-              Apply
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => void handleRefresh()} className="bg-stone-900 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white hover:bg-stone-800" disabled={loading}>
+                Apply
+              </button>
+              <button type="button" onClick={resetFilters} className="border border-stone-300 bg-white px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 hover:bg-stone-50">
+                Reset
+              </button>
+            </div>
           </div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -876,6 +806,12 @@ export default function AnalyticsPage() {
             </button>
           ))}
         </div>
+        {(filters.slug || filters.ip) ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {filters.slug ? <FilterBadge label="post" value={filters.slug} onClear={clearSlugFilter} /> : null}
+            {filters.ip ? <FilterBadge label="ip" value={filters.ip} onClear={clearIpFilter} /> : null}
+          </div>
+        ) : null}
       </Panel>
 
       <div className="grid gap-6 xl:grid-cols-2">
@@ -891,14 +827,9 @@ export default function AnalyticsPage() {
         <LineChart data={stats?.hourly ?? []} lines={[{ key: "totalRequests", color: "#44403c", label: "Hourly Requests" }, { key: "successfulReads", color: "#0f766e", label: "Hourly Reads" }]} />
       </Panel>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <Panel title="Global IP Origins" subtitle="Country-level concentration, powered by proxy geo headers when your deployment provides them.">
-          <WorldMap items={stats?.countryLocations ?? []} />
-        </Panel>
-        <Panel title="China Region Origins" subtitle="Province-level heat grid for China traffic. Unknown or missing region headers will not appear here.">
-          <ChinaGridMap items={stats?.chinaLocations ?? []} />
-        </Panel>
-      </div>
+      <Suspense fallback={<AnalyticsMapsLoading />}>
+        <AnalyticsGeoMapsSection countryLocations={stats?.countryLocations ?? []} chinaLocations={stats?.chinaLocations ?? []} />
+      </Suspense>
 
       <Panel title="Ignored Self-IP Registry" subtitle="Persist your own IPs here. They can be excluded from all analytics with a single toggle.">
         <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr_auto]">
@@ -936,30 +867,16 @@ export default function AnalyticsPage() {
         <DataTable
           columns={["Post", "Path", "Requests", "Reads", "Failed", "Unique IPs", "Last Access", "Action"]}
           rows={pagedPosts.items.map((post) => [
-            <button
-              type="button"
-              onClick={() => {
-                setFilters((current) => ({ ...current, slug: post.slug }));
-                void loadDashboard(session, { ...filters, slug: post.slug });
-              }}
-              className="text-left"
-            >
-              <ScrollTitle title={post.title} slug={post.slug} />
-            </button>,
+              <button type="button" onClick={() => applySlugFilter(post.slug)} className="text-left">
+                <ScrollTitle title={post.title} slug={post.slug} />
+              </button>,
             <div className="max-w-[14rem] break-all text-stone-500">{post.path || "/"}</div>,
             post.totalRequests,
             post.successfulReads,
             post.failedReads,
             post.uniqueIps,
             formatDateTime(post.latestAccessAt),
-            <button
-              type="button"
-              onClick={() => {
-                setFilters((current) => ({ ...current, slug: post.slug }));
-                void loadDashboard(session, { ...filters, slug: post.slug });
-              }}
-              className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50"
-            >
+            <button type="button" onClick={() => applySlugFilter(post.slug)} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
               filter
             </button>,
           ])}
@@ -967,7 +884,11 @@ export default function AnalyticsPage() {
         <Pagination page={pagedPosts.page} totalPages={pagedPosts.totalPages} onChange={setPostPage} />
       </Panel>
 
-      <Panel title="IP Observation Deck" subtitle="Dedicated IP view with quick self-IP filtering support and top-post context per address.">
+      <Panel
+        title="IP Observation Deck"
+        subtitle="Dedicated IP view with quick self-IP filtering support and top-post context per address."
+        action={filters.ip ? <FilterBadge label="active ip" value={filters.ip} onClear={clearIpFilter} /> : undefined}
+      >
         <div className="mb-4 flex flex-wrap gap-3">
           <SortButton label="Requests" active={ipSortKey === "totalRequests"} direction={ipSortDirection} onClick={() => toggleIpSort("totalRequests")} />
           <SortButton label="Reads" active={ipSortKey === "successfulReads"} direction={ipSortDirection} onClick={() => toggleIpSort("successfulReads")} />
@@ -979,33 +900,27 @@ export default function AnalyticsPage() {
         <DataTable
           columns={["IP", "Requests", "Reads", "Failed", "Unique Posts", "Top Posts", "Actions"]}
           rows={pagedIps.items.map((ip) => [
-            <button
-              type="button"
-              onClick={() => {
-                setFilters((current) => ({ ...current, ip: ip.ip }));
-                void loadDashboard(session, { ...filters, ip: ip.ip });
-              }}
-              className="space-y-1 text-left"
-            >
-              <div className="font-mono text-xs text-stone-900">{ip.ip}</div>
-              <div className="text-xs text-stone-500">Last seen {formatDateTime(ip.lastSeenAt)}</div>
-            </button>,
+            <div className="space-y-2">
+              <button type="button" onClick={() => applyIpFilter(ip.ip)} className="space-y-1 text-left">
+                <div className="font-mono text-xs text-stone-900">{ip.ip}</div>
+                <div className="text-xs text-stone-500">Last seen {formatDateTime(ip.lastSeenAt)}</div>
+              </button>
+              <InlineCopyButton text={ip.ip} />
+            </div>,
             ip.totalRequests,
             ip.successfulReads,
             ip.failedReads,
             ip.uniquePosts,
             <div className="max-w-[16rem] overflow-x-auto whitespace-nowrap text-xs text-stone-500 themed-scrollbar">{(ip.topPosts ?? []).join(" • ") || "-"}</div>,
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setFilters((current) => ({ ...current, ip: ip.ip }));
-                  void loadDashboard(session, { ...filters, ip: ip.ip });
-                }}
-                className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50"
-              >
+              <button type="button" onClick={() => applyIpFilter(ip.ip)} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
                 filter
               </button>
+              {filters.ip === ip.ip ? (
+                <button type="button" onClick={clearIpFilter} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
+                  clear
+                </button>
+              ) : null}
               <button type="button" onClick={() => { setIgnoredIp(ip.ip); setIgnoredLabel("self"); }} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
                 ignore
               </button>
@@ -1034,9 +949,14 @@ export default function AnalyticsPage() {
             rows={(stats?.recentEvents ?? []).map((event) => [
               formatDateTime(event.accessedAt),
               <ScrollTitle title={event.title} slug={event.slug} />,
-              <div className="font-mono text-xs">{event.ip}</div>,
-              <div className="text-xs text-stone-500">{[event.countryCode, event.region].filter(Boolean).join(" / ") || "Unknown"}</div>,
-              <span className={cn("inline-flex rounded-full px-2 py-1 text-xs font-medium", event.accessGranted ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700")}>
+              <div className="flex items-center gap-2">
+                <div className="font-mono text-xs">{event.ip}</div>
+                <InlineCopyButton text={event.ip} />
+              </div>,
+              <div className="border border-stone-200 bg-stone-50 px-2 py-1 text-xs text-stone-500">
+                {[event.countryName || event.countryCode, event.region].filter(Boolean).join(" / ") || "Unknown"}
+              </div>,
+              <span className={cn("inline-flex border px-2 py-1 text-xs font-medium", event.accessGranted ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700")}>
                 {event.accessGranted ? "Success" : "Blocked"}
               </span>,
             ])}

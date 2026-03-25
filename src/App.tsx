@@ -7,9 +7,10 @@ import SearchPage from "./pages/SearchPage";
 import PostPage from "./pages/PostPage";
 import FoldersPage from "./pages/FoldersPage";
 import FolderDetailPage from "./pages/FolderDetailPage";
-import AnalyticsPage from "./pages/AnalyticsPage";
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { siteConfig } from "./config/site.config";
+
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 
 const router = createBrowserRouter([
   {
@@ -23,7 +24,14 @@ const router = createBrowserRouter([
       { path: "posts/*", element: <PostPage /> },
       { path: "folders", element: <FoldersPage /> },
       { path: "folders/:path", element: <FolderDetailPage /> },
-      { path: "ops/analytics", element: <AnalyticsPage /> },
+      {
+        path: "ops/analytics",
+        element: (
+          <Suspense fallback={<div className="py-24 text-center text-stone-500">Loading analytics workspace...</div>}>
+            <AnalyticsPage />
+          </Suspense>
+        ),
+      },
     ],
   },
 ]);
