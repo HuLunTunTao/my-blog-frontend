@@ -14,6 +14,11 @@ import { cn } from "@/lib/utils";
 import { format, subDays } from "date-fns";
 import { useEffect, useState, type ReactNode } from "react";
 import { Activity, ArrowDown, ArrowUp, ArrowUpDown, BarChart3, Download, Globe2, LockKeyhole, LogOut, MapPinned, RefreshCw, Shield, Trash2 } from "lucide-react";
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+import { feature } from "topojson-client";
+import worldAtlas from "world-atlas/countries-110m.json";
+import chinaMapGeo from "china-map-geojson/lib/china";
+import type { Feature, FeatureCollection, Geometry } from "geojson";
 
 type FilterState = {
   slug: string;
@@ -43,118 +48,25 @@ const RANGE_PRESETS = [
 
 const PAGE_SIZE = 10;
 
-const worldCoordinates: Record<string, { x: number; y: number; label: string }> = {
-  CN: { x: 78, y: 41, label: "China" },
-  HK: { x: 80, y: 45, label: "Hong Kong" },
-  TW: { x: 81, y: 46, label: "Taiwan" },
-  JP: { x: 86, y: 40, label: "Japan" },
-  KR: { x: 83, y: 39, label: "Korea" },
-  SG: { x: 75, y: 58, label: "Singapore" },
-  MY: { x: 73, y: 59, label: "Malaysia" },
-  TH: { x: 71, y: 54, label: "Thailand" },
-  IN: { x: 66, y: 49, label: "India" },
-  AU: { x: 85, y: 76, label: "Australia" },
-  US: { x: 20, y: 42, label: "United States" },
-  CA: { x: 17, y: 28, label: "Canada" },
-  GB: { x: 45, y: 31, label: "United Kingdom" },
-  DE: { x: 49, y: 34, label: "Germany" },
-  FR: { x: 46, y: 37, label: "France" },
-  NL: { x: 48, y: 32, label: "Netherlands" },
-  RU: { x: 63, y: 19, label: "Russia" },
-};
-
-const chinaCoordinates: Record<string, { col: number; row: number; label: string }> = {
-  "北京": { col: 8, row: 2, label: "北京" },
-  "天津": { col: 9, row: 3, label: "天津" },
-  "河北": { col: 8, row: 4, label: "河北" },
-  "山西": { col: 7, row: 4, label: "山西" },
-  "内蒙古": { col: 7, row: 2, label: "内蒙古" },
-  "辽宁": { col: 10, row: 3, label: "辽宁" },
-  "吉林": { col: 11, row: 2, label: "吉林" },
-  "黑龙江": { col: 12, row: 1, label: "黑龙江" },
-  "上海": { col: 10, row: 6, label: "上海" },
-  "江苏": { col: 9, row: 6, label: "江苏" },
-  "浙江": { col: 10, row: 7, label: "浙江" },
-  "安徽": { col: 8, row: 6, label: "安徽" },
-  "福建": { col: 10, row: 8, label: "福建" },
-  "江西": { col: 8, row: 8, label: "江西" },
-  "山东": { col: 9, row: 4, label: "山东" },
-  "河南": { col: 7, row: 6, label: "河南" },
-  "湖北": { col: 7, row: 8, label: "湖北" },
-  "湖南": { col: 7, row: 9, label: "湖南" },
-  "广东": { col: 8, row: 11, label: "广东" },
-  "广西": { col: 6, row: 11, label: "广西" },
-  "海南": { col: 7, row: 13, label: "海南" },
-  "重庆": { col: 5, row: 8, label: "重庆" },
-  "四川": { col: 4, row: 8, label: "四川" },
-  "贵州": { col: 5, row: 10, label: "贵州" },
-  "云南": { col: 4, row: 11, label: "云南" },
-  "西藏": { col: 2, row: 9, label: "西藏" },
-  "陕西": { col: 5, row: 6, label: "陕西" },
-  "甘肃": { col: 4, row: 5, label: "甘肃" },
-  "青海": { col: 3, row: 6, label: "青海" },
-  "宁夏": { col: 5, row: 5, label: "宁夏" },
-  "新疆": { col: 1, row: 4, label: "新疆" },
-  "台湾": { col: 11, row: 9, label: "台湾" },
-  "香港": { col: 9, row: 11, label: "香港" },
-  "澳门": { col: 8, row: 12, label: "澳门" },
-};
-
-const worldCountryShapes: Record<string, { label: string; d: string }> = {
-  US: { label: "United States", d: "M90 142 L110 132 L146 128 L182 130 L210 122 L248 128 L258 144 L244 158 L210 160 L176 168 L134 164 L98 154 Z" },
-  CA: { label: "Canada", d: "M84 96 L112 82 L154 76 L196 82 L232 88 L248 102 L224 114 L184 114 L140 108 L100 112 Z" },
-  GB: { label: "United Kingdom", d: "M398 114 L408 104 L418 108 L420 122 L410 132 L398 126 Z" },
-  FR: { label: "France", d: "M414 148 L430 140 L448 146 L446 164 L430 172 L414 164 Z" },
-  DE: { label: "Germany", d: "M446 132 L460 124 L472 134 L470 156 L454 162 L442 150 Z" },
-  NL: { label: "Netherlands", d: "M438 126 L446 122 L452 128 L448 138 L438 136 Z" },
-  RU: { label: "Russia", d: "M474 78 L534 70 L600 74 L658 88 L710 98 L730 118 L700 126 L650 122 L596 128 L544 120 L496 108 Z" },
-  IN: { label: "India", d: "M560 198 L578 188 L594 196 L600 214 L586 236 L570 228 L562 210 Z" },
-  CN: { label: "China", d: "M598 126 L638 112 L682 118 L716 132 L734 154 L720 174 L692 182 L664 176 L638 184 L614 174 L596 154 Z" },
-  KR: { label: "Korea", d: "M734 138 L742 132 L746 144 L740 156 L732 150 Z" },
-  JP: { label: "Japan", d: "M760 132 L772 124 L780 136 L776 152 L764 162 L756 150 Z" },
-  TW: { label: "Taiwan", d: "M732 176 L740 174 L742 190 L734 196 Z" },
-  HK: { label: "Hong Kong", d: "M720 186 L726 184 L728 190 L722 192 Z" },
-  SG: { label: "Singapore", d: "M646 250 L652 248 L654 254 L648 256 Z" },
-  MY: { label: "Malaysia", d: "M636 230 L648 224 L656 232 L652 250 L640 248 Z" },
-  TH: { label: "Thailand", d: "M620 214 L632 206 L642 216 L638 236 L626 240 Z" },
-  AU: { label: "Australia", d: "M720 278 L752 268 L790 274 L812 294 L804 320 L772 330 L734 322 L714 302 Z" },
-};
-
-const chinaProvinceShapes: Record<string, { label: string; d: string }> = {
-  "新疆": { label: "新疆", d: "M84 110 L132 96 L170 108 L168 146 L130 156 L92 144 Z" },
-  "西藏": { label: "西藏", d: "M156 176 L220 164 L266 180 L250 222 L180 226 L150 208 Z" },
-  "青海": { label: "青海", d: "M222 150 L270 140 L298 156 L290 192 L246 198 L218 178 Z" },
-  "甘肃": { label: "甘肃", d: "M276 122 L330 118 L338 154 L314 184 L274 178 L264 148 Z" },
-  "内蒙古": { label: "内蒙古", d: "M286 70 L372 60 L470 70 L520 90 L486 112 L392 110 L308 98 Z" },
-  "黑龙江": { label: "黑龙江", d: "M548 62 L606 58 L646 78 L632 116 L574 118 L540 94 Z" },
-  "吉林": { label: "吉林", d: "M520 102 L560 96 L584 112 L574 138 L530 140 L510 120 Z" },
-  "辽宁": { label: "辽宁", d: "M486 118 L522 116 L536 138 L520 158 L486 150 Z" },
-  "北京": { label: "北京", d: "M446 136 L456 132 L462 140 L454 148 L444 144 Z" },
-  "天津": { label: "天津", d: "M458 144 L468 142 L472 150 L462 156 Z" },
-  "河北": { label: "河北", d: "M420 136 L452 124 L480 138 L478 176 L440 186 L414 164 Z" },
-  "山西": { label: "山西", d: "M382 132 L416 128 L422 168 L392 182 L370 158 Z" },
-  "陕西": { label: "陕西", d: "M330 150 L364 144 L382 172 L368 210 L334 204 L322 176 Z" },
-  "宁夏": { label: "宁夏", d: "M344 132 L358 128 L366 138 L358 150 L344 146 Z" },
-  "山东": { label: "山东", d: "M478 154 L520 150 L542 164 L530 186 L492 186 L474 172 Z" },
-  "河南": { label: "河南", d: "M384 182 L430 178 L450 194 L438 220 L392 220 L374 200 Z" },
-  "江苏": { label: "江苏", d: "M488 190 L522 184 L540 198 L536 222 L502 226 L486 210 Z" },
-  "上海": { label: "上海", d: "M538 222 L546 220 L548 232 L540 234 Z" },
-  "安徽": { label: "安徽", d: "M454 188 L490 186 L502 220 L470 230 L448 212 Z" },
-  "湖北": { label: "湖北", d: "M380 226 L436 222 L450 240 L432 260 L386 258 L370 240 Z" },
-  "浙江": { label: "浙江", d: "M500 224 L536 220 L548 246 L522 260 L494 248 Z" },
-  "福建": { label: "福建", d: "M486 258 L522 252 L532 286 L504 298 L480 282 Z" },
-  "江西": { label: "江西", d: "M440 240 L482 238 L494 276 L458 288 L434 266 Z" },
-  "湖南": { label: "湖南", d: "M376 258 L428 256 L438 292 L392 302 L368 280 Z" },
-  "重庆": { label: "重庆", d: "M320 238 L348 234 L358 258 L344 278 L320 268 Z" },
-  "四川": { label: "四川", d: "M258 226 L324 220 L344 270 L294 300 L244 278 L238 244 Z" },
-  "贵州": { label: "贵州", d: "M330 286 L372 282 L388 304 L356 320 L324 314 Z" },
-  "云南": { label: "云南", d: "M248 286 L320 284 L330 322 L278 348 L228 324 Z" },
-  "广东": { label: "广东", d: "M426 304 L484 298 L516 320 L494 346 L438 348 L414 324 Z" },
-  "广西": { label: "广西", d: "M352 304 L422 298 L436 336 L380 350 L344 330 Z" },
-  "海南": { label: "海南", d: "M408 360 L438 358 L448 378 L420 388 L400 376 Z" },
-  "台湾": { label: "台湾", d: "M548 272 L564 268 L570 302 L556 314 L544 292 Z" },
-  "香港": { label: "香港", d: "M500 336 L508 334 L510 342 L502 344 Z" },
-  "澳门": { label: "澳门", d: "M492 338 L498 338 L500 344 L494 344 Z" },
+const worldIsoNumericToAlpha2: Record<string, string> = {
+  "036": "AU",
+  "036.0": "AU",
+  "124": "CA",
+  "156": "CN",
+  "250": "FR",
+  "276": "DE",
+  "344": "HK",
+  "356": "IN",
+  "392": "JP",
+  "410": "KR",
+  "458": "MY",
+  "528": "NL",
+  "643": "RU",
+  "702": "SG",
+  "764": "TH",
+  "158": "TW",
+  "826": "GB",
+  "840": "US",
 };
 
 function normalizeChinaRegionName(raw: string): string {
@@ -362,6 +274,19 @@ function clampOpacity(value: number) {
   return Math.max(0.18, Math.min(0.92, value));
 }
 
+type MapFeature = Feature<Geometry, { name?: string; id?: string | number }>;
+type MapFeatureCollection = FeatureCollection<Geometry, { name?: string; id?: string | number }>;
+
+const worldGeographies = feature(
+  worldAtlas as unknown as {
+    type: "Topology";
+    objects: { countries: { type: string } };
+    arcs: number[][][];
+    transform: { scale: [number, number]; translate: [number, number] };
+  },
+  (worldAtlas as unknown as { objects: { countries: { type: string } } }).objects.countries,
+) as MapFeatureCollection;
+
 function sortPosts(items: AnalyticsPostStat[], key: PostSortKey, direction: SortDirection) {
   const sorted = [...items].sort((a, b) => {
     const multiplier = direction === "asc" ? 1 : -1;
@@ -468,50 +393,41 @@ function HorizontalBarChart({ items }: { items: AnalyticsPostStat[] }) {
 }
 
 function WorldMap({ items }: { items: AnalyticsLocationStat[] }) {
-  const visible = items.filter((item) => worldCountryShapes[item.code]);
-  const maxValue = Math.max(1, ...visible.map((item) => item.totalRequests), 1);
+  const valueMap = new Map(items.map((item) => [item.code, item]));
+  const maxValue = Math.max(1, ...items.map((item) => item.totalRequests), 1);
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-2xl border border-stone-200 bg-[radial-gradient(circle_at_30%_30%,rgba(245,158,11,0.10),transparent_35%),linear-gradient(180deg,#fafaf9_0%,#f5f5f4_100%)]">
-        <svg viewBox="0 0 860 400" className="w-full">
-          <rect x="0" y="0" width="860" height="400" fill="transparent" />
-          <g fill="none" stroke="#d6d3d1" strokeWidth="1.2" strokeLinejoin="round">
-            <path d="M56 86 L120 70 L190 74 L256 90 L292 112 L286 150 L228 174 L152 166 L86 148 L52 120 Z" />
-            <path d="M372 96 L432 78 L520 76 L612 84 L708 100 L776 132 L800 174 L774 214 L704 212 L628 196 L566 192 L492 178 L420 160 L380 132 Z" />
-            <path d="M574 214 L634 214 L684 236 L700 280 L676 320 L618 336 L560 324 L528 286 L540 244 Z" />
-            <path d="M274 286 L324 284 L352 302 L346 328 L302 334 L272 318 Z" />
-          </g>
-          {visible.map((item) => {
-            const shape = worldCountryShapes[item.code];
-            const intensity = clampOpacity(item.totalRequests / maxValue);
-            return (
-              <path
-                key={item.code}
-                d={shape.d}
-                fill={`rgba(180, 83, 9, ${intensity})`}
-                stroke={item.code === "CN" ? "#7c2d12" : "#9a3412"}
-                strokeWidth={item.code === "CN" ? 2.3 : 1.6}
-              >
-                <title>{`${shape.label}: ${item.totalRequests}`}</title>
-              </path>
-            );
-          })}
-          <g fill="#44403c" fontSize="11" fontWeight="600">
-            {visible.map((item) => {
-              const point = worldCoordinates[item.code];
-              return (
-                <text key={`${item.code}-label`} x={`${(point.x / 100) * 860}`} y={`${(point.y / 100) * 400}`} textAnchor="middle">
-                  {worldCountryShapes[item.code].label}
-                </text>
-              );
-            })}
-          </g>
-        </svg>
+        <ComposableMap projection="geoMercator" projectionConfig={{ scale: 135 }} width={860} height={400} style={{ width: "100%", height: "auto" }}>
+          <Geographies geography={worldGeographies}>
+            {({ geographies }: { geographies: MapFeature[] }) =>
+              geographies.map((geo: MapFeature, index: number) => {
+                const rawId = String(geo.id ?? geo.properties?.id ?? "");
+                const alpha2 = worldIsoNumericToAlpha2[rawId.padStart(3, "0")] || worldIsoNumericToAlpha2[rawId];
+                const item = alpha2 ? valueMap.get(alpha2) : undefined;
+                const fill = item ? `rgba(180, 83, 9, ${clampOpacity(item.totalRequests / maxValue)})` : "#f5f5f4";
+                return (
+                  <Geography
+                    key={`world-${rawId || index}`}
+                    geography={geo}
+                    style={{
+                      default: { fill, stroke: item?.code === "CN" ? "#7c2d12" : "#d6d3d1", strokeWidth: item?.code === "CN" ? 1.2 : 0.7, outline: "none" },
+                      hover: { fill, stroke: "#7c2d12", strokeWidth: 1.2, outline: "none" },
+                      pressed: { fill, stroke: "#7c2d12", strokeWidth: 1.2, outline: "none" },
+                    }}
+                  >
+                    <title>{item ? `${item.name}: ${item.totalRequests}` : (geo.properties?.name ?? rawId)}</title>
+                  </Geography>
+                );
+              })
+            }
+          </Geographies>
+        </ComposableMap>
       </div>
       <div className="grid gap-2 md:grid-cols-2">
         {items.slice(0, 8).map((item) => (
           <div key={item.code} className="flex items-center justify-between rounded-lg border border-stone-200 bg-stone-50/70 px-3 py-2 text-sm">
-            <span>{worldCountryShapes[item.code]?.label || item.name}</span>
+            <span>{item.name}</span>
             <span className="font-medium text-stone-700">{item.totalRequests}</span>
           </div>
         ))}
@@ -522,40 +438,35 @@ function WorldMap({ items }: { items: AnalyticsLocationStat[] }) {
 
 function ChinaGridMap({ items }: { items: AnalyticsLocationStat[] }) {
   const normalized = items.map((item) => ({ ...item, normalizedName: normalizeChinaRegionName(item.name || item.code) }));
+  const valueMap = new Map(normalized.map((item) => [item.normalizedName, item]));
   const maxValue = Math.max(1, ...normalized.map((item) => item.totalRequests), 1);
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50/80 p-3">
-        <svg viewBox="0 0 700 430" className="w-full">
-          <g fill="#f5f5f4" stroke="#d6d3d1" strokeWidth="1.4" strokeLinejoin="round">
-            {Object.entries(chinaProvinceShapes).map(([name, shape]) => {
-              const item = normalized.find((entry) => entry.normalizedName === name);
-              const intensity = item ? clampOpacity(item.totalRequests / maxValue) : 0;
-              return (
-                <path
-                  key={name}
-                  d={shape.d}
-                  fill={item ? `rgba(180, 83, 9, ${intensity})` : "#f5f5f4"}
-                  stroke={item ? "#92400e" : "#d6d3d1"}
-                >
-                  <title>{`${name}: ${item?.totalRequests ?? 0}`}</title>
-                </path>
-              );
-            })}
-          </g>
-          <g fill="#44403c" fontSize="10" fontWeight="600">
-            {Object.entries(chinaCoordinates).map(([name, point]) => (
-              <text
-                key={`${name}-label`}
-                x={point.col * 50}
-                y={point.row * 28 + 14}
-                textAnchor="middle"
-              >
-                {name}
-              </text>
-            ))}
-          </g>
-        </svg>
+        <ComposableMap projection="geoMercator" projectionConfig={{ center: [104, 36], scale: 540 }} width={700} height={430} style={{ width: "100%", height: "auto" }}>
+          <Geographies geography={chinaMapGeo as unknown as MapFeatureCollection}>
+            {({ geographies }: { geographies: MapFeature[] }) =>
+              geographies.map((geo: MapFeature, index: number) => {
+                const name = normalizeChinaRegionName(String(geo.properties?.name ?? geo.id ?? ""));
+                const item = valueMap.get(name);
+                const fill = item ? `rgba(180, 83, 9, ${clampOpacity(item.totalRequests / maxValue)})` : "#f5f5f4";
+                return (
+                  <Geography
+                    key={`china-${name || index}`}
+                    geography={geo}
+                    style={{
+                      default: { fill, stroke: item ? "#92400e" : "#d6d3d1", strokeWidth: 0.8, outline: "none" },
+                      hover: { fill, stroke: "#7c2d12", strokeWidth: 1.1, outline: "none" },
+                      pressed: { fill, stroke: "#7c2d12", strokeWidth: 1.1, outline: "none" },
+                    }}
+                  >
+                    <title>{`${name}: ${item?.totalRequests ?? 0}`}</title>
+                  </Geography>
+                );
+              })
+            }
+          </Geographies>
+        </ComposableMap>
       </div>
       <div className="grid gap-2 md:grid-cols-2">
         {normalized.slice(0, 10).map((item) => (
