@@ -9,6 +9,7 @@ import FoldersPage from "./pages/FoldersPage";
 import FolderDetailPage from "./pages/FolderDetailPage";
 import { Suspense, lazy, useEffect } from "react";
 import { siteConfig } from "./config/site.config";
+import { warmImageCache } from "./lib/imageCache";
 
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 
@@ -43,6 +44,8 @@ function App() {
     if (link) {
       link.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>${siteConfig.logo}</text></svg>`;
     }
+
+    void warmImageCache(siteConfig.author.avatar);
   }, []);
 
   return (

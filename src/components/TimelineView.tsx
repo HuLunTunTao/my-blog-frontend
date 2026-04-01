@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { siteConfig } from "@/config/site.config";
 import { toPostRoute } from "@/lib/postSlug";
 import type { ComponentType } from "react";
+import { useCachedImage } from "@/hooks/useCachedImage";
 
 type SocialIconProps = { size?: string | number; className?: string };
 
@@ -33,6 +34,7 @@ export default function TimelineView() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeYear, setActiveYear] = useState<string>("");
+  const cachedAvatar = useCachedImage(siteConfig.author.avatar);
 
   const grouped = groupPostsByYearMonth(posts);
   const years = Object.keys(grouped).sort((a, b) => Number(b) - Number(a));
@@ -104,10 +106,13 @@ export default function TimelineView() {
                 <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-stone-200/50 flex items-center justify-center overflow-hidden border border-stone-300 shadow-inner">
                    {siteConfig.author.avatar ? (
                      <img 
-                        src={siteConfig.author.avatar} 
+                        src={cachedAvatar} 
                         alt={siteConfig.author.name} 
                         className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity duration-700" 
                         referrerPolicy="no-referrer"
+                        loading="eager"
+                        decoding="async"
+                        fetchPriority="high"
                      />
                    ) : (
                      <span className="text-4xl grayscale opacity-50">👤</span>
