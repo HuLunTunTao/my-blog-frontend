@@ -88,7 +88,7 @@ export default function TimelineView() {
     <LazyMotion features={domAnimation}>
       {loading && posts.length === 0 ? (
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+          <Loader2 className="w-8 h-8 animate-spin text-stone-400 dark:text-stone-500" />
         </div>
       ) : (
         <>
@@ -101,9 +101,9 @@ export default function TimelineView() {
         className="space-y-24 relative"
       >
         {/* Hero Section */}
-        <m.section variants={item} className="py-16 md:py-24 flex flex-col md:flex-row items-center gap-8 md:gap-16 md:pl-4 border-b border-stone-200/50 pb-24 mb-12">
+        <m.section variants={item} className="py-16 md:py-24 flex flex-col md:flex-row items-center gap-8 md:gap-16 md:pl-4 border-b border-stone-200/50 dark:border-stone-800/50 pb-24 mb-12">
             <div className="relative shrink-0">
-                <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-stone-200/50 flex items-center justify-center overflow-hidden border border-stone-300 shadow-inner">
+                <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-stone-200/50 dark:bg-stone-800/50 flex items-center justify-center overflow-hidden border border-stone-300 dark:border-stone-700 shadow-inner">
                    {siteConfig.author.avatar ? (
                      <img 
                         src={cachedAvatar} 
@@ -119,18 +119,18 @@ export default function TimelineView() {
                    )}
                 </div>
                 {/* Decorative circle behind */}
-                <div className="absolute inset-0 border border-dashed border-stone-300 rounded-full scale-110 animate-spin-slow opacity-30 pointer-events-none"></div>
+                <div className="absolute inset-0 border border-dashed border-stone-300 dark:border-stone-700 rounded-full scale-110 animate-spin-slow opacity-30 pointer-events-none"></div>
             </div>
             
             <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
                 <h1 className="text-2xl md:text-3xl font-serif font-black text-foreground tracking-tight">
                     {siteConfig.author.name}
                 </h1>
-                <div className="text-sm md:text-lg text-stone-600 leading-relaxed max-w-md font-sans">
+                <div className="text-sm md:text-lg text-stone-600 dark:text-stone-400 leading-relaxed max-w-md font-sans">
                     <p>{siteConfig.author.bio}</p>
                 </div>
                 <div className="pt-2">
-                    <span className="text-sm font-serif italic text-stone-500 border-t border-stone-200 pt-2 px-4 md:px-0 md:border-t-0 md:border-l md:pl-4 block md:inline-block">
+                    <span className="text-sm font-serif italic text-stone-500 dark:text-stone-400 border-t border-stone-200 dark:border-stone-700 pt-2 px-4 md:px-0 md:border-t-0 md:border-l md:pl-4 block md:inline-block">
                         "{siteConfig.author.motto}"
                     </span>
                 </div>
@@ -150,7 +150,7 @@ export default function TimelineView() {
                                 href={link.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="p-2 text-stone-400 hover:text-stone-800 hover:bg-stone-200/50 rounded-full transition-all duration-300 group"
+                                className="p-2 text-stone-400 dark:text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-stone-200/50 dark:hover:bg-stone-800/50 rounded-full transition-all duration-300 group"
                                 title={link.label}
                             >
                                 <Icon size={20} className="group-hover:scale-110 transition-transform" />
@@ -164,8 +164,8 @@ export default function TimelineView() {
         {years.map((year) => (
           <div key={year} id={`year-${year}`} className="relative scroll-mt-32">
              {/* Year Marker - Optimized: Ink wash style, muted, serif water mark */}
-            <div className="flex items-baseline border-b border-black pb-4 mb-12 relative">
-                <span className="text-7xl md:text-8xl font-serif font-bold text-stone-950 absolute -left-2 -top-4 md:-left-4 md:-top-6 -z-10 select-none opacity-[0.1] blur-[0.5px]">
+            <div className="flex items-baseline border-b border-black dark:border-stone-200 pb-4 mb-12 relative">
+                <span className="text-7xl md:text-8xl font-serif font-bold text-stone-950 dark:text-stone-100 absolute -left-2 -top-4 md:-left-4 md:-top-6 -z-10 select-none opacity-[0.1] blur-[0.5px]">
                     {year}
                 </span>
                 <h2 className="text-3xl font-serif font-bold tracking-tight z-10">{year}</h2>
@@ -192,10 +192,10 @@ export default function TimelineView() {
                       
                       <div className="space-y-4 pl-2">
                         {monthPosts.map((post) => (
-                          <Link key={post.slug} to={toPostRoute(post.slug)} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/70">
+                          <Link key={post.slug} to={toPostRoute(post.slug)} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/70 dark:focus-visible:ring-stone-500/70">
                             <article className="relative py-4 px-6 transition-all duration-300 hover:translate-x-1">
                               {/* Individual Paper Layer */}
-                              <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] rounded-none" 
+                              <div className="absolute inset-0 bg-white/50 dark:bg-stone-900/40 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none" 
                                    style={{
                                      backgroundImage: `url("/assets/paperGrain-128.svg")`
                                    }}
@@ -205,7 +205,7 @@ export default function TimelineView() {
                                 <span
                                     className={cn(
                                         "text-xl font-medium decoration-1 underline-offset-4 group-hover:underline",
-                                        post.visibility === 'encrypted' && "font-mono text-base text-neutral-600"
+                                        post.visibility === 'encrypted' && "font-mono text-base text-neutral-600 dark:text-neutral-400"
                                     )}
                                 >
                                   {post.visibility === 'encrypted' && <span className="mr-2">🔒</span>}
@@ -216,7 +216,7 @@ export default function TimelineView() {
                                 </span>
                               </header>
                               {post.excerpt && (
-                                <p className="text-neutral-500 font-serif text-sm leading-relaxed line-clamp-2 max-w-lg">
+                                <p className="text-neutral-500 dark:text-neutral-400 font-serif text-sm leading-relaxed line-clamp-2 max-w-lg">
                                     {post.visibility === 'encrypted' ? "********" : post.excerpt}
                                 </p>
                               )}

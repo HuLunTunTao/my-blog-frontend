@@ -20,7 +20,7 @@ function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
       <div
         className={cn(
           "flex items-center gap-2 py-1.5 group cursor-pointer",
-          level > 0 && "hover:bg-stone-50/50 px-2 -mx-2"
+          level > 0 && "hover:bg-stone-50/50 dark:hover:bg-stone-800/40 px-2 -mx-2"
         )}
         style={{ paddingLeft: `${level * 1}rem` }}
       >
@@ -28,7 +28,7 @@ function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
         {hasChildren && (
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="w-4 h-4 flex items-center justify-center text-stone-400 hover:text-foreground transition-colors"
+            className="w-4 h-4 flex items-center justify-center text-stone-400 dark:text-stone-500 hover:text-foreground transition-colors"
           >
             <svg
               className={cn(
@@ -50,7 +50,7 @@ function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
         )}
 
         {/* Folder Icon - Unified */}
-        <span className="text-stone-400 flex-shrink-0">
+        <span className="text-stone-400 dark:text-stone-500 flex-shrink-0">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
@@ -68,12 +68,12 @@ function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
             className="flex-1 text-sm font-medium text-foreground/80 group-hover:text-foreground transition-colors"
           >
             {folder.name}
-            <span className="ml-2 text-xs text-stone-400">
+            <span className="ml-2 text-xs text-stone-400 dark:text-stone-500">
                ({folder.directPostCount ?? 0} / {folder.postCount ?? 0})
             </span>
           </Link>
         ) : (
-          <span className="flex-1 text-sm font-medium text-stone-400">
+          <span className="flex-1 text-sm font-medium text-stone-400 dark:text-stone-500">
             {folder.name}
           </span>
         )}
@@ -112,7 +112,7 @@ export default function FolderTree({ root }: FolderTreeProps) {
             <FolderTreeItem key={folder.path} folder={folder} level={0} />
           ))
         ) : (
-          <p className="text-sm text-stone-400 italic">暂无文件夹</p>
+          <p className="text-sm text-stone-400 dark:text-stone-500 italic">暂无文件夹</p>
         )}
       </div>
     </LazyMotion>

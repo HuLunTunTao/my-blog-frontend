@@ -26,7 +26,7 @@ export default function AllTagsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-stone-400 dark:text-stone-500" />
       </div>
     );
   }
@@ -45,15 +45,15 @@ export default function AllTagsPage() {
             <Link
               key={tag.name}
               to={`/tags/${tag.name}`}
-              className="group flex h-22 flex-col p-4 border border-stone-200/60 rounded-none hover:border-stone-300 hover:shadow-sm transition-all bg-white/50"
+              className="group flex h-22 flex-col p-4 border border-stone-200/60 dark:border-stone-700/60 rounded-none hover:border-stone-300 dark:hover:border-stone-600 hover:shadow-sm transition-all bg-white/50 dark:bg-stone-900/40"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="font-serif font-medium text-lg line-clamp-1">#{tag.name}</span>
-                <span className="bg-neutral-100 text-subtle text-xs px-2 py-1 rounded-none group-hover:bg-neutral-200 transition-colors">
+                <span className="bg-neutral-100 dark:bg-stone-800 text-subtle text-xs px-2 py-1 rounded-none group-hover:bg-neutral-200 dark:group-hover:bg-stone-700 transition-colors">
                   {tag.count}
                 </span>
               </div>
-              <p className="text-sm text-stone-500 line-clamp-2 min-h-[2.75rem]">
+              <p className="text-sm text-stone-500 dark:text-stone-400 line-clamp-2 min-h-[2.75rem]">
                 {tag.description || ""}
               </p>
             </Link>

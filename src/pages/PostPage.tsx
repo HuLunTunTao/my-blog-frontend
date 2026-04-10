@@ -59,7 +59,7 @@ export default function PostPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-stone-400 dark:text-stone-500" />
       </div>
     );
   }
@@ -89,7 +89,7 @@ export default function PostPage() {
       className="max-w-5xl mx-auto relative group"
     >
       {/* Paper texture overlay - Extremely Subtle Xuan Paper */}
-      <div className="absolute inset-x-[-2.5rem] inset-y-[-2.5rem] bg-white/90 backdrop-blur-[1px] rounded-none -z-10 border border-stone-200/20 hidden md:block overflow-hidden" 
+      <div className="absolute inset-x-[-2.5rem] inset-y-[-2.5rem] bg-white/90 dark:bg-stone-900/40 backdrop-blur-[1px] rounded-none -z-10 border border-stone-200/20 dark:border-stone-700/30 hidden md:block overflow-hidden" 
            style={{
              backgroundImage: `url("/assets/paperGrain-128.svg")`
            }}

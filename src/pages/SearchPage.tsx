@@ -26,7 +26,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
       nodes.push(<span key={`plain-${lastIndex}`}>{text.slice(lastIndex, start)}</span>);
     }
     nodes.push(
-      <mark key={`match-${start}`} className="bg-yellow-200 rounded-sm px-0.5">
+      <mark key={`match-${start}`} className="bg-yellow-200 dark:bg-yellow-600/40 dark:text-yellow-100 rounded-sm px-0.5">
         {text.slice(start, end)}
       </mark>,
     );
@@ -154,13 +154,13 @@ export default function SearchPage() {
             onCompositionStart={handleCompositionStart}
             onCompositionEnd={handleCompositionEnd}
             placeholder="Search posts..."
-            className="w-full text-2xl font-serif border-b-2 border-border focus:border-black outline-none py-2 bg-transparent placeholder:text-neutral-300 transition-colors"
+            className="w-full text-2xl font-serif border-b-2 border-border focus:border-foreground outline-none py-2 bg-transparent placeholder:text-neutral-300 dark:placeholder:text-neutral-600 transition-colors"
           />
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-stone-400 dark:text-stone-500" />
           </div>
         ) : (
           <div className="space-y-8">
@@ -172,7 +172,7 @@ export default function SearchPage() {
               <article key={post.slug} className="group relative p-6 transition-all duration-300 hover:translate-x-1">
                 {/* Individual Paper Layer */}
                 <div
-                  className="absolute inset-0 bg-white/50 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] rounded-sm"
+                  className="absolute inset-0 bg-white/50 dark:bg-stone-900/40 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-sm"
                   style={{
                     backgroundImage: `url("/assets/paperGrain-128.svg")`,
                   }}
@@ -189,7 +189,7 @@ export default function SearchPage() {
                   </div>
                   <div className="flex gap-2">
                     {post.tags.map(t => (
-                      <span key={t} className="text-xs text-subtle bg-neutral-100 px-1.5 rounded">
+                      <span key={t} className="text-xs text-subtle bg-neutral-100 dark:bg-stone-800 px-1.5 rounded">
                         <Highlight text={`#${t}`} query={query} />
                       </span>
                     ))}

@@ -1,5 +1,5 @@
 import type { AnalyticsLocationStat } from "@/lib/api";
-import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+import { geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import worldAtlas from "world-atlas/countries-110m.json";
 import chinaMapGeo from "china-map-geojson/lib/china";
@@ -89,9 +89,9 @@ function LegendList({ items, formatter }: { items: AnalyticsLocationStat[]; form
   return (
     <div className="grid gap-2 md:grid-cols-2">
       {items.slice(0, 10).map((item) => (
-        <div key={`${item.code}-${item.name}`} className="flex items-center justify-between border border-stone-200 bg-stone-50/70 px-3 py-2 text-sm">
+        <div key={`${item.code}-${item.name}`} className="flex items-center justify-between border border-stone-200 dark:border-stone-700/60 bg-stone-50/70 dark:bg-stone-900/40 px-3 py-2 text-sm">
           <span className="truncate pr-4">{formatter ? formatter(item) : item.name}</span>
-          <span className="font-medium text-stone-700">{item.totalRequests}</span>
+          <span className="font-medium text-stone-700 dark:text-stone-200">{item.totalRequests}</span>
         </div>
       ))}
     </div>
@@ -101,35 +101,35 @@ function LegendList({ items, formatter }: { items: AnalyticsLocationStat[]; form
 export function WorldMap({ items }: { items: AnalyticsLocationStat[] }) {
   const { byCode, byName } = buildWorldLocationMap(items);
   const maxValue = Math.max(1, ...items.map((item) => item.totalRequests), 1);
+  const width = 860;
+  const height = 400;
+  const projection = geoMercator().fitSize([width, height], worldGeographies);
+  const pathGenerator = geoPath(projection);
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden border border-stone-200 bg-[radial-gradient(circle_at_30%_30%,rgba(245,158,11,0.10),transparent_35%),linear-gradient(180deg,#fafaf9_0%,#f5f5f4_100%)]">
-        <ComposableMap projection="geoMercator" projectionConfig={{ scale: 135 }} width={860} height={400} style={{ width: "100%", height: "auto" }}>
-          <Geographies geography={worldGeographies}>
-            {({ geographies }: { geographies: MapFeature[] }) =>
-              geographies.map((geo: MapFeature, index: number) => {
-                const rawId = String(geo.id ?? geo.properties?.id ?? "").trim();
-                const geoName = String(geo.properties?.name ?? "").trim();
-                const item = byCode.get(rawId.toUpperCase()) || byName.get(normalizeCountryName(geoName));
-                const fill = item ? `rgba(180, 83, 9, ${clampOpacity(item.totalRequests / maxValue)})` : "#f5f5f4";
-                return (
-                  <Geography
-                    key={`world-${rawId || geoName || index}`}
-                    geography={geo}
-                    style={{
-                      default: { fill, stroke: item?.code === "CN" ? "#7c2d12" : "#d6d3d1", strokeWidth: item?.code === "CN" ? 1.2 : 0.7, outline: "none" },
-                      hover: { fill, stroke: "#7c2d12", strokeWidth: 1.2, outline: "none" },
-                      pressed: { fill, stroke: "#7c2d12", strokeWidth: 1.2, outline: "none" },
-                    }}
-                  >
-                    <title>{item ? `${item.name}: ${item.totalRequests}` : (geoName || rawId)}</title>
-                  </Geography>
-                );
-              })
-            }
-          </Geographies>
-        </ComposableMap>
+      <div className="overflow-hidden border border-stone-200 dark:border-stone-700/60 bg-[radial-gradient(circle_at_30%_30%,rgba(245,158,11,0.10),transparent_35%),linear-gradient(180deg,#fafaf9_0%,#f5f5f4_100%)] dark:bg-none dark:bg-stone-900/60">
+        <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full" role="img" aria-label="World IP origin map">
+          {worldGeographies.features.map((geo: MapFeature, index: number) => {
+            const rawId = String(geo.id ?? geo.properties?.id ?? "").trim();
+            const geoName = String(geo.properties?.name ?? "").trim();
+            const item = byCode.get(rawId.toUpperCase()) || byName.get(normalizeCountryName(geoName));
+            const fill = item ? `rgba(180, 83, 9, ${clampOpacity(item.totalRequests / maxValue)})` : "#f5f5f4";
+            const path = pathGenerator(geo) ?? "";
+
+            return (
+              <path
+                key={`world-${rawId || geoName || index}`}
+                d={path}
+                fill={fill}
+                stroke={item?.code === "CN" ? "#7c2d12" : "#d6d3d1"}
+                strokeWidth={item?.code === "CN" ? 1.2 : 0.7}
+              >
+                <title>{item ? `${item.name}: ${item.totalRequests}` : (geoName || rawId)}</title>
+              </path>
+            );
+          })}
+        </svg>
       </div>
       <LegendList items={items} />
     </div>
@@ -140,34 +140,34 @@ export function ChinaMap({ items }: { items: AnalyticsLocationStat[] }) {
   const normalized = items.map((item) => ({ ...item, normalizedName: normalizeChinaRegionName(item.name || item.code) }));
   const valueMap = new Map(normalized.map((item) => [item.normalizedName, item]));
   const maxValue = Math.max(1, ...normalized.map((item) => item.totalRequests), 1);
+  const width = 700;
+  const height = 430;
+  const projection = geoMercator().fitSize([width, height], chinaMapGeo as unknown as MapFeatureCollection);
+  const pathGenerator = geoPath(projection);
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden border border-stone-200 bg-stone-50/80 p-3">
-        <ComposableMap projection="geoMercator" projectionConfig={{ center: [104, 36], scale: 540 }} width={700} height={430} style={{ width: "100%", height: "auto" }}>
-          <Geographies geography={chinaMapGeo as unknown as MapFeatureCollection}>
-            {({ geographies }: { geographies: MapFeature[] }) =>
-              geographies.map((geo: MapFeature, index: number) => {
-                const name = normalizeChinaRegionName(String(geo.properties?.name ?? geo.id ?? ""));
-                const item = valueMap.get(name);
-                const fill = item ? `rgba(180, 83, 9, ${clampOpacity(item.totalRequests / maxValue)})` : "#f5f5f4";
-                return (
-                  <Geography
-                    key={`china-${name || index}`}
-                    geography={geo}
-                    style={{
-                      default: { fill, stroke: item ? "#92400e" : "#d6d3d1", strokeWidth: 0.8, outline: "none" },
-                      hover: { fill, stroke: "#7c2d12", strokeWidth: 1.1, outline: "none" },
-                      pressed: { fill, stroke: "#7c2d12", strokeWidth: 1.1, outline: "none" },
-                    }}
-                  >
-                    <title>{`${name}: ${item?.totalRequests ?? 0}`}</title>
-                  </Geography>
-                );
-              })
-            }
-          </Geographies>
-        </ComposableMap>
+      <div className="overflow-hidden border border-stone-200 dark:border-stone-700/60 bg-stone-50/80 dark:bg-stone-900/40 p-3">
+        <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full" role="img" aria-label="China region origin map">
+          {(chinaMapGeo as unknown as MapFeatureCollection).features.map((geo: MapFeature, index: number) => {
+            const name = normalizeChinaRegionName(String(geo.properties?.name ?? geo.id ?? ""));
+            const item = valueMap.get(name);
+            const fill = item ? `rgba(180, 83, 9, ${clampOpacity(item.totalRequests / maxValue)})` : "#f5f5f4";
+            const path = pathGenerator(geo) ?? "";
+
+            return (
+              <path
+                key={`china-${name || index}`}
+                d={path}
+                fill={fill}
+                stroke={item ? "#92400e" : "#d6d3d1"}
+                strokeWidth={0.8}
+              >
+                <title>{`${name}: ${item?.totalRequests ?? 0}`}</title>
+              </path>
+            );
+          })}
+        </svg>
       </div>
       <LegendList items={normalized} formatter={(item) => item.name} />
     </div>
@@ -183,17 +183,17 @@ export default function AnalyticsGeoMapsSection({
 }) {
   return (
     <div className="grid gap-6 xl:grid-cols-2">
-      <section className="border border-stone-200/70 bg-white/88 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]">
+      <section className="border border-stone-200/70 dark:border-stone-700/60 bg-white/88 dark:bg-stone-900/60 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]">
         <div className="mb-4">
-          <h2 className="text-lg font-serif text-stone-900">Global IP Origins</h2>
-          <p className="mt-1 text-sm text-stone-500">Country-level concentration, with full country-name matching instead of a partial hardcoded code list.</p>
+          <h2 className="text-lg font-serif text-stone-900 dark:text-stone-100">Global IP Origins</h2>
+          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Country-level concentration, with full country-name matching instead of a partial hardcoded code list.</p>
         </div>
         <WorldMap items={countryLocations} />
       </section>
-      <section className="border border-stone-200/70 bg-white/88 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]">
+      <section className="border border-stone-200/70 dark:border-stone-700/60 bg-white/88 dark:bg-stone-900/60 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]">
         <div className="mb-4">
-          <h2 className="text-lg font-serif text-stone-900">China Region Origins</h2>
-          <p className="mt-1 text-sm text-stone-500">Province-level heat map, lazily loaded so it no longer blocks the rest of the dashboard.</p>
+          <h2 className="text-lg font-serif text-stone-900 dark:text-stone-100">China Region Origins</h2>
+          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Province-level heat map, lazily loaded so it no longer blocks the rest of the dashboard.</p>
         </div>
         <ChinaMap items={chinaLocations} />
       </section>

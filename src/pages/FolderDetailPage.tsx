@@ -55,7 +55,7 @@ export default function FolderDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-stone-400 dark:text-stone-500" />
       </div>
     );
   }
@@ -64,7 +64,7 @@ export default function FolderDetailPage() {
     return (
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-serif mb-4">文件夹未找到</h1>
-        <p className="text-stone-500">该文件夹不存在或已被移除。</p>
+        <p className="text-stone-500 dark:text-stone-400">该文件夹不存在或已被移除。</p>
         <Link to="/folders" className="text-foreground underline mt-4 inline-block">
           返回文件夹列表
         </Link>
@@ -83,7 +83,7 @@ export default function FolderDetailPage() {
       className="max-w-4xl mx-auto space-y-12"
     >
       {/* Breadcrumb */}
-      <m.nav variants={item} className="text-sm text-stone-500 flex items-center gap-2 flex-wrap">
+      <m.nav variants={item} className="text-sm text-stone-500 dark:text-stone-400 flex items-center gap-2 flex-wrap">
         <Link to="/folders" className="hover:text-foreground transition-colors">
           文件夹
         </Link>
@@ -116,7 +116,7 @@ export default function FolderDetailPage() {
         >
           {folder.name}
         </m.h1>
-        <m.span variants={item} className="text-stone-500 text-lg">
+        <m.span variants={item} className="text-stone-500 dark:text-stone-400 text-lg">
            ({folder.directPostCount ?? 0} / {folder.postCount ?? 0})
         </m.span>
       </div>
@@ -125,7 +125,7 @@ export default function FolderDetailPage() {
       {folder.description && (
         <m.div
           variants={item}
-          className="prose prose-stone max-w-none bg-stone-50/30 rounded-none p-6 border border-stone-200/50"
+          className="prose prose-stone dark:prose-invert max-w-none bg-stone-50/30 dark:bg-stone-900/30 rounded-none p-6 border border-stone-200/50 dark:border-stone-700/50"
         >
           <MarkdownRenderer content={folder.description} />
         </m.div>
@@ -152,11 +152,11 @@ export default function FolderDetailPage() {
               <Link
                 key={subfolder.path}
                 to={`/folders/${encodeURIComponent(subfolder.path)}`}
-                className="group p-4 border border-stone-200/60 rounded-none hover:border-stone-300 hover:shadow-sm transition-all bg-white/50"
+                className="group p-4 border border-stone-200/60 dark:border-stone-700/60 rounded-none hover:border-stone-300 dark:hover:border-stone-600 hover:shadow-sm transition-all bg-white/50 dark:bg-stone-900/40"
               >
                 <div className="flex items-center gap-3">
                   <svg
-                    className="w-6 h-6 text-stone-400 group-hover:text-foreground transition-colors"
+                    className="w-6 h-6 text-stone-400 dark:text-stone-500 group-hover:text-foreground transition-colors"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -172,12 +172,12 @@ export default function FolderDetailPage() {
                     <h3 className="font-medium text-foreground group-hover:underline">
                       {subfolder.name}
                     </h3>
-                    <p className="text-xs text-stone-500 mt-0.5">
+                    <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                       {subfolder.directPostCount ?? 0} / {subfolder.postCount ?? 0} 篇文章
                     </p>
                   </div>
                   <svg
-                    className="w-4 h-4 text-stone-400 group-hover:translate-x-1 transition-transform"
+                    className="w-4 h-4 text-stone-400 dark:text-stone-500 group-hover:translate-x-1 transition-transform"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -221,7 +221,7 @@ export default function FolderDetailPage() {
               >
                 {/* Paper Layer - Consistent with other pages */}
                 <div
-                  className="absolute inset-0 bg-white/50 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] rounded-none"
+                  className="absolute inset-0 bg-white/50 dark:bg-stone-900/40 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none"
                   style={{
                     backgroundImage: `url("/assets/paperGrain-128.svg")`
                   }}
@@ -239,7 +239,7 @@ export default function FolderDetailPage() {
                   </span>
                 </header>
                 {post.excerpt && (
-                  <p className="text-neutral-500 font-serif text-sm leading-relaxed line-clamp-2 max-w-lg">
+                  <p className="text-neutral-500 dark:text-neutral-400 font-serif text-sm leading-relaxed line-clamp-2 max-w-lg">
                     {post.excerpt}
                   </p>
                 )}
@@ -251,7 +251,7 @@ export default function FolderDetailPage() {
 
       {/* Empty state */}
       {folder.children.length === 0 && posts.length === 0 && !folder.description && (
-        <m.p variants={item} className="text-stone-500 italic text-center py-12">
+        <m.p variants={item} className="text-stone-500 dark:text-stone-400 italic text-center py-12">
           该文件夹暂时没有内容
         </m.p>
       )}

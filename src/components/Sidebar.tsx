@@ -13,7 +13,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-20 md:w-32 lg:w-48 flex flex-col justify-between py-12 items-center border-r border-stone-200/60 z-50 bg-background/50 backdrop-blur-sm hidden md:flex">
+    <aside className="fixed left-0 top-0 h-screen w-20 md:w-32 lg:w-48 flex flex-col justify-between py-12 items-center border-r border-stone-200/60 dark:border-stone-800/60 z-50 bg-background/50 backdrop-blur-sm hidden md:flex">
       {/* Brand / Logo removed */}
       <div />
 
@@ -52,11 +52,11 @@ export default function Sidebar() {
           );
         })}
         {/* Decorative line running through */}
-        <div className="absolute top-1/2 left-1/2 -ml-px w-px h-64 bg-stone-200 -z-10 -translate-y-1/2" />
+        <div className="absolute top-1/2 left-1/2 -ml-px w-px h-64 bg-stone-200 dark:bg-stone-800 -z-10 -translate-y-1/2" />
       </nav>
 
       {/* Footer / Copyright */}
-      <div className="writing-vertical-rl text-[10px] text-stone-300 tracking-widest opacity-50 select-none">
+      <div className="writing-vertical-rl text-[10px] text-stone-300 dark:text-stone-600 tracking-widest opacity-50 select-none">
         © 2026
       </div>
     </aside>

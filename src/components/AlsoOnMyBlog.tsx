@@ -47,13 +47,13 @@ export default function AlsoOnMyBlog({ currentPost }: Props) {
                   <li key={`tag-${post.slug}`} className="min-w-[260px] max-w-[320px] snap-start shrink-0">
                     <Link
                       to={toPostRoute(post.slug)}
-                      className="group block border border-stone-200/70 bg-white/60 p-4 h-full hover:bg-neutral-50 transition-colors"
+                      className="group block border border-stone-200/70 dark:border-stone-700/60 bg-white/60 dark:bg-stone-900/40 p-4 h-full hover:bg-neutral-50 dark:hover:bg-stone-800/50 transition-colors"
                     >
                       <div className="flex justify-between items-baseline gap-3 mb-2">
                         <span className="group-hover:underline decoration-1 underline-offset-4 line-clamp-2">{post.title}</span>
                         <span className="text-xs text-subtle shrink-0">{post.date}</span>
                       </div>
-                      <p className="text-xs text-stone-600 leading-relaxed line-clamp-3">
+                      <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed line-clamp-3">
                         {post.excerpt || "暂无简述"}
                       </p>
                     </Link>
@@ -70,13 +70,13 @@ export default function AlsoOnMyBlog({ currentPost }: Props) {
                   <li key={`near-${post.slug}`} className="min-w-[260px] max-w-[320px] snap-start shrink-0">
                     <Link
                       to={toPostRoute(post.slug)}
-                      className="group block border border-stone-200/70 bg-white/60 p-4 h-full hover:bg-neutral-50 transition-colors"
+                      className="group block border border-stone-200/70 dark:border-stone-700/60 bg-white/60 dark:bg-stone-900/40 p-4 h-full hover:bg-neutral-50 dark:hover:bg-stone-800/50 transition-colors"
                     >
                       <div className="flex justify-between items-baseline gap-3 mb-2">
                         <span className="group-hover:underline decoration-1 underline-offset-4 line-clamp-2">{post.title}</span>
                         <span className="text-xs text-subtle shrink-0">{post.date}</span>
                       </div>
-                      <p className="text-xs text-stone-600 leading-relaxed line-clamp-3">
+                      <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed line-clamp-3">
                         {post.excerpt || "暂无简述"}
                       </p>
                     </Link>

@@ -56,24 +56,24 @@ function toDateTimeLocalValue(date: Date) {
 
 function ScrollTitle({ title, slug }: { title: string; slug: string }) {
   return (
-    <div className="flex min-h-[4.75rem] w-[18rem] max-w-[18rem] flex-col justify-between border border-stone-200 bg-stone-50/80 px-3 py-2">
-      <div className="overflow-x-auto whitespace-nowrap text-sm font-medium text-stone-900 themed-scrollbar">{title}</div>
-      <div className="mt-1 overflow-x-auto whitespace-nowrap font-mono text-[11px] text-stone-500 themed-scrollbar">{slug}</div>
+    <div className="flex min-h-[4.75rem] w-[18rem] max-w-[18rem] flex-col justify-between border border-stone-200 dark:border-stone-700/60 bg-stone-50/80 dark:bg-stone-900/40 px-3 py-2">
+      <div className="overflow-x-auto whitespace-nowrap text-sm font-medium text-stone-900 dark:text-stone-100 themed-scrollbar">{title}</div>
+      <div className="mt-1 overflow-x-auto whitespace-nowrap font-mono text-[11px] text-stone-500 dark:text-stone-400 themed-scrollbar">{slug}</div>
     </div>
   );
 }
 
 function MetricCard({ icon: Icon, label, value, hint }: { icon: typeof Activity; label: string; value: string | number; hint: string }) {
   return (
-    <div className="relative overflow-hidden border border-stone-200/70 bg-white/90 p-5 shadow-[0_20px_60px_rgba(120,113,108,0.08)]">
+    <div className="relative overflow-hidden border border-stone-200/70 dark:border-stone-700/60 bg-white/90 dark:bg-stone-900/60 p-5 shadow-[0_20px_60px_rgba(120,113,108,0.08)]">
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-stone-700 via-amber-700/70 to-stone-300" />
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-[11px] uppercase tracking-[0.32em] text-stone-500">{label}</div>
-          <div className="mt-4 text-3xl font-serif text-stone-900">{value}</div>
-          <div className="mt-2 text-sm text-stone-500">{hint}</div>
+          <div className="text-[11px] uppercase tracking-[0.32em] text-stone-500 dark:text-stone-400">{label}</div>
+          <div className="mt-4 text-3xl font-serif text-stone-900 dark:text-stone-100">{value}</div>
+          <div className="mt-2 text-sm text-stone-500 dark:text-stone-400">{hint}</div>
         </div>
-        <div className="rounded-full border border-stone-200 bg-stone-50 p-2 text-stone-600">
+        <div className="rounded-full border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 p-2 text-stone-600 dark:text-stone-300">
           <Icon className="h-4 w-4" />
         </div>
       </div>
@@ -83,11 +83,11 @@ function MetricCard({ icon: Icon, label, value, hint }: { icon: typeof Activity;
 
 function Panel({ title, subtitle, action, children, className }: { title: string; subtitle?: string; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cn("border border-stone-200/70 bg-white/88 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]", className)}>
+    <section className={cn("border border-stone-200/70 dark:border-stone-700/60 bg-white/88 dark:bg-stone-900/60 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]", className)}>
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-serif text-stone-900">{title}</h2>
-          {subtitle ? <p className="mt-1 text-sm text-stone-500">{subtitle}</p> : null}
+          <h2 className="text-lg font-serif text-stone-900 dark:text-stone-100">{title}</h2>
+          {subtitle ? <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">{subtitle}</p> : null}
         </div>
         {action}
       </div>
@@ -112,7 +112,7 @@ function LineChart({ data, lines }: { data: AnalyticsTimeBucket[]; lines: Array<
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.2em] text-stone-500">
+      <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
         {lines.map((line) => (
           <div key={line.key} className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: line.color }} />
@@ -140,7 +140,7 @@ function LineChart({ data, lines }: { data: AnalyticsTimeBucket[]; lines: Array<
           {data.map((item, index) => {
             const x = padding + (index * (width - padding * 2)) / Math.max(1, data.length - 1);
             return (
-              <text key={item.label} x={x} y={height - 4} textAnchor="middle" className="fill-stone-400 text-[10px]">
+              <text key={item.label} x={x} y={height - 4} textAnchor="middle" className="fill-stone-400 dark:fill-stone-500 text-[10px]">
                 {item.label.slice(5)}
               </text>
             );
@@ -276,7 +276,7 @@ function SortButton({
 }) {
   const Icon = !active ? ArrowUpDown : direction === "asc" ? ArrowUp : ArrowDown;
   return (
-    <button type="button" onClick={onClick} className={cn("inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.22em]", active ? "text-stone-900" : "text-stone-500 hover:text-stone-800")}>
+    <button type="button" onClick={onClick} className={cn("inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.22em]", active ? "text-stone-900 dark:text-stone-100" : "text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200")}>
       {label}
       <Icon className="h-3.5 w-3.5" />
     </button>
@@ -293,13 +293,13 @@ function Pagination({
   onChange: (page: number) => void;
 }) {
   return (
-    <div className="mt-4 flex items-center justify-between gap-3 text-sm text-stone-500">
+    <div className="mt-4 flex items-center justify-between gap-3 text-sm text-stone-500 dark:text-stone-400">
       <span>Page {page} / {totalPages}</span>
       <div className="flex gap-2">
-        <button type="button" onClick={() => onChange(page - 1)} disabled={page <= 1} className="border border-stone-300 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-stone-600 disabled:opacity-40">
+        <button type="button" onClick={() => onChange(page - 1)} disabled={page <= 1} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-stone-600 dark:text-stone-300 disabled:opacity-40">
           Prev
         </button>
-        <button type="button" onClick={() => onChange(page + 1)} disabled={page >= totalPages} className="border border-stone-300 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-stone-600 disabled:opacity-40">
+        <button type="button" onClick={() => onChange(page + 1)} disabled={page >= totalPages} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-stone-600 dark:text-stone-300 disabled:opacity-40">
           Next
         </button>
       </div>
@@ -311,12 +311,12 @@ function AnalyticsMapsLoading() {
   return (
     <div className="grid gap-6 xl:grid-cols-2">
       {["Global IP Origins", "China Region Origins"].map((title) => (
-        <section key={title} className="border border-stone-200/70 bg-white/88 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]">
+        <section key={title} className="border border-stone-200/70 dark:border-stone-700/60 bg-white/88 dark:bg-stone-900/60 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]">
           <div className="mb-4">
-            <h2 className="text-lg font-serif text-stone-900">{title}</h2>
-            <p className="mt-1 text-sm text-stone-500">Loading geo visualization...</p>
+            <h2 className="text-lg font-serif text-stone-900 dark:text-stone-100">{title}</h2>
+            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Loading geo visualization...</p>
           </div>
-          <div className="h-[420px] animate-pulse border border-stone-200 bg-stone-100/80" />
+          <div className="h-[420px] animate-pulse border border-stone-200 dark:border-stone-700/60 bg-stone-100/80 dark:bg-stone-800/60" />
         </section>
       ))}
     </div>
@@ -325,10 +325,10 @@ function AnalyticsMapsLoading() {
 
 function FilterBadge({ label, value, onClear }: { label: string; value: string; onClear: () => void }) {
   return (
-    <div className="inline-flex min-h-[2.25rem] min-w-[14rem] items-center gap-2 border border-stone-300 bg-white px-3 py-1.5 text-xs text-stone-700">
-      <span className="uppercase tracking-[0.2em] text-stone-500">{label}</span>
+    <div className="inline-flex min-h-[2.25rem] min-w-[14rem] items-center gap-2 border border-stone-300 dark:border-stone-600/60 bg-white dark:bg-stone-900/60 px-3 py-1.5 text-xs text-stone-700 dark:text-stone-200">
+      <span className="uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">{label}</span>
       <span className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap font-mono text-[11px] themed-scrollbar">{value}</span>
-      <button type="button" onClick={onClear} className="border-l border-stone-200 pl-2 text-stone-500 hover:text-stone-900">
+      <button type="button" onClick={onClear} className="border-l border-stone-200 dark:border-stone-700/60 pl-2 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100">
         clear
       </button>
     </div>
@@ -345,7 +345,7 @@ function InlineCopyButton({ text }: { text: string }) {
   };
 
   return (
-    <button type="button" onClick={() => void handleCopy()} className="border border-stone-300 bg-white px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:bg-stone-50">
+    <button type="button" onClick={() => void handleCopy()} className="border border-stone-300 dark:border-stone-600/60 bg-white dark:bg-stone-900/60 px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">
       copy
     </button>
   );
@@ -373,25 +373,25 @@ function HorizontalBarChart({ items }: { items: AnalyticsPostStat[] }) {
   const maxValue = Math.max(1, ...items.map((item) => item.successfulReads));
   return (
     <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1 themed-scrollbar">
-      {items.length === 0 ? <div className="text-sm text-stone-500">No recent hot posts.</div> : null}
+      {items.length === 0 ? <div className="text-sm text-stone-500 dark:text-stone-400">No recent hot posts.</div> : null}
       {items.map((item) => (
-        <div key={item.slug} className="border border-stone-200 bg-stone-50/70 p-3">
+        <div key={item.slug} className="border border-stone-200 dark:border-stone-700/60 bg-stone-50/70 dark:bg-stone-900/40 p-3">
           <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1 border border-stone-200 bg-white px-3 py-2">
-              <div className="overflow-x-auto whitespace-nowrap text-sm font-medium text-stone-900 themed-scrollbar">{item.title}</div>
-              <div className="mt-1 overflow-x-auto whitespace-nowrap font-mono text-[11px] text-stone-500 themed-scrollbar">{item.slug}</div>
+            <div className="min-w-0 flex-1 border border-stone-200 dark:border-stone-700/60 bg-white dark:bg-stone-900/60 px-3 py-2">
+              <div className="overflow-x-auto whitespace-nowrap text-sm font-medium text-stone-900 dark:text-stone-100 themed-scrollbar">{item.title}</div>
+              <div className="mt-1 overflow-x-auto whitespace-nowrap font-mono text-[11px] text-stone-500 dark:text-stone-400 themed-scrollbar">{item.slug}</div>
             </div>
-            <div className="w-20 border border-stone-200 bg-white px-2 py-2 text-right">
-              <div className="text-[10px] uppercase tracking-[0.2em] text-stone-500">Reads</div>
-              <div className="mt-1 text-lg font-serif text-stone-900">{item.successfulReads}</div>
+            <div className="w-20 border border-stone-200 dark:border-stone-700/60 bg-white dark:bg-stone-900/60 px-2 py-2 text-right">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">Reads</div>
+              <div className="mt-1 text-lg font-serif text-stone-900 dark:text-stone-100">{item.successfulReads}</div>
             </div>
           </div>
-          <div className="mt-2 border border-stone-200 bg-white p-2">
-            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-stone-500">
+          <div className="mt-2 border border-stone-200 dark:border-stone-700/60 bg-white dark:bg-stone-900/60 p-2">
+            <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">
               <span>Heat</span>
               <span>{item.totalRequests} requests</span>
             </div>
-            <div className="h-2 bg-stone-100">
+            <div className="h-2 bg-stone-100 dark:bg-stone-800/60">
               <div className="h-full bg-gradient-to-r from-stone-900 via-amber-700 to-amber-500" style={{ width: `${(item.successfulReads / maxValue) * 100}%` }} />
             </div>
           </div>
@@ -410,24 +410,24 @@ function DataTable({
 }) {
   return (
     <div className="overflow-x-auto themed-scrollbar">
-      <table className="min-w-full divide-y divide-stone-200 text-sm">
+      <table className="min-w-full divide-y divide-stone-200 dark:divide-stone-700 text-sm">
         <thead>
-          <tr className="text-left text-[11px] uppercase tracking-[0.24em] text-stone-500">
+          <tr className="text-left text-[11px] uppercase tracking-[0.24em] text-stone-500 dark:text-stone-400">
             {columns.map((column) => (
               <th key={column} className="px-3 py-3 font-medium">{column}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-stone-100">
+        <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-3 py-8 text-center text-stone-500">No data</td>
+              <td colSpan={columns.length} className="px-3 py-8 text-center text-stone-500 dark:text-stone-400">No data</td>
             </tr>
           ) : (
             rows.map((row, rowIndex) => (
               <tr key={rowIndex} className="align-top">
                 {row.map((cell, cellIndex) => (
-                  <td key={cellIndex} className="px-3 py-3 text-stone-700">{cell}</td>
+                  <td key={cellIndex} className="px-3 py-3 text-stone-700 dark:text-stone-200">{cell}</td>
                 ))}
               </tr>
             ))
@@ -443,16 +443,16 @@ function LoginPanel({ onSubmit, loading, error }: { onSubmit: (password: string)
   return (
     <section className="mx-auto max-w-5xl">
       <div className="grid gap-8 xl:grid-cols-[1.2fr_0.9fr]">
-        <div className="relative overflow-hidden border border-stone-200/70 bg-[radial-gradient(circle_at_top_left,rgba(120,113,108,0.14),transparent_35%),linear-gradient(135deg,#fafaf9_0%,#f5f5f4_45%,#eee7da_100%)] p-8 md:p-10">
+        <div className="relative overflow-hidden border border-stone-200/70 dark:border-stone-700/60 bg-[radial-gradient(circle_at_top_left,rgba(120,113,108,0.14),transparent_35%),linear-gradient(135deg,#fafaf9_0%,#f5f5f4_45%,#eee7da_100%)] dark:bg-none dark:bg-stone-900/60 p-8 md:p-10">
           <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-amber-600/10 blur-3xl" />
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-stone-300/70 bg-white/70 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-stone-600">
+            <div className="inline-flex items-center gap-2 rounded-full border border-stone-300/70 dark:border-stone-600/60 bg-white/70 dark:bg-stone-900/60 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-stone-600 dark:text-stone-300">
               <Shield className="h-3.5 w-3.5" />
               Ops Analytics
             </div>
             <div>
-              <h1 className="max-w-xl text-4xl font-serif leading-tight text-stone-900 md:text-5xl">Professional traffic intelligence for your blog operations.</h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600">
+              <h1 className="max-w-xl text-4xl font-serif leading-tight text-stone-900 dark:text-stone-100 md:text-5xl">Professional traffic intelligence for your blog operations.</h1>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600 dark:text-stone-300">
                 JWT session persistence, ignored self-IP management, recent hot posts, access trends, referrers, and geo-origin dashboards are all consolidated here.
               </p>
             </div>
@@ -462,23 +462,23 @@ function LoginPanel({ onSubmit, loading, error }: { onSubmit: (password: string)
                 ["Self-IP Filter", "Persist your own IPs and exclude them by default."],
                 ["Geo Pulse", "Visualize country and China-region access concentration."],
               ].map(([title, desc]) => (
-                <div key={title} className="border border-stone-200/70 bg-white/75 p-4">
-                  <div className="text-sm font-medium text-stone-900">{title}</div>
-                  <div className="mt-2 text-sm text-stone-500">{desc}</div>
+                <div key={title} className="border border-stone-200/70 dark:border-stone-700/60 bg-white/75 dark:bg-stone-900/60 p-4">
+                  <div className="text-sm font-medium text-stone-900 dark:text-stone-100">{title}</div>
+                  <div className="mt-2 text-sm text-stone-500 dark:text-stone-400">{desc}</div>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="border border-stone-200/70 bg-white/90 p-8 shadow-[0_24px_70px_rgba(120,113,108,0.10)]">
+        <div className="border border-stone-200/70 dark:border-stone-700/60 bg-white/90 dark:bg-stone-900/60 p-8 shadow-[0_24px_70px_rgba(120,113,108,0.10)]">
           <div className="mb-6 flex items-center gap-3">
-            <div className="rounded-full border border-stone-200 bg-stone-50 p-3 text-stone-700">
+            <div className="rounded-full border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 p-3 text-stone-700 dark:text-stone-200">
               <LockKeyhole className="h-5 w-5" />
             </div>
             <div>
-              <div className="text-sm font-medium text-stone-900">Administrator Sign-In</div>
-              <div className="text-sm text-stone-500">The route stays hidden, and all data requires backend authorization.</div>
+              <div className="text-sm font-medium text-stone-900 dark:text-stone-100">Administrator Sign-In</div>
+              <div className="text-sm text-stone-500 dark:text-stone-400">The route stays hidden, and all data requires backend authorization.</div>
             </div>
           </div>
           <form
@@ -489,19 +489,19 @@ function LoginPanel({ onSubmit, loading, error }: { onSubmit: (password: string)
             }}
           >
             <label className="block space-y-2">
-              <span className="text-[11px] uppercase tracking-[0.24em] text-stone-500">Admin Password</span>
+              <span className="text-[11px] uppercase tracking-[0.24em] text-stone-500 dark:text-stone-400">Admin Password</span>
               <input
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="w-full border border-stone-300 bg-stone-50/60 px-4 py-3 focus:outline-none focus:ring-1 focus:ring-stone-500"
+                className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-4 py-3 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400"
                 placeholder="Enter password"
               />
             </label>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-stone-900 px-4 py-3 text-sm uppercase tracking-[0.28em] text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full bg-stone-900 dark:bg-stone-100 px-4 py-3 text-sm uppercase tracking-[0.28em] text-white dark:text-stone-900 transition hover:bg-stone-800 dark:hover:bg-stone-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Signing In..." : "Enter Dashboard"}
             </button>
@@ -673,7 +673,7 @@ export default function AnalyticsPage() {
   };
 
   if (booting) {
-    return <div className="py-24 text-center text-stone-500">Loading analytics workspace...</div>;
+    return <div className="py-24 text-center text-stone-500 dark:text-stone-400">Loading analytics workspace...</div>;
   }
 
   if (!session) {
@@ -708,17 +708,17 @@ export default function AnalyticsPage() {
 
   return (
     <section className="space-y-8">
-      <header className="relative overflow-hidden border border-stone-200/70 bg-[radial-gradient(circle_at_top_left,rgba(146,64,14,0.12),transparent_32%),linear-gradient(145deg,#fafaf9_0%,#f6f3ee_52%,#f0ece4_100%)] p-6 md:p-8">
+      <header className="relative overflow-hidden border border-stone-200/70 dark:border-stone-700/60 bg-[radial-gradient(circle_at_top_left,rgba(146,64,14,0.12),transparent_32%),linear-gradient(145deg,#fafaf9_0%,#f6f3ee_52%,#f0ece4_100%)] dark:bg-none dark:bg-stone-900/60 p-6 md:p-8">
         <div className="absolute inset-y-0 right-0 w-1/3 bg-[linear-gradient(to_left,rgba(120,113,108,0.12),transparent)]" />
         <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-stone-300/70 bg-white/80 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-stone-600">
+            <div className="inline-flex items-center gap-2 rounded-full border border-stone-300/70 dark:border-stone-600/60 bg-white/80 dark:bg-stone-900/60 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-stone-600 dark:text-stone-300">
               <Activity className="h-3.5 w-3.5" />
               Internal Analytics
             </div>
             <div>
-              <h1 className="text-3xl font-serif text-stone-900 md:text-4xl">Traffic Intelligence Console</h1>
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-stone-600">
+              <h1 className="text-3xl font-serif text-stone-900 dark:text-stone-100 md:text-4xl">Traffic Intelligence Console</h1>
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-stone-600 dark:text-stone-300">
                 JWT session active until {formatDateTime(session.expiresAt)}. Geo charts rely on reverse-proxy country and region headers when available.
               </p>
             </div>
@@ -727,7 +727,7 @@ export default function AnalyticsPage() {
             <button
               type="button"
               onClick={() => void handleRefresh()}
-              className="inline-flex items-center gap-2 border border-stone-300 bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 hover:bg-white"
+              className="inline-flex items-center gap-2 border border-stone-300 dark:border-stone-600/60 bg-white/80 dark:bg-stone-900/60 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-800/60"
               disabled={loading}
             >
               <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
@@ -736,7 +736,7 @@ export default function AnalyticsPage() {
             <button
               type="button"
               onClick={handleExportJson}
-              className="inline-flex items-center gap-2 border border-stone-300 bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 hover:bg-white"
+              className="inline-flex items-center gap-2 border border-stone-300 dark:border-stone-600/60 bg-white/80 dark:bg-stone-900/60 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-800/60"
             >
               <Download className="h-4 w-4" />
               JSON
@@ -744,7 +744,7 @@ export default function AnalyticsPage() {
             <button
               type="button"
               onClick={handleExportCsv}
-              className="inline-flex items-center gap-2 border border-stone-300 bg-white/80 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 hover:bg-white"
+              className="inline-flex items-center gap-2 border border-stone-300 dark:border-stone-600/60 bg-white/80 dark:bg-stone-900/60 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-800/60"
             >
               <Download className="h-4 w-4" />
               CSV
@@ -752,7 +752,7 @@ export default function AnalyticsPage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 border border-stone-300 bg-stone-900 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white hover:bg-stone-800"
+              className="inline-flex items-center gap-2 border border-stone-300 dark:border-stone-600/60 bg-stone-900 dark:bg-stone-100 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-stone-300"
             >
               <LogOut className="h-4 w-4" />
               Logout
@@ -775,38 +775,38 @@ export default function AnalyticsPage() {
         title="Filters & Session Controls"
         subtitle="Apply structured filters without re-entering the password. Ignored self-IP traffic is excluded by default."
         action={
-          <div className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs uppercase tracking-[0.22em] text-stone-500">
+          <div className="rounded-full border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 px-3 py-1 text-xs uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">
             Generated {formatDateTime(stats?.generatedAt)}
           </div>
         }
       >
         <div className="grid gap-4 lg:grid-cols-5">
           <label className="space-y-2 text-sm">
-            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500">Post Slug</span>
-            <input value={filters.slug} onChange={(event) => setFilters((current) => ({ ...current, slug: event.target.value }))} className="w-full border border-stone-300 bg-stone-50/60 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500" placeholder="folder/post" />
+            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">Post Slug</span>
+            <input value={filters.slug} onChange={(event) => setFilters((current) => ({ ...current, slug: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="folder/post" />
           </label>
           <label className="space-y-2 text-sm">
-            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500">IP</span>
-            <input value={filters.ip} onChange={(event) => setFilters((current) => ({ ...current, ip: event.target.value }))} className="w-full border border-stone-300 bg-stone-50/60 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500" placeholder="203.0.113.8" />
+            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">IP</span>
+            <input value={filters.ip} onChange={(event) => setFilters((current) => ({ ...current, ip: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="203.0.113.8" />
           </label>
           <label className="space-y-2 text-sm">
-            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500">From</span>
-            <input type="datetime-local" value={filters.from} onChange={(event) => setFilters((current) => ({ ...current, from: event.target.value }))} className="w-full border border-stone-300 bg-stone-50/60 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500" />
+            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">From</span>
+            <input type="datetime-local" value={filters.from} onChange={(event) => setFilters((current) => ({ ...current, from: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" />
           </label>
           <label className="space-y-2 text-sm">
-            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500">To</span>
-            <input type="datetime-local" value={filters.to} onChange={(event) => setFilters((current) => ({ ...current, to: event.target.value }))} className="w-full border border-stone-300 bg-stone-50/60 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500" />
+            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">To</span>
+            <input type="datetime-local" value={filters.to} onChange={(event) => setFilters((current) => ({ ...current, to: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" />
           </label>
           <div className="flex flex-col justify-between gap-3">
-            <label className="flex items-center gap-3 rounded-xl border border-stone-200 bg-stone-50/70 px-3 py-3 text-sm text-stone-700">
-              <input type="checkbox" checked={filters.excludeIgnored} onChange={(event) => setFilters((current) => ({ ...current, excludeIgnored: event.target.checked }))} className="h-4 w-4 accent-stone-900" />
+            <label className="flex items-center gap-3 rounded-xl border border-stone-200 dark:border-stone-700/60 bg-stone-50/70 dark:bg-stone-900/40 px-3 py-3 text-sm text-stone-700 dark:text-stone-200">
+              <input type="checkbox" checked={filters.excludeIgnored} onChange={(event) => setFilters((current) => ({ ...current, excludeIgnored: event.target.checked }))} className="h-4 w-4 accent-stone-900 dark:accent-stone-100" />
               Exclude ignored IPs
             </label>
             <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => void handleRefresh()} className="bg-stone-900 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white hover:bg-stone-800" disabled={loading}>
+              <button type="button" onClick={() => void handleRefresh()} className="bg-stone-900 dark:bg-stone-100 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-stone-300" disabled={loading}>
                 Apply
               </button>
-              <button type="button" onClick={resetFilters} className="border border-stone-300 bg-white px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 hover:bg-stone-50">
+              <button type="button" onClick={resetFilters} className="border border-stone-300 dark:border-stone-600/60 bg-white dark:bg-stone-900/60 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800/60">
                 Reset
               </button>
             </div>
@@ -818,7 +818,7 @@ export default function AnalyticsPage() {
               key={preset.label}
               type="button"
               onClick={() => applyRangePreset(preset.days)}
-              className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-[11px] uppercase tracking-[0.24em] text-stone-600 hover:bg-stone-50"
+              className="rounded-full border border-stone-300 dark:border-stone-600/60 bg-white dark:bg-stone-900/60 px-3 py-1.5 text-[11px] uppercase tracking-[0.24em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60"
             >
               Last {preset.label}
             </button>
@@ -851,21 +851,21 @@ export default function AnalyticsPage() {
 
       <Panel title="Ignored Self-IP Registry" subtitle="Persist your own IPs here. They can be excluded from all analytics with a single toggle.">
         <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr_auto]">
-          <input value={ignoredIp} onChange={(event) => setIgnoredIp(event.target.value)} className="w-full border border-stone-300 bg-stone-50/60 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500" placeholder="IP address" />
-          <input value={ignoredLabel} onChange={(event) => setIgnoredLabel(event.target.value)} className="w-full border border-stone-300 bg-stone-50/60 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500" placeholder="Label (home / office / server)" />
-          <button type="button" onClick={() => void handleAddIgnoredIp()} className="bg-stone-900 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white hover:bg-stone-800">
+          <input value={ignoredIp} onChange={(event) => setIgnoredIp(event.target.value)} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="IP address" />
+          <input value={ignoredLabel} onChange={(event) => setIgnoredLabel(event.target.value)} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="Label (home / office / server)" />
+          <button type="button" onClick={() => void handleAddIgnoredIp()} className="bg-stone-900 dark:bg-stone-100 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-stone-300">
             Save IP
           </button>
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {ignoredIps.length === 0 ? <div className="text-sm text-stone-500">No ignored IPs configured yet.</div> : null}
+          {ignoredIps.length === 0 ? <div className="text-sm text-stone-500 dark:text-stone-400">No ignored IPs configured yet.</div> : null}
           {ignoredIps.map((item) => (
-            <div key={item.ip} className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-stone-50/70 px-4 py-3">
+            <div key={item.ip} className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 dark:border-stone-700/60 bg-stone-50/70 dark:bg-stone-900/40 px-4 py-3">
               <div>
-                <div className="font-mono text-sm text-stone-900">{item.ip}</div>
-                <div className="text-xs text-stone-500">{item.label || "No label"} • added {formatDateTime(item.createdAt)}</div>
+                <div className="font-mono text-sm text-stone-900 dark:text-stone-100">{item.ip}</div>
+                <div className="text-xs text-stone-500 dark:text-stone-400">{item.label || "No label"} • added {formatDateTime(item.createdAt)}</div>
               </div>
-              <button type="button" onClick={() => void handleDeleteIgnoredIp(item.ip)} className="rounded-full border border-stone-300 p-2 text-stone-500 hover:text-red-600">
+              <button type="button" onClick={() => void handleDeleteIgnoredIp(item.ip)} className="rounded-full border border-stone-300 dark:border-stone-600/60 p-2 text-stone-500 dark:text-stone-400 hover:text-red-600">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
@@ -892,14 +892,14 @@ export default function AnalyticsPage() {
               <button type="button" onClick={() => applySlugFilter(post.slug)} className="text-left">
                 <ScrollTitle title={post.title} slug={post.slug} />
               </button>,
-            <div className="max-w-[14rem] break-all text-stone-500">{post.path || "/"}</div>,
+            <div className="max-w-[14rem] break-all text-stone-500 dark:text-stone-400">{post.path || "/"}</div>,
             post.totalRequests,
             post.successfulReads,
             post.failedReads,
             post.uniqueIps,
             formatDateTime(post.latestAccessAt),
             <div className="grid min-w-[7.5rem] grid-cols-1 gap-2">
-              <button type="button" onClick={() => applySlugFilter(post.slug)} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
+              <button type="button" onClick={() => applySlugFilter(post.slug)} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">
                 filter
               </button>
               <button
@@ -907,8 +907,8 @@ export default function AnalyticsPage() {
                 onClick={clearSlugFilter}
                 disabled={filters.slug !== post.slug}
                 className={cn(
-                  "border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em]",
-                  filters.slug === post.slug ? "text-stone-600 hover:bg-stone-50" : "pointer-events-none opacity-0",
+                  "border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em]",
+                  filters.slug === post.slug ? "text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60" : "pointer-events-none opacity-0",
                 )}
               >
                 clear
@@ -937,8 +937,8 @@ export default function AnalyticsPage() {
           rows={pagedIps.items.map((ip) => [
             <div className="min-w-[9.5rem] space-y-2">
               <button type="button" onClick={() => applyIpFilter(ip.ip)} className="space-y-1 text-left">
-                <div className="font-mono text-xs text-stone-900">{ip.ip}</div>
-                <div className="text-xs text-stone-500">Last seen {formatDateTime(ip.lastSeenAt)}</div>
+                <div className="font-mono text-xs text-stone-900 dark:text-stone-100">{ip.ip}</div>
+                <div className="text-xs text-stone-500 dark:text-stone-400">Last seen {formatDateTime(ip.lastSeenAt)}</div>
               </button>
               <InlineCopyButton text={ip.ip} />
             </div>,
@@ -946,9 +946,9 @@ export default function AnalyticsPage() {
             ip.successfulReads,
             ip.failedReads,
             ip.uniquePosts,
-            <div className="max-w-[16rem] overflow-x-auto whitespace-nowrap text-xs text-stone-500 themed-scrollbar">{(ip.topPosts ?? []).join(" • ") || "-"}</div>,
+            <div className="max-w-[16rem] overflow-x-auto whitespace-nowrap text-xs text-stone-500 dark:text-stone-400 themed-scrollbar">{(ip.topPosts ?? []).join(" • ") || "-"}</div>,
             <div className="grid min-w-[11rem] grid-cols-1 gap-2">
-              <button type="button" onClick={() => applyIpFilter(ip.ip)} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
+              <button type="button" onClick={() => applyIpFilter(ip.ip)} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">
                 filter
               </button>
               <button
@@ -956,13 +956,13 @@ export default function AnalyticsPage() {
                 onClick={clearIpFilter}
                 disabled={filters.ip !== ip.ip}
                 className={cn(
-                  "border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em]",
-                  filters.ip === ip.ip ? "text-stone-600 hover:bg-stone-50" : "pointer-events-none opacity-0",
+                  "border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em]",
+                  filters.ip === ip.ip ? "text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60" : "pointer-events-none opacity-0",
                 )}
               >
                 clear
               </button>
-              <button type="button" onClick={() => { setIgnoredIp(ip.ip); setIgnoredLabel("self"); }} className="border border-stone-300 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 hover:bg-stone-50">
+              <button type="button" onClick={() => { setIgnoredIp(ip.ip); setIgnoredLabel("self"); }} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">
                 ignore
               </button>
             </div>,
@@ -976,7 +976,7 @@ export default function AnalyticsPage() {
           <DataTable
             columns={["Referrer", "Host", "Requests", "Reads", "Failed"]}
             rows={(stats?.referrers ?? []).map((referrer) => [
-              <div className="max-w-[20rem] break-all text-stone-600">{referrer.referrer}</div>,
+              <div className="max-w-[20rem] break-all text-stone-600 dark:text-stone-300">{referrer.referrer}</div>,
               referrer.host || "-",
               referrer.totalRequests,
               referrer.successfulReads,
@@ -994,7 +994,7 @@ export default function AnalyticsPage() {
                 <div className="font-mono text-xs">{event.ip}</div>
                 <InlineCopyButton text={event.ip} />
               </div>,
-              <div className="border border-stone-200 bg-stone-50 px-2 py-1 text-xs text-stone-500">
+              <div className="border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 px-2 py-1 text-xs text-stone-500 dark:text-stone-400">
                 {[event.countryName || event.countryCode, event.region].filter(Boolean).join(" / ") || "Unknown"}
               </div>,
               <span className={cn("inline-flex border px-2 py-1 text-xs font-medium", event.accessGranted ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700")}>

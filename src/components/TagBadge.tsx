@@ -12,13 +12,13 @@ export default function TagBadge({ tag, count, className }: TagBadgeProps) {
     <Link
       to={`/tags/${tag}`}
       className={cn(
-        "group inline-flex items-center gap-2 border border-border px-2 py-1 rounded hover:border-black transition-colors bg-neutral-50",
+        "group inline-flex items-center gap-2 border border-border px-2 py-1 rounded hover:border-foreground transition-colors bg-neutral-50 dark:bg-stone-800/50",
         className
       )}
     >
       <span className="font-sans font-medium text-xs text-subtle group-hover:text-foreground">#{tag}</span>
       {count !== undefined && (
-        <span className="bg-neutral-200 text-subtle text-[10px] px-1 rounded group-hover:bg-neutral-300">
+        <span className="bg-neutral-200 dark:bg-stone-700 text-subtle text-[10px] px-1 rounded group-hover:bg-neutral-300 dark:group-hover:bg-stone-600">
           {count}
         </span>
       )}

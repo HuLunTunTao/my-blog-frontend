@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneLight, oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import mermaid from "mermaid";
 import { Link } from "react-router-dom";
 import {
@@ -28,6 +28,7 @@ import CopyButton from "./CopyButton";
 import { getPostBySlug } from "@/lib/api";
 import { toPostRoute } from "@/lib/postSlug";
 import { buildBackendUrl } from "@/config/backend.config";
+import { useTheme } from "@/context/ThemeContext";
 import {
   decodeObsidianDetailsHref,
   decodeObsidianEmbedHref,
@@ -74,7 +75,7 @@ function MermaidBlock({ code }: { code: string }) {
 
   if (error) {
     return (
-      <pre className="bg-stone-100/60 border border-stone-300/60 p-4 overflow-x-auto text-xs">
+      <pre className="bg-stone-100/60 dark:bg-stone-800/60 border border-stone-300/60 dark:border-stone-700/60 p-4 overflow-x-auto text-xs">
         <code>{code}</code>
       </pre>
     );
@@ -88,7 +89,7 @@ function MermaidBlock({ code }: { code: string }) {
     <img
       src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`}
       alt="Mermaid diagram"
-      className="my-6 block max-w-full border border-stone-300/60 bg-paper p-4"
+      className="my-6 block max-w-full border border-stone-300/60 dark:border-stone-700/60 bg-paper p-4"
       loading="lazy"
     />
   );
@@ -208,17 +209,17 @@ function ObsidianEmbed({ reference, depth, sourceSlug }: { reference: string; de
 
   if (state.locked) {
     return (
-      <div className="border border-stone-300/70 bg-stone-50/60 p-4 my-3 rounded-sm">
+      <div className="border border-stone-300/70 dark:border-stone-700/70 bg-stone-50/60 dark:bg-stone-900/50 p-4 my-3 rounded-sm">
         <p className="text-sm font-serif mb-3">该引用来自加密文章，输入密码后可查看。</p>
         <div className="flex items-center gap-2">
           <input
             type="password"
             value={state.password}
             onChange={(e) => dispatch({ type: "set_password", password: e.target.value })}
-            className="border border-stone-300 bg-white/70 px-2 py-1 text-sm"
+            className="border border-stone-300 dark:border-stone-700 bg-white/70 dark:bg-stone-800/70 text-foreground px-2 py-1 text-sm"
             placeholder="输入密码"
           />
-          <button type="button" onClick={() => void loadReference(state.password)} className="px-3 py-1 text-xs border border-stone-400 hover:bg-stone-100">
+          <button type="button" onClick={() => void loadReference(state.password)} className="px-3 py-1 text-xs border border-stone-400 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800">
             解锁引用
           </button>
         </div>
@@ -227,7 +228,7 @@ function ObsidianEmbed({ reference, depth, sourceSlug }: { reference: string; de
   }
 
   return (
-    <div className="border-l-2 border-stone-300 pl-4 my-4 bg-stone-50/40 py-3 pr-3">
+    <div className="border-l-2 border-stone-300 dark:border-stone-700 pl-4 my-4 bg-stone-50/40 dark:bg-stone-900/40 py-3 pr-3">
       <div className="mb-2 text-xs uppercase tracking-widest text-subtle">
         引用自{" "}
         <Link className="underline underline-offset-2" to={toPostRoute(state.resolvedSlug)}>
@@ -245,7 +246,7 @@ function ObsidianDetails({ href, depth, sourceSlug }: { href: string; depth: num
     return <span className="text-xs text-red-500">折叠内容解析失败</span>;
   }
   return (
-    <details className="my-6 rounded-sm border border-stone-300/70 bg-stone-50/40 px-4 py-3">
+    <details className="my-6 rounded-sm border border-stone-300/70 dark:border-stone-700/70 bg-stone-50/40 dark:bg-stone-900/40 px-4 py-3">
       <summary className="cursor-pointer select-none text-sm font-semibold tracking-wide text-foreground">{details.summary}</summary>
       <div className="mt-3">
         <MarkdownRenderer content={details.body} depth={depth + 1} sourceSlug={sourceSlug} />
@@ -265,37 +266,37 @@ function getPlainText(node: unknown): string {
 }
 
 const CALLOUT_STYLES: Record<string, string> = {
-  note: "border-l-blue-400 bg-blue-50/50",
-  tip: "border-l-emerald-500 bg-emerald-50/55",
-  info: "border-l-cyan-500 bg-cyan-50/55",
-  success: "border-l-lime-500 bg-lime-50/60",
-  question: "border-l-sky-500 bg-sky-50/60",
-  warning: "border-l-amber-500 bg-amber-50/55",
-  failure: "border-l-orange-500 bg-orange-50/60",
-  danger: "border-l-rose-500 bg-rose-50/55",
-  bug: "border-l-red-500 bg-red-50/60",
-  quote: "border-l-stone-500 bg-stone-100/70",
-  summary: "border-l-indigo-500 bg-indigo-50/55",
-  abstract: "border-l-violet-500 bg-violet-50/55",
-  example: "border-l-teal-500 bg-teal-50/55",
-  todo: "border-l-fuchsia-500 bg-fuchsia-50/60",
+  note:     "border-l-blue-400 bg-blue-50/50 dark:bg-blue-950/30",
+  tip:      "border-l-emerald-500 bg-emerald-50/55 dark:bg-emerald-950/30",
+  info:     "border-l-cyan-500 bg-cyan-50/55 dark:bg-cyan-950/30",
+  success:  "border-l-lime-500 bg-lime-50/60 dark:bg-lime-950/30",
+  question: "border-l-sky-500 bg-sky-50/60 dark:bg-sky-950/30",
+  warning:  "border-l-amber-500 bg-amber-50/55 dark:bg-amber-950/30",
+  failure:  "border-l-orange-500 bg-orange-50/60 dark:bg-orange-950/30",
+  danger:   "border-l-rose-500 bg-rose-50/55 dark:bg-rose-950/30",
+  bug:      "border-l-red-500 bg-red-50/60 dark:bg-red-950/30",
+  quote:    "border-l-stone-500 bg-stone-100/70 dark:bg-stone-800/50",
+  summary:  "border-l-indigo-500 bg-indigo-50/55 dark:bg-indigo-950/30",
+  abstract: "border-l-violet-500 bg-violet-50/55 dark:bg-violet-950/30",
+  example:  "border-l-teal-500 bg-teal-50/55 dark:bg-teal-950/30",
+  todo:     "border-l-fuchsia-500 bg-fuchsia-50/60 dark:bg-fuchsia-950/30",
 };
 
 const CALLOUT_META: Record<string, { icon: LucideIcon; titleClassName: string }> = {
-  note: { icon: FileText, titleClassName: "text-blue-700" },
-  tip: { icon: Lightbulb, titleClassName: "text-emerald-700" },
-  info: { icon: Info, titleClassName: "text-cyan-700" },
-  success: { icon: CheckCircle2, titleClassName: "text-lime-700" },
-  question: { icon: HelpCircle, titleClassName: "text-sky-700" },
-  warning: { icon: AlertTriangle, titleClassName: "text-amber-700" },
-  failure: { icon: AlertTriangle, titleClassName: "text-orange-700" },
-  danger: { icon: AlertOctagon, titleClassName: "text-rose-700" },
-  bug: { icon: Bug, titleClassName: "text-red-700" },
-  quote: { icon: Quote, titleClassName: "text-stone-700" },
-  summary: { icon: ClipboardList, titleClassName: "text-indigo-700" },
-  abstract: { icon: ClipboardList, titleClassName: "text-violet-700" },
-  example: { icon: FlaskConical, titleClassName: "text-teal-700" },
-  todo: { icon: ListTodo, titleClassName: "text-fuchsia-700" },
+  note:     { icon: FileText,     titleClassName: "text-blue-700 dark:text-blue-300" },
+  tip:      { icon: Lightbulb,    titleClassName: "text-emerald-700 dark:text-emerald-300" },
+  info:     { icon: Info,         titleClassName: "text-cyan-700 dark:text-cyan-300" },
+  success:  { icon: CheckCircle2, titleClassName: "text-lime-700 dark:text-lime-300" },
+  question: { icon: HelpCircle,   titleClassName: "text-sky-700 dark:text-sky-300" },
+  warning:  { icon: AlertTriangle,titleClassName: "text-amber-700 dark:text-amber-300" },
+  failure:  { icon: AlertTriangle,titleClassName: "text-orange-700 dark:text-orange-300" },
+  danger:   { icon: AlertOctagon, titleClassName: "text-rose-700 dark:text-rose-300" },
+  bug:      { icon: Bug,          titleClassName: "text-red-700 dark:text-red-300" },
+  quote:    { icon: Quote,        titleClassName: "text-stone-700 dark:text-stone-300" },
+  summary:  { icon: ClipboardList,titleClassName: "text-indigo-700 dark:text-indigo-300" },
+  abstract: { icon: ClipboardList,titleClassName: "text-violet-700 dark:text-violet-300" },
+  example:  { icon: FlaskConical, titleClassName: "text-teal-700 dark:text-teal-300" },
+  todo:     { icon: ListTodo,     titleClassName: "text-fuchsia-700 dark:text-fuchsia-300" },
 };
 
 const CALLOUT_TYPE_ALIASES: Record<string, string> = {
@@ -434,7 +435,7 @@ function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: s
       alt={alt || ""}
       loading="lazy"
       style={width ? { width: `${width}px`, maxWidth: "100%" } : { maxWidth: "100%" }}
-      className="my-6 border border-stone-300/60 bg-paper"
+      className="my-6 border border-stone-300/60 dark:border-stone-700/60 bg-paper"
       onError={() => {
         setCandidateIndex((curr) => (curr + 1 < candidates.length ? curr + 1 : curr));
       }}
@@ -443,6 +444,8 @@ function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: s
 }
 
 export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: MarkdownRendererProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const processedContent = useMemo(() => preprocessMarkdown(content), [content]);
   const urlTransform = useCallback((url: string) => {
     if (url.startsWith("obsidian-embed://") || url.startsWith("obsidian-details://")) {
@@ -450,6 +453,19 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
     }
     return defaultUrlTransform(url);
   }, []);
+
+  const codeBlockStyle = useMemo(
+    () => ({
+      background: isDark ? "#1c1b19" : "#FBFBFA",
+      padding: "2rem",
+      borderRadius: "0",
+      fontSize: "0.875rem",
+      border: isDark ? "1px solid #3a3733" : "1px solid #D6D3D1",
+      margin: 0,
+    }),
+    [isDark]
+  );
+  const syntaxTheme = isDark ? oneDark : oneLight;
 
   const components: Components = {
     code({ className, children, node, ...props }) {
@@ -463,43 +479,29 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
         <div className="relative group my-10">
           <CopyButton text={codeText} />
           <SyntaxHighlighter
-            style={oneLight}
+            style={syntaxTheme}
             language={match[1]}
             PreTag="div"
             useInlineStyles={true}
-            customStyle={{
-              background: "#FBFBFA",
-              padding: "2rem",
-              borderRadius: "0",
-              fontSize: "0.875rem",
-              border: "1px solid #D6D3D1",
-              margin: 0,
-            }}
+            customStyle={codeBlockStyle}
           >
             {codeText}
           </SyntaxHighlighter>
         </div>
       ) : (
         isInline ? (
-          <code className={`${className} bg-neutral-200/60 px-1.5 py-0.5 rounded font-mono text-sm border border-neutral-300/50 text-foreground`} {...props}>
+          <code className={`${className} bg-neutral-200/60 dark:bg-stone-800/80 px-1.5 py-0.5 rounded font-mono text-sm border border-neutral-300/50 dark:border-stone-700/60 text-foreground`} {...props}>
             {children}
           </code>
         ) : (
           <div className="relative group my-10">
             <CopyButton text={codeText} />
             <SyntaxHighlighter
-              style={oneLight}
+              style={syntaxTheme}
               language="text"
               PreTag="div"
               useInlineStyles={true}
-              customStyle={{
-                background: "#FBFBFA",
-                padding: "2rem",
-                borderRadius: "0",
-                fontSize: "0.875rem",
-                border: "1px solid #D6D3D1",
-                margin: 0,
-              }}
+              customStyle={codeBlockStyle}
             >
               {codeText}
             </SyntaxHighlighter>
@@ -540,7 +542,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       const match = /^\[!([a-zA-Z0-9_-]+)\]([+-])?\s*(.*)$/.exec((firstLine || "").trim());
       if (!match) {
         return (
-          <blockquote className="my-6 border-l-[6px] border-stone-300/90 bg-background/50 px-5 py-4 rounded-r-sm text-stone-600 before:content-none after:content-none [&>p]:my-4 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0 [&>p]:whitespace-pre-line [&>p:first-of-type]:before:content-none [&>p:last-of-type]:after:content-none [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1 [&_li_p]:my-0 [&_strong]:font-semibold">
+          <blockquote className="my-6 border-l-[6px] border-stone-300/90 dark:border-stone-600/80 bg-background/50 px-5 py-4 rounded-r-sm text-stone-600 dark:text-stone-300 before:content-none after:content-none [&>p]:my-4 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0 [&>p]:whitespace-pre-line [&>p:first-of-type]:before:content-none [&>p:last-of-type]:after:content-none [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1 [&_li_p]:my-0 [&_strong]:font-semibold">
 
             {children}
           </blockquote>
@@ -552,7 +554,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       const title = (match[3] || "").trim() || calloutDefaultTitle(type);
       const inlineBody = restLines.join("\n").trim();
       const body = (
-        <div className="prose prose-neutral max-w-none">
+        <div className="prose prose-neutral dark:prose-invert max-w-none">
           {inlineBody ? <SoftBreakText text={inlineBody} /> : null}
           {childList.slice(1)}
         </div>
@@ -580,7 +582,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
 
   return (
     <div
-      className="prose prose-neutral max-w-none
+      className="prose prose-neutral dark:prose-invert max-w-none
       prose-headings:font-serif prose-headings:text-foreground prose-headings:font-bold
       prose-h1:text-4xl prose-h1:font-black prose-h1:tracking-tight prose-h1:mb-8
       prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-12 prose-h2:mb-6 prose-h2:pb-2 prose-h2:border-b prose-h2:border-border
@@ -589,8 +591,8 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       prose-code:before:content-none prose-code:after:content-none
       prose-strong:font-black prose-strong:text-foreground
       prose-a:text-foreground prose-a:decoration-1 prose-a:underline-offset-4 prose-a:font-bold
-      prose-blockquote:border-l-[6px] prose-blockquote:border-stone-300/90 prose-blockquote:bg-background/50 prose-blockquote:py-4 prose-blockquote:px-5 prose-blockquote:rounded-r-sm prose-blockquote:font-sans prose-blockquote:not-italic prose-blockquote:shadow-none prose-blockquote:text-stone-600 prose-blockquote:before:content-none prose-blockquote:after:content-none [&_blockquote_p]:whitespace-pre-line [&_blockquote_p:first-of-type]:before:content-none [&_blockquote_p:last-of-type]:after:content-none [&_blockquote_ul]:my-2 [&_blockquote_ol]:my-2 [&_blockquote_li]:my-1 [&_blockquote_li_p]:my-0 [&_blockquote_strong]:font-semibold
-      prose-li:marker:text-stone-400 prose-ul:list-disc prose-ol:list-decimal
+      prose-blockquote:border-l-[6px] prose-blockquote:border-stone-300/90 dark:prose-blockquote:border-stone-600/80 prose-blockquote:bg-background/50 prose-blockquote:py-4 prose-blockquote:px-5 prose-blockquote:rounded-r-sm prose-blockquote:font-sans prose-blockquote:not-italic prose-blockquote:shadow-none prose-blockquote:text-stone-600 dark:prose-blockquote:text-stone-300 prose-blockquote:before:content-none prose-blockquote:after:content-none [&_blockquote_p]:whitespace-pre-line [&_blockquote_p:first-of-type]:before:content-none [&_blockquote_p:last-of-type]:after:content-none [&_blockquote_ul]:my-2 [&_blockquote_ol]:my-2 [&_blockquote_li]:my-1 [&_blockquote_li_p]:my-0 [&_blockquote_strong]:font-semibold
+      prose-li:marker:text-stone-400 dark:prose-li:marker:text-stone-500 prose-ul:list-disc prose-ol:list-decimal
       prose-pre:bg-transparent prose-pre:p-0"
     >
       <ReactMarkdown

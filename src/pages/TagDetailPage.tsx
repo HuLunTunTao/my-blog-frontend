@@ -84,7 +84,7 @@ export default function TagDetailPage() {
   if (state.loading && state.posts.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-stone-400 dark:text-stone-500" />
       </div>
     );
   }
@@ -100,14 +100,14 @@ export default function TagDetailPage() {
         <header className="text-center space-y-4 max-w-2xl mx-auto">
           <span className="text-xs uppercase tracking-widest text-subtle">Tag</span>
           <h1 className="text-3xl font-serif">#{tag}</h1>
-          {state.tagInfo?.description && <p className="text-stone-500 font-serif leading-relaxed">{state.tagInfo.description}</p>}
+          {state.tagInfo?.description && <p className="text-stone-500 dark:text-stone-400 font-serif leading-relaxed">{state.tagInfo.description}</p>}
         </header>
 
         <div className="space-y-8">
           {state.posts.map((post) => (
             <article key={post.slug} className="group relative py-6 px-8 transition-all duration-300 hover:translate-x-1">
               <div
-                className="absolute inset-0 bg-white/50 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] rounded-none"
+                className="absolute inset-0 bg-white/50 dark:bg-stone-900/40 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none"
                 style={{
                   backgroundImage: `url("/assets/paperGrain-128.svg")`,
                 }}
@@ -118,7 +118,7 @@ export default function TagDetailPage() {
                   <h2 className="text-xl font-medium decoration-1 underline-offset-4 hover:underline tracking-tight transition-colors">{post.title}</h2>
                   <span className="text-xs text-subtle font-sans opacity-70">{format(parseISO(post.date), "yyyy-MM-dd")}</span>
                 </div>
-                {post.excerpt && <p className="text-stone-500 font-serif text-sm line-clamp-2 leading-relaxed">{post.excerpt}</p>}
+                {post.excerpt && <p className="text-stone-500 dark:text-stone-400 font-serif text-sm line-clamp-2 leading-relaxed">{post.excerpt}</p>}
               </Link>
             </article>
           ))}

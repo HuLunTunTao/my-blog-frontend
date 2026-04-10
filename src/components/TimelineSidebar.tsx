@@ -22,8 +22,8 @@ export default function TimelineSidebar({ groups, activeYear, onSelectYear }: Ti
       className="hidden xl:flex fixed right-12 top-1/2 -translate-y-1/2 flex-col items-center gap-4 z-40 w-12"
     >
       {/* Top Decor Line (Vertical) */}
-      <div className="h-16 w-px bg-stone-300 opacity-50" />
-      
+      <div className="h-16 w-px bg-stone-300 dark:bg-stone-700 opacity-50" />
+
       <ul className="flex flex-col gap-4">
         {years.map((year) => (
           <li key={year} className="relative flex items-center justify-center">
@@ -35,9 +35,9 @@ export default function TimelineSidebar({ groups, activeYear, onSelectYear }: Ti
               }}
               className={cn(
                 "writing-vertical-rl text-sm tracking-[0.3em] font-serif transition-all duration-500 py-4 font-medium",
-                activeYear === year 
-                    ? "text-foreground font-bold scale-110" 
-                    : "text-stone-400 hover:text-foreground"
+                activeYear === year
+                    ? "text-foreground font-bold scale-110"
+                    : "text-stone-400 dark:text-stone-500 hover:text-foreground"
               )}
             >
               <span className={cn(activeYear === year ? "border-l-4 border-foreground pl-2" : "")}>
@@ -47,11 +47,11 @@ export default function TimelineSidebar({ groups, activeYear, onSelectYear }: Ti
           </li>
         ))}
       </ul>
-      
+
       {/* Bottom Decor Line */}
-      <div className="h-16 w-px bg-stone-300 opacity-50" />
-      
-      <div className="writing-vertical-rl text-[9px] text-stone-200 mt-2">
+      <div className="h-16 w-px bg-stone-300 dark:bg-stone-700 opacity-50" />
+
+      <div className="writing-vertical-rl text-[9px] text-stone-200 dark:text-stone-700 mt-2">
         年表
       </div>
       </m.aside>

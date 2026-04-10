@@ -4,16 +4,17 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        background: "#F2F0E9", // Rice paper nuance
-        paper: "#FDFBF7",      // Lighter area
-        foreground: "#1C1C1C", // Ink black
-        muted: "#57534E",      // Stone gray
-        subtle: "#A8A29E",     // Light wash
-        border: "#E7E5E4",     // Stone 200
-        accent: "#1C1C1C",     // Replaced Seal Red with Ink Black for monochrome request
+        background: "rgb(var(--color-background) / <alpha-value>)",
+        paper:      "rgb(var(--color-paper) / <alpha-value>)",
+        foreground: "rgb(var(--color-foreground) / <alpha-value>)",
+        muted:      "rgb(var(--color-muted) / <alpha-value>)",
+        subtle:     "rgb(var(--color-subtle) / <alpha-value>)",
+        border:     "rgb(var(--color-border) / <alpha-value>)",
+        accent:     "rgb(var(--color-accent) / <alpha-value>)",
       },
       fontFamily: {
         sans: [

@@ -28,7 +28,7 @@ const router = createBrowserRouter([
       {
         path: "ops/analytics",
         element: (
-          <Suspense fallback={<div className="py-24 text-center text-stone-500">Loading analytics workspace...</div>}>
+          <Suspense fallback={<div className="py-24 text-center text-stone-500 dark:text-stone-400">Loading analytics workspace...</div>}>
             <AnalyticsPage />
           </Suspense>
         ),
