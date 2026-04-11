@@ -1,9 +1,5 @@
 import type { GuestNote } from './types';
-
-const GISCUS_API = 'https://giscus.app/api/discussions';
-const REPO = 'Shao-Xian-Cao/blog-comments';
-const TERM = 'fading-note-guestbook';
-const CATEGORY = 'Announcements';
+import { buildBackendUrl } from '@/config/backend.config';
 
 interface GiscusAuthor {
   login: string;
@@ -51,7 +47,7 @@ function commentToNote(c: { id: string; createdAt: string; bodyHTML: string; aut
 }
 
 export async function fetchGiscusNotes(): Promise<GuestNote[]> {
-  const url = `${GISCUS_API}?repo=${encodeURIComponent(REPO)}&term=${encodeURIComponent(TERM)}&category=${encodeURIComponent(CATEGORY)}&first=100`;
+  const url = buildBackendUrl('/api/giscus-proxy');
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) return [];
   const data: GiscusResponse = await res.json();

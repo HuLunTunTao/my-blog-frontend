@@ -82,12 +82,16 @@ export default function GiscusComments({ commentId, slug }: GiscusCommentsProps)
 
   // Hot-swap the theme on an already-rendered giscus iframe without reloading
   useEffect(() => {
-    const iframe = document.querySelector<HTMLIFrameElement>("iframe.giscus-frame");
+    const iframe = containerRef.current?.querySelector<HTMLIFrameElement>("iframe.giscus-frame");
     if (!iframe?.contentWindow) return;
-    iframe.contentWindow.postMessage(
-      { giscus: { setConfig: { theme: giscusTheme } } },
-      "https://giscus.app"
-    );
+    try {
+      iframe.contentWindow.postMessage(
+        { giscus: { setConfig: { theme: giscusTheme } } },
+        "https://giscus.app"
+      );
+    } catch {
+      // iframe may not have navigated to giscus.app yet — ignore
+    }
   }, [giscusTheme]);
 
   if (!discussionTerm) {

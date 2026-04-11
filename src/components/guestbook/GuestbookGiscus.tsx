@@ -4,6 +4,10 @@ import type { ResolvedTheme } from '@/context/ThemeContext';
 
 const GISCUS_THEME_DATA_URL = `data:text/css;charset=utf-8,${encodeURIComponent(giscusThemeCss)}`;
 
+function resolveGiscusTheme(theme: ResolvedTheme): string {
+  return theme === 'dark' ? 'dark' : GISCUS_THEME_DATA_URL;
+}
+
 interface GuestbookGiscusProps {
   theme: ResolvedTheme;
   onDiscussionUpdate?: () => void;
@@ -11,14 +15,13 @@ interface GuestbookGiscusProps {
 
 export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const themeRef = useRef(theme);
-  themeRef.current = theme;
   const callbackRef = useRef(onDiscussionUpdate);
   callbackRef.current = onDiscussionUpdate;
   const mountedRef = useRef(false);
 
-  const giscusTheme = theme === 'dark' ? 'dark' : GISCUS_THEME_DATA_URL;
+  const giscusTheme = resolveGiscusTheme(theme);
 
+  // Mount the giscus script once.
   useEffect(() => {
     if (mountedRef.current) return;
     mountedRef.current = true;
@@ -38,11 +41,12 @@ export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusPr
     script.setAttribute('data-reactions-enabled', '0');
     script.setAttribute('data-emit-metadata', '0');
     script.setAttribute('data-input-position', 'bottom');
-    script.setAttribute('data-theme', themeRef.current === 'dark' ? 'dark' : GISCUS_THEME_DATA_URL);
+    script.setAttribute('data-theme', giscusTheme);
     script.setAttribute('data-lang', 'zh-CN');
     script.crossOrigin = 'anonymous';
     script.async = true;
     el.appendChild(script);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Listen for giscus discussion updates to re-fetch notes.
@@ -71,20 +75,22 @@ export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusPr
     return () => window.removeEventListener('message', handler);
   }, []);
 
-  // Hot-swap theme on the existing iframe.
+  // Hot-swap theme on the already-rendered iframe.
   useEffect(() => {
-    const targetTheme = themeRef.current === 'dark' ? 'dark' : GISCUS_THEME_DATA_URL;
-
     const sendTheme = () => {
-      const iframe = document.querySelector<HTMLIFrameElement>(
+      const iframe = containerRef.current?.querySelector<HTMLIFrameElement>(
         'iframe.giscus-frame'
       );
       if (!iframe?.contentWindow) return false;
-      iframe.contentWindow.postMessage(
-        { giscus: { setConfig: { theme: targetTheme } } },
-        'https://giscus.app'
-      );
-      return true;
+      try {
+        iframe.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: giscusTheme } } },
+          'https://giscus.app'
+        );
+        return true;
+      } catch {
+        return false;
+      }
     };
 
     if (sendTheme()) return;
