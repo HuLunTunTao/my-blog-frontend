@@ -10,6 +10,7 @@ export default function Sidebar() {
     { name: "Folders", path: "/folders", zh: "录" },
     { name: "Tags", path: "/tags", zh: "类" },
     { name: "Search", path: "/search", zh: "寻" },
+    { name: "Note", path: "/guestbook", zh: "言" },
   ];
 
   return (

@@ -98,3 +98,180 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ===================================================================
+   Guestbook — Fading-Note sticky-note styles (namespaced with gb-)
+   =================================================================== */
+
+/* --- Light CSS variables (guestbook-specific) --- */
+:root {
+  --gb-ink: #1c1c1c;
+  --gb-ink-soft: #2f2b27;
+  --gb-ink-faint: #a8a29e;
+  --gb-border-hairline: #e7e5e4;
+  --gb-border-medium: #d6d3d1;
+
+  --gb-shadow-drop: 0 10px 18px -10px rgba(28, 28, 28, 0.25),
+    0 2px 4px rgba(28, 28, 28, 0.08);
+
+  --gb-noise-a: rgba(28, 28, 28, 0.025);
+  --gb-noise-b: rgba(28, 28, 28, 0.02);
+  --gb-noise-edge: rgba(28, 28, 28, 0.015);
+  --gb-noise-edge-strong: rgba(28, 28, 28, 0.025);
+
+  --gb-note-surface-border: rgba(28, 28, 28, 0.08);
+  --gb-note-surface-inset: rgba(255, 255, 255, 0.6);
+  --gb-note-adhesive-1: rgba(28, 28, 28, 0.1);
+  --gb-note-adhesive-2: rgba(28, 28, 28, 0.055);
+  --gb-note-adhesive-3: rgba(28, 28, 28, 0.02);
+  --gb-note-curl-edge: rgba(28, 28, 28, 0.12);
+  --gb-note-curl-highlight: rgba(255, 255, 255, 0.5);
+  --gb-note-curl-shadow: rgba(28, 28, 28, 0.18);
+  --gb-note-avatar-bg: rgba(28, 28, 28, 0.08);
+  --gb-note-avatar-border: rgba(28, 28, 28, 0.12);
+
+  --gb-modal-backdrop: rgba(28, 28, 28, 0.72);
+}
+
+/* --- Dark CSS variables (guestbook-specific) --- */
+.dark {
+  --gb-ink: #f2f0e9;
+  --gb-ink-soft: #e7e3da;
+  --gb-ink-faint: #5a544d;
+  --gb-border-hairline: #3a3431;
+  --gb-border-medium: #4a4340;
+
+  --gb-shadow-drop: 0 14px 24px -12px rgba(0, 0, 0, 0.6),
+    0 2px 6px rgba(0, 0, 0, 0.35);
+
+  --gb-noise-a: rgba(255, 255, 255, 0.025);
+  --gb-noise-b: rgba(255, 255, 255, 0.018);
+  --gb-noise-edge: rgba(0, 0, 0, 0.35);
+  --gb-noise-edge-strong: rgba(0, 0, 0, 0.5);
+
+  --gb-note-surface-border: rgba(255, 255, 255, 0.09);
+  --gb-note-surface-inset: rgba(255, 255, 255, 0.04);
+  --gb-note-adhesive-1: rgba(0, 0, 0, 0.45);
+  --gb-note-adhesive-2: rgba(0, 0, 0, 0.22);
+  --gb-note-adhesive-3: rgba(0, 0, 0, 0.08);
+  --gb-note-curl-edge: rgba(0, 0, 0, 0.5);
+  --gb-note-curl-highlight: rgba(255, 255, 255, 0.08);
+  --gb-note-curl-shadow: rgba(0, 0, 0, 0.55);
+  --gb-note-avatar-bg: rgba(255, 255, 255, 0.08);
+  --gb-note-avatar-border: rgba(255, 255, 255, 0.15);
+
+  --gb-modal-backdrop: rgba(0, 0, 0, 0.78);
+}
+
+/* Paper noise background for the board area */
+.gb-paper-field {
+  background-color: rgb(var(--color-background));
+  background-image:
+    radial-gradient(var(--gb-noise-a) 1px, transparent 1px),
+    radial-gradient(var(--gb-noise-b) 1px, transparent 1px),
+    linear-gradient(
+      180deg,
+      var(--gb-noise-edge) 0%,
+      transparent 30%,
+      transparent 70%,
+      var(--gb-noise-edge-strong) 100%
+    );
+  background-size: 3px 3px, 7px 7px, 100% 100%;
+  background-position: 0 0, 1px 1px, 0 0;
+  transition: background-color 260ms ease;
+}
+
+/* Sticky paper — three layers: outer position/shadow · mid filter · top content */
+.gb-sticky-paper {
+  position: absolute;
+  box-shadow: var(--gb-shadow-drop);
+  transition:
+    opacity 200ms linear,
+    transform 240ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform, opacity;
+  cursor: pointer;
+}
+
+.gb-sticky-paper:hover {
+  z-index: 50;
+}
+
+.gb-sticky-paper-surface {
+  position: absolute;
+  inset: 0;
+  background-color: var(--note-bg, rgb(var(--color-paper)));
+  border: 1px solid var(--gb-note-surface-border);
+  box-shadow: 0 1px 0 var(--gb-note-surface-inset) inset;
+  transition: filter 200ms linear;
+  will-change: filter;
+}
+
+.gb-sticky-paper-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+}
+
+.gb-sticky-paper-surface .gb-adhesive {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 14%;
+  background: linear-gradient(
+    180deg,
+    var(--gb-note-adhesive-1) 0%,
+    var(--gb-note-adhesive-2) 30%,
+    var(--gb-note-adhesive-3) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.gb-sticky-paper-surface .gb-band {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--note-band, var(--gb-border-medium));
+  opacity: 0.9;
+}
+
+.gb-sticky-paper-surface .gb-curl {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: calc(var(--curl, 0) * 52px);
+  height: calc(var(--curl, 0) * 52px);
+  background: linear-gradient(
+    135deg,
+    transparent 45%,
+    var(--gb-note-curl-edge) 50%,
+    var(--gb-note-curl-highlight) 58%,
+    var(--note-bg, rgb(var(--color-paper))) 74%
+  );
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  pointer-events: none;
+  filter: drop-shadow(-2px -2px 3px var(--gb-note-curl-shadow));
+  opacity: var(--curl-opacity, 0);
+}
+
+/* Modal */
+.gb-modal-backdrop {
+  background: var(--gb-modal-backdrop);
+  backdrop-filter: blur(3px);
+  animation: gb-fade-in 260ms ease-out forwards;
+}
+.gb-modal-note-wrapper {
+  animation: gb-zoom-in 360ms cubic-bezier(0.2, 0.7, 0.3, 1.05) forwards;
+}
+@keyframes gb-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes gb-zoom-in {
+  from { opacity: 0; transform: scale(0.7) rotate(-3deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}

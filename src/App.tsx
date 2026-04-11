@@ -7,6 +7,7 @@ import SearchPage from "./pages/SearchPage";
 import PostPage from "./pages/PostPage";
 import FoldersPage from "./pages/FoldersPage";
 import FolderDetailPage from "./pages/FolderDetailPage";
+import GuestbookPage from "./pages/GuestbookPage";
 import { Suspense, lazy, useEffect } from "react";
 import { siteConfig } from "./config/site.config";
 import { warmImageCache } from "./lib/imageCache";
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
       { path: "tags", element: <AllTagsPage /> },
       { path: "tags/:tag", element: <TagDetailPage /> },
       { path: "search", element: <SearchPage /> },
+      { path: "guestbook", element: <GuestbookPage /> },
       { path: "posts/*", element: <PostPage /> },
       { path: "folders", element: <FoldersPage /> },
       { path: "folders/:path", element: <FolderDetailPage /> },
