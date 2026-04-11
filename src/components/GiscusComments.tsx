@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import giscusThemeCss from "@/styles/giscus-theme.css?raw";
+import giscusThemeDarkCss from "@/styles/giscus-theme-dark.css?raw";
 import { useTheme } from "@/context/ThemeContext";
 
 interface GiscusCommentsProps {
@@ -8,7 +9,8 @@ interface GiscusCommentsProps {
 }
 
 const GISCUS_SCRIPT_SRC = "https://giscus.app/client.js";
-const GISCUS_THEME_DATA_URL = `data:text/css;charset=utf-8,${encodeURIComponent(giscusThemeCss)}`;
+const GISCUS_THEME_LIGHT = `data:text/css;charset=utf-8,${encodeURIComponent(giscusThemeCss)}`;
+const GISCUS_THEME_DARK = `data:text/css;charset=utf-8,${encodeURIComponent(giscusThemeDarkCss)}`;
 
 let warmedUp = false;
 
@@ -43,7 +45,7 @@ export default function GiscusComments({ commentId, slug }: GiscusCommentsProps)
   const containerRef = useRef<HTMLDivElement | null>(null);
   const discussionTerm = (commentId || slug || "").trim();
   const { resolvedTheme } = useTheme();
-  const giscusTheme = resolvedTheme === "dark" ? "dark" : GISCUS_THEME_DATA_URL;
+  const giscusTheme = resolvedTheme === "dark" ? GISCUS_THEME_DARK : GISCUS_THEME_LIGHT;
 
   useEffect(() => {
     warmupGiscusResources();

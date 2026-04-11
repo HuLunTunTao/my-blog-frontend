@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react';
 import giscusThemeCss from '@/styles/giscus-theme.css?raw';
+import giscusThemeDarkCss from '@/styles/giscus-theme-dark.css?raw';
 import type { ResolvedTheme } from '@/context/ThemeContext';
 
-const GISCUS_THEME_DATA_URL = `data:text/css;charset=utf-8,${encodeURIComponent(giscusThemeCss)}`;
+const GISCUS_THEME_LIGHT = `data:text/css;charset=utf-8,${encodeURIComponent(giscusThemeCss)}`;
+const GISCUS_THEME_DARK = `data:text/css;charset=utf-8,${encodeURIComponent(giscusThemeDarkCss)}`;
 
 function resolveGiscusTheme(theme: ResolvedTheme): string {
-  return theme === 'dark' ? 'dark' : GISCUS_THEME_DATA_URL;
+  return theme === 'dark' ? GISCUS_THEME_DARK : GISCUS_THEME_LIGHT;
 }
 
 interface GuestbookGiscusProps {
