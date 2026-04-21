@@ -113,7 +113,7 @@ export default function TagDetailPage() {
                 }}
               />
 
-              <Link to={toPostRoute(post.slug)} className="block">
+              <Link to={toPostRoute(post)} className="block">
                 <div className="flex justify-between items-baseline mb-2">
                   <h2 className="text-xl font-medium decoration-1 underline-offset-4 hover:underline tracking-tight transition-colors">{post.title}</h2>
                   <span className="text-xs text-subtle font-sans opacity-70">{format(parseISO(post.date), "yyyy-MM-dd")}</span>

@@ -1,3 +1,5 @@
+import type { Post } from "./api";
+
 export function encodeSlugForPath(slug: string): string {
   return slug
     .split("/")
@@ -21,6 +23,16 @@ export function decodeSlugFromPath(pathParam: string | undefined): string {
     .join("/");
 }
 
-export function toPostRoute(slug: string): string {
-  return `/posts/${encodeSlugForPath(slug)}`;
+export function toShortPostRoute(shortId: string): string {
+  return `/p/${shortId}`;
+}
+
+export function toPostRoute(input: Post | string): string {
+  if (typeof input === "string") {
+    return `/posts/${encodeSlugForPath(input)}`;
+  }
+  if (input.shortId) {
+    return toShortPostRoute(input.shortId);
+  }
+  return `/posts/${encodeSlugForPath(input.slug)}`;
 }

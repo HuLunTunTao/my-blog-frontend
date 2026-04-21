@@ -405,20 +405,23 @@ function buildObsidianAssetCandidates(src?: string, sourceSlug?: string): string
   if (!assetPath) return [normalized];
 
   const paths = new Set<string>();
-  paths.add(assetPath);
 
   const fileName = assetPath.split("/").filter(Boolean).pop() || "";
   const sourceDir = sourceDirFromSlug(sourceSlug);
   if (fileName) {
-    // Obsidian supports shortest-path wikilinks. For bare names, try note-local and attachment dirs.
+    // For nested posts, post-local directory is the most likely location.
     if (sourceDir) {
       paths.add(joinPath(sourceDir, fileName));
       paths.add(joinPath(joinPath(sourceDir, "附件"), fileName));
       paths.add(joinPath(joinPath(sourceDir, "attachment"), fileName));
     }
+    // Bare path as fallback (correct for root-level posts, useful for hand-written paths).
+    paths.add(assetPath);
     // Common default attachment folders in many vaults.
     paths.add(joinPath("附件", fileName));
     paths.add(joinPath("attachment", fileName));
+  } else {
+    paths.add(assetPath);
   }
 
   return Array.from(paths).map((p) => buildBackendUrl(`/api/assets/${encodeAssetPath(p)}`));

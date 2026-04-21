@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import giscusThemeCss from '@/styles/giscus-theme.css?raw';
 import giscusThemeDarkCss from '@/styles/giscus-theme-dark.css?raw';
 import type { ResolvedTheme } from '@/context/ThemeContext';
+import { giscusConfig, isGiscusConfigured } from '@/config/giscus.config';
 
 const GISCUS_THEME_LIGHT = `data:text/css;charset=utf-8,${encodeURIComponent(giscusThemeCss)}`;
 const GISCUS_THEME_DARK = `data:text/css;charset=utf-8,${encodeURIComponent(giscusThemeDarkCss)}`;
@@ -29,16 +30,16 @@ export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusPr
     mountedRef.current = true;
 
     const el = containerRef.current;
-    if (!el) return;
+    if (!el || !isGiscusConfigured()) return;
 
     const script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
-    script.setAttribute('data-repo', 'Shao-Xian-Cao/blog-comments');
-    script.setAttribute('data-repo-id', 'R_kgDOROYfPA');
-    script.setAttribute('data-category', 'Announcements');
-    script.setAttribute('data-category-id', 'DIC_kwDOROYfPM4C2Q05');
+    script.setAttribute('data-repo', giscusConfig.repo);
+    script.setAttribute('data-repo-id', giscusConfig.repoId);
+    script.setAttribute('data-category', giscusConfig.category);
+    script.setAttribute('data-category-id', giscusConfig.categoryId);
     script.setAttribute('data-mapping', 'specific');
-    script.setAttribute('data-term', 'fading-note-guestbook');
+    script.setAttribute('data-term', giscusConfig.guestbookTerm);
     script.setAttribute('data-strict', '0');
     script.setAttribute('data-reactions-enabled', '0');
     script.setAttribute('data-emit-metadata', '0');
@@ -102,6 +103,8 @@ export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusPr
     );
     return () => timers.forEach(clearTimeout);
   }, [giscusTheme]);
+
+  if (!isGiscusConfigured()) return null;
 
   return <div ref={containerRef} className="giscus" />;
 }

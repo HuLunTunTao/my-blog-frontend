@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { getPostBySlug, Post } from "@/lib/posts";
+import { getPostBySlug, getPostByShortId, Post } from "@/lib/api";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import EncryptedGate from "@/components/EncryptedGate";
 import AlsoOnMyBlog from "@/components/AlsoOnMyBlog";
@@ -12,23 +12,42 @@ import { LazyMotion, domAnimation, m } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { decodeSlugFromPath } from "@/lib/postSlug";
 
+function setCanonicalUrl(shortId: string) {
+  const url = `/p/${shortId}`;
+  let link = document.querySelector<HTMLLinkElement>("link[rel='canonical']");
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "canonical";
+    document.head.appendChild(link);
+  }
+  link.href = url;
+}
+
 export default function PostPage() {
   const params = useParams();
-  const slug = decodeSlugFromPath(params["*"]);
+  const shortId = params.shortId?.trim();
+  const slug = shortId ? "" : decodeSlugFromPath(params["*"]);
+
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [unlocked, setUnlocked] = useState(false);
 
   const loadPost = useCallback(async () => {
-    if (!slug) return;
-    
     setLoading(true);
     try {
-      const data = await getPostBySlug(slug);
-      if (data) {
-        setPost(data);
+      let data: Post;
+      if (shortId) {
+        data = await getPostByShortId(shortId);
+      } else if (slug) {
+        data = await getPostBySlug(slug);
       } else {
         setPost(null);
+        setLoading(false);
+        return;
+      }
+      setPost(data);
+      if (data.shortId) {
+        setCanonicalUrl(data.shortId);
       }
     } catch (error) {
       console.error("Failed to load post:", error);
@@ -36,25 +55,34 @@ export default function PostPage() {
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [shortId, slug]);
 
   useEffect(() => {
-    // Load post when slug changes
     setUnlocked(false);
     warmupGiscusResources();
     void loadPost();
   }, [loadPost]);
 
   const handleUnlock = useCallback(async (password: string): Promise<boolean> => {
-    if (!slug) return false;
-    const data = await getPostBySlug(slug, password);
-    if (!data || data.locked) {
+    try {
+      let data: Post;
+      if (shortId) {
+        data = await getPostByShortId(shortId, password);
+      } else if (slug) {
+        data = await getPostBySlug(slug, password);
+      } else {
+        return false;
+      }
+      if (!data || data.locked) {
+        return false;
+      }
+      setPost(data);
+      setUnlocked(true);
+      return true;
+    } catch {
       return false;
     }
-    setPost(data);
-    setUnlocked(true);
-    return true;
-  }, [slug]);
+  }, [shortId, slug]);
 
   if (loading) {
     return (
@@ -78,25 +106,24 @@ export default function PostPage() {
   return (
     <LazyMotion features={domAnimation}>
       <m.article
-      key={slug}
+      key={post.slug}
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -15 }}
-      transition={{ 
-        duration: 0.5, 
-        ease: [0.23, 1, 0.32, 1] // Custom quintic ease-out for a "ink spreading" feel
-      }} 
+      transition={{
+        duration: 0.5,
+        ease: [0.23, 1, 0.32, 1]
+      }}
       className="max-w-5xl mx-auto relative group"
     >
-      {/* Paper texture overlay - Extremely Subtle Xuan Paper */}
-      <div className="absolute inset-x-[-2.5rem] inset-y-[-2.5rem] bg-white/90 dark:bg-stone-900/40 backdrop-blur-[1px] rounded-none -z-10 border border-stone-200/20 dark:border-stone-700/30 hidden md:block overflow-hidden" 
+      <div className="absolute inset-x-[-2.5rem] inset-y-[-2.5rem] bg-white/90 dark:bg-stone-900/40 backdrop-blur-[1px] rounded-none -z-10 border border-stone-200/20 dark:border-stone-700/30 hidden md:block overflow-hidden"
            style={{
              backgroundImage: `url("/assets/paperGrain-128.svg")`
            }}
       />
-      
+
       <header className="mb-12 text-center space-y-4 pt-4">
-        
+
         <h1 className="text-3xl md:text-4xl font-serif font-medium leading-tight">
           {post.title}
         </h1>

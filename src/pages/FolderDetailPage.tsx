@@ -229,7 +229,7 @@ export default function FolderDetailPage() {
 
                 <header className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-1">
                   <Link
-                    to={toPostRoute(post.slug)}
+                    to={toPostRoute(post)}
                     className="text-xl font-medium decoration-1 underline-offset-4 hover:underline"
                   >
                     {post.title}

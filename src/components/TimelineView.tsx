@@ -192,7 +192,7 @@ export default function TimelineView() {
                       
                       <div className="space-y-4 pl-2">
                         {monthPosts.map((post) => (
-                          <Link key={post.slug} to={toPostRoute(post.slug)} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/70 dark:focus-visible:ring-stone-500/70">
+                          <Link key={post.slug} to={toPostRoute(post)} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/70 dark:focus-visible:ring-stone-500/70">
                             <article className="relative py-4 px-6 transition-all duration-300 hover:translate-x-1">
                               {/* Individual Paper Layer */}
                               <div className="absolute inset-0 bg-white/50 dark:bg-stone-900/40 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none" 

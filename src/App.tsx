@@ -25,6 +25,7 @@ const router = createBrowserRouter([
       { path: "search", element: <SearchPage /> },
       { path: "guestbook", element: <GuestbookPage /> },
       { path: "posts/*", element: <PostPage /> },
+      { path: "p/:shortId", element: <PostPage /> },
       { path: "folders", element: <FoldersPage /> },
       { path: "folders/:path", element: <FolderDetailPage /> },
       {

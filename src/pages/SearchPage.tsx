@@ -178,7 +178,7 @@ export default function SearchPage() {
                   }}
                 />
 
-                <Link to={toPostRoute(post.slug)} className="block space-y-2">
+                <Link to={toPostRoute(post)} className="block space-y-2">
                   <div className="flex justify-between items-baseline">
                     <h2 className="text-xl font-medium group-hover:underline decoration-1 underline-offset-4">
                       <Highlight text={post.title} query={query} />

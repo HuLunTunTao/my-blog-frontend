@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import giscusThemeCss from "@/styles/giscus-theme.css?raw";
 import giscusThemeDarkCss from "@/styles/giscus-theme-dark.css?raw";
 import { useTheme } from "@/context/ThemeContext";
+import { giscusConfig, isGiscusConfigured } from "@/config/giscus.config";
 
 interface GiscusCommentsProps {
   commentId?: string;
@@ -49,7 +50,7 @@ export default function GiscusComments({ commentId, slug }: GiscusCommentsProps)
 
   useEffect(() => {
     warmupGiscusResources();
-    if (!discussionTerm || !containerRef.current) {
+    if (!discussionTerm || !containerRef.current || !isGiscusConfigured()) {
       return;
     }
 
@@ -61,10 +62,10 @@ export default function GiscusComments({ commentId, slug }: GiscusCommentsProps)
     script.async = true;
     script.crossOrigin = "anonymous";
 
-    script.setAttribute("data-repo", "Shao-Xian-Cao/blog-comments");
-    script.setAttribute("data-repo-id", "R_kgDOROYfPA");
-    script.setAttribute("data-category", "Announcements");
-    script.setAttribute("data-category-id", "DIC_kwDOROYfPM4C2Q05");
+    script.setAttribute("data-repo", giscusConfig.repo);
+    script.setAttribute("data-repo-id", giscusConfig.repoId);
+    script.setAttribute("data-category", giscusConfig.category);
+    script.setAttribute("data-category-id", giscusConfig.categoryId);
     script.setAttribute("data-mapping", "specific");
     script.setAttribute("data-term", discussionTerm);
     script.setAttribute("data-strict", "0");
@@ -96,7 +97,7 @@ export default function GiscusComments({ commentId, slug }: GiscusCommentsProps)
     }
   }, [giscusTheme]);
 
-  if (!discussionTerm) {
+  if (!discussionTerm || !isGiscusConfigured()) {
     return null;
   }
 

@@ -3,6 +3,7 @@ import { encodeSlugForPath } from "./postSlug";
 
 export interface Post {
   slug: string;
+  shortId: string;
   title: string;
   date: string;
   tags: string[];
@@ -189,6 +190,19 @@ export async function getPostBySlug(slug: string, password?: string): Promise<Po
   const encodedSlug = encodeSlugForPath(slug);
 
   const response = await fetch(`${API_BASE}/posts/${encodedSlug}?${queryParams}`);
+  if (!response.ok) {
+    throw new Error("Post not found");
+  }
+
+  const data = await response.json();
+  return normalizePost(data);
+}
+
+export async function getPostByShortId(shortId: string, password?: string): Promise<Post> {
+  const queryParams = new URLSearchParams();
+  if (password) queryParams.append("password", password);
+
+  const response = await fetch(`${API_BASE}/posts/id/${encodeURIComponent(shortId)}?${queryParams}`);
   if (!response.ok) {
     throw new Error("Post not found");
   }

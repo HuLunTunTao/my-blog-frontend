@@ -46,7 +46,7 @@ export default function AlsoOnMyBlog({ currentPost }: Props) {
                 {tagRelated.map((post) => (
                   <li key={`tag-${post.slug}`} className="min-w-[260px] max-w-[320px] snap-start shrink-0">
                     <Link
-                      to={toPostRoute(post.slug)}
+                      to={toPostRoute(post)}
                       className="group block border border-stone-200/70 dark:border-stone-700/60 bg-white/60 dark:bg-stone-900/40 p-4 h-full hover:bg-neutral-50 dark:hover:bg-stone-800/50 transition-colors"
                     >
                       <div className="flex justify-between items-baseline gap-3 mb-2">
@@ -69,7 +69,7 @@ export default function AlsoOnMyBlog({ currentPost }: Props) {
                 {nearby.map((post) => (
                   <li key={`near-${post.slug}`} className="min-w-[260px] max-w-[320px] snap-start shrink-0">
                     <Link
-                      to={toPostRoute(post.slug)}
+                      to={toPostRoute(post)}
                       className="group block border border-stone-200/70 dark:border-stone-700/60 bg-white/60 dark:bg-stone-900/40 p-4 h-full hover:bg-neutral-50 dark:hover:bg-stone-800/50 transition-colors"
                     >
                       <div className="flex justify-between items-baseline gap-3 mb-2">
