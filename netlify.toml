@@ -1,0 +1,21 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SSR: /p/:shortId → backend render endpoint
+[[redirects]]
+  from = "/p/*"
+  to = "https://api.blog.hltt.online/render/post/:splat"
+  status = 200
+
+# Proxy API assets so images work in SSR HTML
+[[redirects]]
+  from = "/api/assets/*"
+  to = "https://api.blog.hltt.online/api/assets/:splat"
+  status = 200
+
+# SPA fallback: everything else → index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
