@@ -8,8 +8,9 @@ import { NoteModal } from '@/components/guestbook/NoteModal';
 import { GuestbookGiscus } from '@/components/guestbook/GuestbookGiscus';
 import { useTheme } from '@/context/ThemeContext';
 
-const BASE_LIFESPAN_DAYS = 30;
+const BASE_LIFESPAN_DAYS = 547.5; // 约 1.5 年
 const BASE_LIFESPAN = BASE_LIFESPAN_DAYS * 86400;
+const LIFESPAN_LABEL = '1.5 年';
 const BASE_SIZE = 220;
 
 export default function GuestbookPage() {
@@ -68,14 +69,14 @@ export default function GuestbookPage() {
           </h1>
           <p className="text-sm text-muted font-serif leading-relaxed max-w-2xl">
             在下方 Giscus 区域登录 GitHub 后即可留言。
-            每条留言会以便签形式出现在板上；随着时间推移，便签会慢慢老去 —— {BASE_LIFESPAN_DAYS} 天后它将脱落消失。
+            每条留言会以便签形式出现在板上；随着时间推移，便签会慢慢老去 —— {LIFESPAN_LABEL}后它将脱落消失。
             点击便签可放大查看原始内容。
           </p>
 
           <div className="h-px bg-border" />
 
           <div className="flex items-center gap-4 text-[10px] font-sans uppercase tracking-widest text-subtle">
-            <span>消失周期 · {BASE_LIFESPAN_DAYS} 天</span>
+            <span>消失周期 · {LIFESPAN_LABEL}</span>
             <span>·</span>
             <span>便签数 · {notes.length}</span>
             {loading && <span>· 加载中...</span>}
