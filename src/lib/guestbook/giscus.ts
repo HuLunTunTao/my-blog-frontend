@@ -53,14 +53,11 @@ export async function fetchGiscusNotes(): Promise<GuestNote[]> {
   const data: GiscusResponse = await res.json();
   if (data.error || !data.discussion) return [];
 
+  // 只把「直接评论」(顶层 comment) 渲染成便签上墙;
+  // 「跟帖回复」(comment.replies) 不上墙,仍会在下方 Giscus 评论区正常显示。
   const notes: GuestNote[] = [];
   for (const comment of data.discussion.comments) {
     notes.push(commentToNote(comment));
-    if (comment.replies) {
-      for (const reply of comment.replies) {
-        notes.push(commentToNote(reply));
-      }
-    }
   }
   return notes;
 }
