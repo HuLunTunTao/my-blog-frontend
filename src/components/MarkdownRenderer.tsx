@@ -469,11 +469,27 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
   const codeBlockStyle = useMemo(
     () => ({
       background: isDark ? "#1c1b19" : "#FBFBFA",
-      padding: "2rem",
+      padding: "1rem 1.25rem",
       borderRadius: "0",
       fontSize: "0.875rem",
       border: isDark ? "1px solid #3a3733" : "1px solid #D6D3D1",
       margin: 0,
+    }),
+    [isDark]
+  );
+  // 主题给内层 <code> 单独设了背景色,与外层 div 背景不一致,会显出一块"高亮"矩形;
+  // 这里把内层 <code> 背景置为透明,让它继承外层背景。
+  const codeTagProps = useMemo(
+    () => ({ style: { background: "transparent" } }),
+    []
+  );
+  const lineNumberStyle = useMemo(
+    () => ({
+      minWidth: "2.5em",
+      paddingRight: "1em",
+      textAlign: "right" as const,
+      userSelect: "none" as const,
+      color: isDark ? "#6b675f" : "#A8A29E",
     }),
     [isDark]
   );
@@ -488,7 +504,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
         return <MermaidBlock code={codeText} />;
       }
       return match ? (
-        <div className="relative group my-10">
+        <div className="relative group my-6">
           <CopyButton text={codeText} />
           <SyntaxHighlighter
             style={syntaxTheme}
@@ -496,6 +512,9 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
             PreTag="div"
             useInlineStyles={true}
             customStyle={codeBlockStyle}
+            codeTagProps={codeTagProps}
+            showLineNumbers
+            lineNumberStyle={lineNumberStyle}
           >
             {codeText}
           </SyntaxHighlighter>
@@ -506,7 +525,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
             {children}
           </code>
         ) : (
-          <div className="relative group my-10">
+          <div className="relative group my-6">
             <CopyButton text={codeText} />
             <SyntaxHighlighter
               style={syntaxTheme}
@@ -514,6 +533,9 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
               PreTag="div"
               useInlineStyles={true}
               customStyle={codeBlockStyle}
+              codeTagProps={codeTagProps}
+              showLineNumbers
+              lineNumberStyle={lineNumberStyle}
             >
               {codeText}
             </SyntaxHighlighter>
