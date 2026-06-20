@@ -7,7 +7,7 @@ import { Github, Twitter, Link as LinkIcon, Loader2 } from "lucide-react";
 import TimelineSidebar from "./TimelineSidebar";
 import { CnblogsIcon } from "./icons/CnblogsIcon";
 import { XiaohongshuIcon } from "./icons/XiaohongshuIcon";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { siteConfig } from "@/config/site.config";
 import { toPostRoute } from "@/lib/postSlug";
 import type { ComponentType } from "react";
@@ -36,8 +36,11 @@ export default function TimelineView() {
   const [activeYear, setActiveYear] = useState<string>("");
   const cachedAvatar = useCachedImage(siteConfig.author.avatar);
 
-  const grouped = groupPostsByYearMonth(posts);
-  const years = Object.keys(grouped).sort((a, b) => Number(b) - Number(a));
+  const grouped = useMemo(() => groupPostsByYearMonth(posts), [posts]);
+  const years = useMemo(
+    () => Object.keys(grouped).sort((a, b) => Number(b) - Number(a)),
+    [grouped]
+  );
 
   // 加载文章
   useEffect(() => {
@@ -64,9 +67,11 @@ export default function TimelineView() {
     }
   };
 
-  // Simple scroll spy-like effect for active year (optional refinement)
+  // Simple scroll spy-like effect for active year (rAF-throttled)
+  const tickingRef = useRef(false);
   useEffect(() => {
-    const handleScroll = () => {
+    const updateActiveYear = () => {
+        tickingRef.current = false;
         // Find which year is closest to top
         for (const year of years) {
             const el = document.getElementById(`year-${year}`);
@@ -74,10 +79,15 @@ export default function TimelineView() {
                 const rect = el.getBoundingClientRect();
                 if (rect.top >= 0 && rect.top < 300) {
                     setActiveYear(year);
-                    break; 
+                    break;
                 }
             }
         }
+    };
+    const handleScroll = () => {
+        if (tickingRef.current) return;
+        tickingRef.current = true;
+        window.requestAnimationFrame(updateActiveYear);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);

@@ -20,4 +20,23 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          // Keep manual grouping minimal. Heavy markdown libs (katex,
+          // react-syntax-highlighter, mermaid, the remark/rehype stack) are
+          // only reached through the lazy PostPage route, so we let Rollup
+          // auto-split them into that async subgraph rather than forcing named
+          // chunks — forcing them caused Rollup to hoist one into the eager
+          // entry. Only split the clearly-shared react runtime and the
+          // analytics-only geo libs.
+          if (/[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) return "react-vendor";
+          if (/[\\/]node_modules[\\/](d3-geo|topojson-client|world-atlas|china-map-geojson)[\\/]/.test(id)) return "geo";
+          return undefined;
+        },
+      },
+    },
+  },
 })

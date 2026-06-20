@@ -7,7 +7,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneLight, oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import mermaid from "mermaid";
+import "katex/dist/katex.min.css";
 import { Link } from "react-router-dom";
 import {
   AlertOctagon,
@@ -47,7 +47,19 @@ interface MarkdownRendererProps {
 }
 
 const MAX_EMBED_DEPTH = 5;
-let mermaidInitialized = false;
+
+// Lazily load mermaid (~1.6MB) only when a post actually contains a mermaid block.
+let mermaidPromise: Promise<typeof import("mermaid").default> | null = null;
+function loadMermaid() {
+  if (!mermaidPromise) {
+    mermaidPromise = import("mermaid").then((mod) => {
+      const mermaid = mod.default;
+      mermaid.initialize({ startOnLoad: false, theme: "neutral", securityLevel: "loose" });
+      return mermaid;
+    });
+  }
+  return mermaidPromise;
+}
 
 function MermaidBlock({ code }: { code: string }) {
   const [svg, setSvg] = useState<string>("");
@@ -58,10 +70,7 @@ function MermaidBlock({ code }: { code: string }) {
     let active = true;
     void (async () => {
       try {
-        if (!mermaidInitialized) {
-          mermaid.initialize({ startOnLoad: false, theme: "neutral", securityLevel: "loose" });
-          mermaidInitialized = true;
-        }
+        const mermaid = await loadMermaid();
         const rendered = await mermaid.render(idRef.current, code);
         if (active) setSvg(rendered.svg);
       } catch (e) {
@@ -470,7 +479,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
   );
   const syntaxTheme = isDark ? oneDark : oneLight;
 
-  const components: Components = {
+  const components: Components = useMemo(() => ({
     code({ className, children, node, ...props }) {
       const match = /language-(\w+)/.exec(className || "");
       const codeText = String(children).replace(/\n$/, "");
@@ -581,7 +590,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
         </div>
       );
     },
-  };
+  }), [syntaxTheme, codeBlockStyle, depth, sourceSlug]);
 
   return (
     <div
