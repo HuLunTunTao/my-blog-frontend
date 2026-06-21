@@ -12,6 +12,16 @@ import { LazyMotion, domAnimation, m } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { decodeSlugFromPath } from "@/lib/postSlug";
 
+// 含 "T" 的展示到分钟，仅日期的（旧文兜底）只展示日期。
+function formatPostTime(value: string): string {
+  try {
+    const d = parseISO(value);
+    return value.includes("T") ? format(d, "yyyy年M月d日 HH:mm") : format(d, "yyyy年M月d日");
+  } catch {
+    return value;
+  }
+}
+
 function setCanonicalUrl(shortId: string) {
   const url = `/p/${shortId}`;
   let link = document.querySelector<HTMLLinkElement>("link[rel='canonical']");
@@ -127,9 +137,17 @@ export default function PostPage() {
         <h1 className="text-3xl md:text-4xl font-serif font-medium leading-tight">
           {post.title}
         </h1>
-        <time className="block text-sm text-subtle font-serif">
-            {format(parseISO(post.date), "MMMM d, yyyy")}
-        </time>
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-subtle font-serif">
+            {post.createdTime && (
+              <span>创建时间：{formatPostTime(post.createdTime)}</span>
+            )}
+            {post.date && (
+              <span>发布时间：{formatPostTime(post.date)}</span>
+            )}
+            {post.updatedTime && (
+              <span>最新修改时间：{formatPostTime(post.updatedTime)}</span>
+            )}
+        </div>
         <div className="flex justify-center gap-2 mb-6">
             {post.tags.map(tag => (
                 <TagBadge key={tag} tag={tag} />

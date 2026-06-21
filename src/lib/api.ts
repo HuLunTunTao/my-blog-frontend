@@ -6,6 +6,8 @@ export interface Post {
   shortId: string;
   title: string;
   date: string;
+  createdTime?: string;
+  updatedTime?: string;
   tags: string[];
   visibility: "public" | "encrypted" | "hidden";
   excerpt: string;
