@@ -43,19 +43,21 @@ export function warmupGiscusResources(): void {
 }
 
 export default function GiscusComments({ commentId, slug }: GiscusCommentsProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const hostRef = useRef<HTMLDivElement | null>(null);
   const discussionTerm = (commentId || slug || "").trim();
   const { resolvedTheme } = useTheme();
   const giscusTheme = resolvedTheme === "dark" ? GISCUS_THEME_DARK : GISCUS_THEME_LIGHT;
 
   useEffect(() => {
     warmupGiscusResources();
-    if (!discussionTerm || !containerRef.current || !isGiscusConfigured()) {
+    const host = hostRef.current;
+    if (!discussionTerm || !host || !isGiscusConfigured()) {
       return;
     }
 
-    const container = containerRef.current;
-    container.innerHTML = "";
+    const mount = document.createElement("div");
+    mount.className = "giscus";
+    host.replaceChildren(mount);
 
     const script = document.createElement("script");
     script.src = GISCUS_SCRIPT_SRC;
@@ -76,16 +78,18 @@ export default function GiscusComments({ commentId, slug }: GiscusCommentsProps)
     script.setAttribute("data-lang", "zh-CN");
     script.setAttribute("data-loading", "eager");
 
-    container.appendChild(script);
+    mount.appendChild(script);
 
     return () => {
-      container.innerHTML = "";
+      if (mount.parentNode === host) {
+        host.removeChild(mount);
+      }
     };
   }, [discussionTerm, giscusTheme]);
 
   // Hot-swap the theme on an already-rendered giscus iframe without reloading
   useEffect(() => {
-    const iframe = containerRef.current?.querySelector<HTMLIFrameElement>("iframe.giscus-frame");
+    const iframe = hostRef.current?.querySelector<HTMLIFrameElement>("iframe.giscus-frame");
     if (!iframe?.contentWindow) return;
     try {
       iframe.contentWindow.postMessage(
@@ -104,7 +108,7 @@ export default function GiscusComments({ commentId, slug }: GiscusCommentsProps)
   return (
     <section className="mt-12 border-t border-stone-300/60 dark:border-stone-700/60 pt-10">
       <h2 className="text-xl font-serif mb-6">评论</h2>
-      <div ref={containerRef} />
+      <div ref={hostRef} />
     </section>
   );
 }

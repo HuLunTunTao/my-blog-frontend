@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/Layout";
 import TimelineView from "./components/TimelineView";
+import RouteErrorPage from "./components/RouteErrorPage";
 import { lazy, useEffect } from "react";
 import { siteConfig } from "./config/site.config";
 import { warmImageCache } from "./lib/imageCache";
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
+    errorElement: <RouteErrorPage />,
     children: [
       { index: true, element: <TimelineView /> },
       { path: "tags", element: <AllTagsPage /> },

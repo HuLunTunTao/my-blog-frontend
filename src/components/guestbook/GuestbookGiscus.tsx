@@ -17,7 +17,7 @@ interface GuestbookGiscusProps {
 }
 
 export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const hostRef = useRef<HTMLDivElement>(null);
   const callbackRef = useRef(onDiscussionUpdate);
   callbackRef.current = onDiscussionUpdate;
   const mountedRef = useRef(false);
@@ -29,8 +29,12 @@ export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusPr
     if (mountedRef.current) return;
     mountedRef.current = true;
 
-    const el = containerRef.current;
-    if (!el || !isGiscusConfigured()) return;
+    const host = hostRef.current;
+    if (!host || !isGiscusConfigured()) return;
+
+    const mount = document.createElement('div');
+    mount.className = 'giscus';
+    host.replaceChildren(mount);
 
     const script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
@@ -48,7 +52,14 @@ export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusPr
     script.setAttribute('data-lang', 'zh-CN');
     script.crossOrigin = 'anonymous';
     script.async = true;
-    el.appendChild(script);
+    mount.appendChild(script);
+
+    return () => {
+      if (mount.parentNode === host) {
+        host.removeChild(mount);
+      }
+      mountedRef.current = false;
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -81,7 +92,7 @@ export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusPr
   // Hot-swap theme on the already-rendered iframe.
   useEffect(() => {
     const sendTheme = () => {
-      const iframe = containerRef.current?.querySelector<HTMLIFrameElement>(
+      const iframe = hostRef.current?.querySelector<HTMLIFrameElement>(
         'iframe.giscus-frame'
       );
       if (!iframe?.contentWindow) return false;
@@ -106,5 +117,5 @@ export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusPr
 
   if (!isGiscusConfigured()) return null;
 
-  return <div ref={containerRef} className="giscus" />;
+  return <div ref={hostRef} />;
 }
