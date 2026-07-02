@@ -1,5 +1,6 @@
 #!/bin/bash
-# After Vite build, copy hashed CSS/JS to stable paths for SSR HTML references.
+# After Vite build, copy hashed CSS to the stable path used by SSR HTML.
+# JS is emitted directly as assets/index.js by Vite/Rollup config.
 set -euo pipefail
 
 DIST_DIR="${1:-dist}"
@@ -13,11 +14,10 @@ fi
 cp "$HASHED_CSS" "$DIST_DIR/assets/index.css"
 echo "Copied $(basename "$HASHED_CSS") -> assets/index.css"
 
-# Copy JS
-HASHED_JS=$(find "$DIST_DIR/assets" -name 'index-*.js' | head -1)
-if [ -z "$HASHED_JS" ]; then
-  echo "ERROR: No index-*.js found in $DIST_DIR/assets" >&2
+# Verify JS
+STABLE_JS="$DIST_DIR/assets/index.js"
+if [ ! -f "$STABLE_JS" ]; then
+  echo "ERROR: No stable JS entry found at $STABLE_JS" >&2
   exit 1
 fi
-cp "$HASHED_JS" "$DIST_DIR/assets/index.js"
-echo "Copied $(basename "$HASHED_JS") -> assets/index.js"
+echo "Verified assets/index.js"

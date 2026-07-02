@@ -23,6 +23,10 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
+        // SSR HTML intentionally loads /assets/index.js as a stable entry.
+        // Generate that file directly so async chunks import the same module
+        // instance instead of a copied hashed entry plus the original hash.
+        entryFileNames: "assets/[name].js",
         manualChunks(id) {
           if (!id.includes("node_modules")) return;
           // Keep manual grouping minimal. Heavy markdown libs (katex,
