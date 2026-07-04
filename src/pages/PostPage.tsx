@@ -73,6 +73,12 @@ export default function PostPage() {
     void loadPost();
   }, [loadPost]);
 
+  useEffect(() => {
+    if (!loading) {
+      window.dispatchEvent(new Event("blog:spa-ready"));
+    }
+  }, [loading]);
+
   const handleUnlock = useCallback(async (password: string): Promise<boolean> => {
     try {
       let data: Post;

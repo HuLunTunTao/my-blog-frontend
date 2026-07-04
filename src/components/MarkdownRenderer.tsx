@@ -3,11 +3,6 @@ import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneLight, oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import "katex/dist/katex.min.css";
 import { Link } from "react-router-dom";
 import {
   AlertOctagon,
@@ -28,7 +23,6 @@ import CopyButton from "./CopyButton";
 import { getPostBySlug } from "@/lib/api";
 import { toPostRoute } from "@/lib/postSlug";
 import { buildBackendUrl } from "@/config/backend.config";
-import { useTheme } from "@/context/ThemeContext";
 import {
   decodeObsidianDetailsHref,
   decodeObsidianEmbedHref,
@@ -47,6 +41,43 @@ interface MarkdownRendererProps {
 }
 
 const MAX_EMBED_DEPTH = 5;
+
+type RemarkMathPlugin = typeof import("remark-math").default;
+type RehypeKatexPlugin = typeof import("rehype-katex").default;
+type MathPlugins = {
+  remarkMath: RemarkMathPlugin;
+  rehypeKatex: RehypeKatexPlugin;
+};
+
+let mathPluginsPromise: Promise<MathPlugins> | null = null;
+function loadMathPlugins(): Promise<MathPlugins> {
+  if (!mathPluginsPromise) {
+    mathPluginsPromise = Promise.all([
+      import("remark-math"),
+      import("rehype-katex"),
+      import("katex/dist/katex.min.css"),
+    ]).then(([remarkMathMod, rehypeKatexMod]) => ({
+      remarkMath: remarkMathMod.default,
+      rehypeKatex: rehypeKatexMod.default,
+    }));
+  }
+  return mathPluginsPromise;
+}
+
+function containsMath(content: string): boolean {
+  return /(^|\n)\s*\$\$|\\\(|\\\[|(?:^|[^$])\$[^$\n]+\$/.test(content);
+}
+
+function LazyCodeBlock({ codeText, language }: { codeText: string; language: string }) {
+  return (
+    <div className="relative group my-6">
+      <CopyButton text={codeText} />
+      <pre className="overflow-x-auto border border-stone-300/60 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900 p-4 text-sm leading-relaxed">
+        <code className={`language-${language}`}>{codeText}</code>
+      </pre>
+    </div>
+  );
+}
 
 // Lazily load mermaid (~1.6MB) only when a post actually contains a mermaid block.
 let mermaidPromise: Promise<typeof import("mermaid").default> | null = null;
@@ -456,44 +487,38 @@ function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: s
 }
 
 export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: MarkdownRendererProps) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
   const processedContent = useMemo(() => preprocessMarkdown(content), [content]);
+  const shouldLoadMath = useMemo(() => containsMath(processedContent), [processedContent]);
+  const [mathPlugins, setMathPlugins] = useState<MathPlugins | null>(null);
+
+  useEffect(() => {
+    if (!shouldLoadMath) {
+      setMathPlugins(null);
+      return;
+    }
+    let active = true;
+    void loadMathPlugins().then((loaded) => {
+      if (active) setMathPlugins(loaded);
+    });
+    return () => {
+      active = false;
+    };
+  }, [shouldLoadMath]);
+
   const urlTransform = useCallback((url: string) => {
     if (url.startsWith("obsidian-embed://") || url.startsWith("obsidian-details://")) {
       return url;
     }
     return defaultUrlTransform(url);
   }, []);
-
-  const codeBlockStyle = useMemo(
-    () => ({
-      background: isDark ? "#1c1b19" : "#FBFBFA",
-      padding: "1rem 1.25rem",
-      borderRadius: "0",
-      fontSize: "0.875rem",
-      border: isDark ? "1px solid #3a3733" : "1px solid #D6D3D1",
-      margin: 0,
-    }),
-    [isDark]
+  const remarkPlugins = useMemo(
+    () => (mathPlugins ? [remarkGfm, mathPlugins.remarkMath] : [remarkGfm]),
+    [mathPlugins]
   );
-  // 主题给内层 <code> 单独设了背景色,与外层 div 背景不一致,会显出一块"高亮"矩形;
-  // 这里把内层 <code> 背景置为透明,让它继承外层背景。
-  const codeTagProps = useMemo(
-    () => ({ style: { background: "transparent" } }),
-    []
+  const rehypePlugins = useMemo(
+    () => (mathPlugins ? [mathPlugins.rehypeKatex] : []),
+    [mathPlugins]
   );
-  const lineNumberStyle = useMemo(
-    () => ({
-      minWidth: "2.5em",
-      paddingRight: "1em",
-      textAlign: "right" as const,
-      userSelect: "none" as const,
-      color: isDark ? "#6b675f" : "#A8A29E",
-    }),
-    [isDark]
-  );
-  const syntaxTheme = isDark ? oneDark : oneLight;
 
   const components: Components = useMemo(() => ({
     code({ className, children, node, ...props }) {
@@ -504,42 +529,14 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
         return <MermaidBlock code={codeText} />;
       }
       return match ? (
-        <div className="relative group my-6">
-          <CopyButton text={codeText} />
-          <SyntaxHighlighter
-            style={syntaxTheme}
-            language={match[1]}
-            PreTag="div"
-            useInlineStyles={true}
-            customStyle={codeBlockStyle}
-            codeTagProps={codeTagProps}
-            showLineNumbers
-            lineNumberStyle={lineNumberStyle}
-          >
-            {codeText}
-          </SyntaxHighlighter>
-        </div>
+        <LazyCodeBlock codeText={codeText} language={match[1]} />
       ) : (
         isInline ? (
           <code className={`${className} bg-neutral-200/60 dark:bg-stone-800/80 px-1.5 py-0.5 rounded font-mono text-sm border border-neutral-300/50 dark:border-stone-700/60 text-foreground`} {...props}>
             {children}
           </code>
         ) : (
-          <div className="relative group my-6">
-            <CopyButton text={codeText} />
-            <SyntaxHighlighter
-              style={syntaxTheme}
-              language="text"
-              PreTag="div"
-              useInlineStyles={true}
-              customStyle={codeBlockStyle}
-              codeTagProps={codeTagProps}
-              showLineNumbers
-              lineNumberStyle={lineNumberStyle}
-            >
-              {codeText}
-            </SyntaxHighlighter>
-          </div>
+          <LazyCodeBlock codeText={codeText} language="text" />
         )
       );
     },
@@ -612,7 +609,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
         </div>
       );
     },
-  }), [syntaxTheme, codeBlockStyle, depth, sourceSlug]);
+  }), [depth, sourceSlug]);
 
   return (
     <div
@@ -630,8 +627,8 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       prose-pre:bg-transparent prose-pre:p-0"
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        remarkPlugins={remarkPlugins}
+        rehypePlugins={rehypePlugins}
         components={components}
         urlTransform={urlTransform}
       >
