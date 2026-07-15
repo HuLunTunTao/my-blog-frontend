@@ -171,7 +171,7 @@ export default function SearchPage() {
             {results.map((post) => (
               <article key={post.slug} className="group relative p-6 transition-all duration-300 hover:translate-x-1">
                 {/* Individual Paper Layer */}
-                <div className="absolute inset-0 bg-white/60 dark:bg-stone-900/55 -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-sm" />
+                <div className="paper-texture absolute inset-0 bg-white/60 dark:bg-stone-900/55 -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-sm" />
 
                 <Link to={toPostRoute(post)} className="block space-y-2">
                   <div className="flex justify-between items-baseline">

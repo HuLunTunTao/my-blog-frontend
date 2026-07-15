@@ -8,6 +8,14 @@ import { siteConfig } from "@/config/site.config";
 export default function Layout() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row relative">
+      <div className="site-atmosphere absolute inset-x-0 top-0 h-[900px] pointer-events-none z-0 overflow-hidden select-none" aria-hidden="true">
+        <svg className="absolute bottom-0 right-0 h-[420px] w-[315px] text-stone-900 opacity-[0.025] dark:text-stone-100 dark:opacity-[0.045]" viewBox="0 0 100 200" preserveAspectRatio="none">
+          <path d="M50 200 Q60 150 55 100 T70 0" stroke="currentColor" strokeWidth="2" fill="none" />
+          <path d="M55 120 Q80 110 90 90" stroke="currentColor" strokeWidth="1" fill="none" />
+          <path d="M52 160 Q20 150 10 130" stroke="currentColor" strokeWidth="1" fill="none" />
+        </svg>
+      </div>
+
       <Sidebar />
       <Header />
 

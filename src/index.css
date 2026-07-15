@@ -11,6 +11,7 @@
     --color-subtle:     168 162 158; /* #A8A29E */
     --color-border:     231 229 228; /* #E7E5E4 */
     --color-accent:     28 28 28;    /* ink */
+    --paper-grain-image: url("/assets/paper-grain-light.png");
   }
 
   .dark {
@@ -21,6 +22,7 @@
     --color-subtle:     120 116 110;
     --color-border:     54 52 48;
     --color-accent:     232 228 217;
+    --paper-grain-image: url("/assets/paper-grain-dark.png");
   }
 
   body {
@@ -36,6 +38,36 @@
 }
 
 @layer components {
+  .paper-texture {
+    background-image: var(--paper-grain-image);
+    background-repeat: repeat;
+    background-size: 192px 192px;
+  }
+
+  .site-atmosphere {
+    background-image:
+      radial-gradient(circle at 88% 10%, rgb(28 28 28 / 0.045), transparent 34rem),
+      radial-gradient(circle at 4% 72%, rgb(87 83 78 / 0.035), transparent 28rem),
+      repeating-linear-gradient(
+        to right,
+        transparent 0,
+        transparent 79px,
+        rgb(28 28 28 / 0.018) 80px
+      );
+  }
+
+  .dark .site-atmosphere {
+    background-image:
+      radial-gradient(circle at 88% 10%, rgb(232 228 217 / 0.04), transparent 34rem),
+      radial-gradient(circle at 4% 72%, rgb(168 162 158 / 0.03), transparent 28rem),
+      repeating-linear-gradient(
+        to right,
+        transparent 0,
+        transparent 79px,
+        rgb(232 228 217 / 0.025) 80px
+      );
+  }
+
   .themed-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #a8a29e #ebe7dc;

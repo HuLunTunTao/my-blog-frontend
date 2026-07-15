@@ -132,7 +132,7 @@ export default function PostPage() {
       }}
       className="max-w-5xl mx-auto relative group"
     >
-      <div className="absolute inset-x-[-2.5rem] inset-y-[-2.5rem] bg-white/90 dark:bg-stone-900/60 rounded-none -z-10 border border-stone-200/20 dark:border-stone-700/30 hidden md:block" />
+      <div className="paper-texture absolute inset-x-[-2.5rem] inset-y-[-2.5rem] bg-white/90 dark:bg-stone-900/60 rounded-none -z-10 border border-stone-200/20 dark:border-stone-700/30 hidden md:block" />
 
       <header className="mb-12 text-center space-y-4 pt-4">
 

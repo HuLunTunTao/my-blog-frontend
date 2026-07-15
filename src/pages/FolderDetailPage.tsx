@@ -220,7 +220,7 @@ export default function FolderDetailPage() {
                 className="group relative py-4 px-6 transition-all duration-300 hover:translate-x-1"
               >
                 {/* Paper Layer - Consistent with other pages */}
-                <div className="absolute inset-0 bg-white/60 dark:bg-stone-900/55 -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none" />
+                <div className="paper-texture absolute inset-0 bg-white/60 dark:bg-stone-900/55 -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none" />
 
                 <header className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-1">
                   <Link
