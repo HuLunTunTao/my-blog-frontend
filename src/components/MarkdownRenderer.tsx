@@ -494,29 +494,45 @@ function buildImagePreviewSrc(src?: string): string | null {
   }
 }
 
+interface ImageLoadState {
+  src?: string;
+  loaded: boolean;
+  previewRetired: boolean;
+  previewFailed: boolean;
+  imageFailed: boolean;
+}
+
+function createImageLoadState(src?: string): ImageLoadState {
+  return {
+    src,
+    loaded: false,
+    previewRetired: false,
+    previewFailed: false,
+    imageFailed: false,
+  };
+}
+
 function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: string; title?: string; sourceSlug?: string }) {
   const width = getImageWidthFromTitle(title);
   const intrinsicSize = useMemo(() => getIntrinsicImageSize(src), [src]);
   const candidates = useMemo(() => buildObsidianAssetCandidates(src, sourceSlug), [src, sourceSlug]);
   const [candidateIndex, setCandidateIndex] = useState(0);
-  const [loaded, setLoaded] = useState(false);
-  const [previewRetired, setPreviewRetired] = useState(false);
-  const [previewFailed, setPreviewFailed] = useState(false);
-  const [imageFailed, setImageFailed] = useState(false);
   const imageRef = useRef<HTMLImageElement | null>(null);
   const currentSrc = candidates[candidateIndex];
+  const [loadState, setLoadState] = useState<ImageLoadState>(() => createImageLoadState(currentSrc));
   const previewSrc = useMemo(() => buildImagePreviewSrc(currentSrc), [currentSrc]);
 
-  useEffect(() => {
-    setLoaded(false);
-    setPreviewRetired(false);
-    setPreviewFailed(false);
-    setImageFailed(false);
-  }, [currentSrc]);
+  if (loadState.src !== currentSrc) {
+    setLoadState(createImageLoadState(currentSrc));
+  }
+
+  const { loaded, previewRetired, previewFailed, imageFailed } = loadState;
 
   useEffect(() => {
     if (!loaded) return;
-    const timeout = window.setTimeout(() => setPreviewRetired(true), 600);
+    const timeout = window.setTimeout(() => {
+      setLoadState((current) => ({ ...current, previewRetired: true }));
+    }, 600);
     return () => window.clearTimeout(timeout);
   }, [loaded]);
 
@@ -528,7 +544,7 @@ function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: s
       // A completed load is still safe to reveal when decode() is unavailable or interrupted.
     }
     if (imageRef.current === image && image.currentSrc === loadedSrc) {
-      setLoaded(true);
+      setLoadState((current) => ({ ...current, loaded: true }));
     }
   }, []);
 
@@ -553,7 +569,7 @@ function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: s
           loading="lazy"
           decoding="async"
           className={`progressive-image__preview${loaded ? " is-retiring" : ""}`}
-          onError={() => setPreviewFailed(true)}
+          onError={() => setLoadState((current) => ({ ...current, previewFailed: true }))}
         />
       )}
       {imageFailed ? (
@@ -573,7 +589,7 @@ function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: s
             if (candidateIndex + 1 < candidates.length) {
               setCandidateIndex((curr) => curr + 1);
             } else {
-              setImageFailed(true);
+              setLoadState((current) => ({ ...current, imageFailed: true }));
             }
           }}
         />

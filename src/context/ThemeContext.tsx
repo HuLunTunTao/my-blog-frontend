@@ -68,10 +68,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => media.removeEventListener("change", handler);
   }, []);
 
-  const resolvedTheme: ResolvedTheme = useMemo(
-    () => (theme === "system" ? systemTheme : theme),
-    [theme, systemTheme]
-  );
+  const resolvedTheme: ResolvedTheme = theme === "system" ? systemTheme : theme;
 
   // Apply .dark class + persist
   useEffect(() => {
