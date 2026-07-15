@@ -10,7 +10,6 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { siteConfig } from "@/config/site.config";
 import { toPostRoute } from "@/lib/postSlug";
 import type { ComponentType } from "react";
-import { useCachedImage } from "@/hooks/useCachedImage";
 
 type SocialIconProps = { size?: string | number; className?: string };
 
@@ -18,7 +17,6 @@ export default function TimelineView() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeYear, setActiveYear] = useState<string>("");
-  const cachedAvatar = useCachedImage(siteConfig.author.avatar);
 
   const grouped = useMemo(() => groupPostsByYearMonth(posts), [posts]);
   const years = useMemo(
@@ -80,13 +78,9 @@ export default function TimelineView() {
 
   return (
     <>
-      {loading && posts.length === 0 ? (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-stone-400 dark:text-stone-500" />
-        </div>
-      ) : (
-        <>
-          <TimelineSidebar groups={grouped} activeYear={activeYear} onSelectYear={setActiveYear} />
+      {!loading && (
+        <TimelineSidebar groups={grouped} activeYear={activeYear} onSelectYear={setActiveYear} />
+      )}
       
       <div className="space-y-24 relative">
         {/* Hero Section */}
@@ -95,13 +89,13 @@ export default function TimelineView() {
                 <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-stone-200/50 dark:bg-stone-800/50 flex items-center justify-center overflow-hidden border border-stone-300 dark:border-stone-700 shadow-inner">
                    {siteConfig.author.avatar ? (
                      <img 
-                        src={cachedAvatar} 
+                        src={siteConfig.author.avatar}
                         alt={siteConfig.author.name} 
                         className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity duration-700" 
                         referrerPolicy="no-referrer"
                         loading="eager"
                         decoding="async"
-                        fetchPriority="high"
+                        {...{ fetchpriority: "high" }}
                      />
                    ) : (
                      <span className="text-4xl grayscale opacity-50">👤</span>
@@ -139,7 +133,7 @@ export default function TimelineView() {
                                 href={link.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="p-2 text-stone-400 dark:text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-stone-200/50 dark:hover:bg-stone-800/50 rounded-full transition-all duration-300 group"
+                                className="p-2 text-subtle hover:text-stone-800 dark:hover:text-stone-200 hover:bg-stone-200/50 dark:hover:bg-stone-800/50 rounded-full transition-all duration-300 group"
                                 title={link.label}
                             >
                                 <Icon size={20} className="group-hover:scale-110 transition-transform" />
@@ -150,7 +144,12 @@ export default function TimelineView() {
             </div>
         </section>
 
-        {years.map((year) => (
+        {loading && posts.length === 0 ? (
+          <div className="flex min-h-[100svh] items-start justify-center pt-24" aria-live="polite">
+            <Loader2 className="h-8 w-8 animate-spin text-stone-400 dark:text-stone-500" />
+            <span className="sr-only">正在加载文章列表</span>
+          </div>
+        ) : years.map((year) => (
           <div key={year} id={`year-${year}`} className="relative scroll-mt-32">
              {/* Year Marker - Optimized: Ink wash style, muted, serif water mark */}
             <div className="flex items-baseline border-b border-black dark:border-stone-200 pb-4 mb-12 relative">
@@ -216,8 +215,6 @@ export default function TimelineView() {
           </div>
         ))}
       </div>
-    </>
-  )}
     </>
   );
 }

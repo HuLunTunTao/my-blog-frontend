@@ -34,7 +34,7 @@ export default function Layout() {
             </Suspense>
         </div>
 
-        <footer className="py-12 mt-12 border-t border-stone-200/50 dark:border-stone-800/50 text-center text-xs text-stone-400 dark:text-stone-500 font-sans tracking-widest flex flex-col items-center gap-4">
+        <footer className="py-12 mt-12 border-t border-stone-200/50 dark:border-stone-800/50 text-center text-xs text-subtle font-sans tracking-widest flex flex-col items-center gap-4">
             <div className="flex gap-6">
                 {siteConfig.socialLinks.map((link) => (
                     <a

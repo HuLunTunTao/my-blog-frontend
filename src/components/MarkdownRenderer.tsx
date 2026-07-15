@@ -415,7 +415,7 @@ function extractApiAssetPath(src?: string): string | null {
   const marker = "/api/assets/";
   const idx = src.indexOf(marker);
   if (idx === -1) return null;
-  const raw = src.slice(idx + marker.length).replace(/^\/+/, "");
+  const raw = src.slice(idx + marker.length).split(/[?#]/, 1)[0].replace(/^\/+/, "");
   if (!raw) return null;
   try {
     return decodeURIComponent(raw);
@@ -455,8 +455,6 @@ function buildObsidianAssetCandidates(src?: string, sourceSlug?: string): string
       paths.add(joinPath(joinPath(sourceDir, "附件"), fileName));
       paths.add(joinPath(joinPath(sourceDir, "attachment"), fileName));
     }
-    // Bare path as fallback (correct for root-level posts, useful for hand-written paths).
-    paths.add(assetPath);
     // Common default attachment folders in many vaults.
     paths.add(joinPath("附件", fileName));
     paths.add(joinPath("attachment", fileName));
@@ -464,11 +462,28 @@ function buildObsidianAssetCandidates(src?: string, sourceSlug?: string): string
     paths.add(assetPath);
   }
 
-  return Array.from(paths).map((p) => buildBackendUrl(`/api/assets/${encodeAssetPath(p)}`));
+  const fallbackUrls = Array.from(paths).map((p) => buildBackendUrl(`/api/assets/${encodeAssetPath(p)}`));
+  return Array.from(new Set([normalized, ...fallbackUrls]));
+}
+
+function getIntrinsicImageSize(src?: string): { width: number; height: number } | null {
+  if (!src) return null;
+  try {
+    const url = new URL(src, window.location.origin);
+    const width = Number(url.searchParams.get("w"));
+    const height = Number(url.searchParams.get("h"));
+    if (Number.isInteger(width) && width > 0 && Number.isInteger(height) && height > 0) {
+      return { width, height };
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }
 
 function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: string; title?: string; sourceSlug?: string }) {
   const width = getImageWidthFromTitle(title);
+  const intrinsicSize = useMemo(() => getIntrinsicImageSize(src), [src]);
   const candidates = useMemo(() => buildObsidianAssetCandidates(src, sourceSlug), [src, sourceSlug]);
   const [candidateIndex, setCandidateIndex] = useState(0);
 
@@ -476,6 +491,8 @@ function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: s
     <img
       src={candidates[candidateIndex]}
       alt={alt || ""}
+      width={intrinsicSize?.width}
+      height={intrinsicSize?.height}
       loading="lazy"
       style={width ? { width: `${width}px`, maxWidth: "100%" } : { maxWidth: "100%" }}
       className="my-6 border border-stone-300/60 dark:border-stone-700/60 bg-paper"

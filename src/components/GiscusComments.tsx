@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import giscusThemeCss from "@/styles/giscus-theme.css?raw";
 import giscusThemeDarkCss from "@/styles/giscus-theme-dark.css?raw";
 import { useTheme } from "@/context/ThemeContext";
@@ -43,12 +43,32 @@ export function warmupGiscusResources(): void {
 }
 
 export default function GiscusComments({ commentId, slug }: GiscusCommentsProps) {
+  const sectionRef = useRef<HTMLElement | null>(null);
   const hostRef = useRef<HTMLDivElement | null>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
   const discussionTerm = (commentId || slug || "").trim();
   const { resolvedTheme } = useTheme();
   const giscusTheme = resolvedTheme === "dark" ? GISCUS_THEME_DARK : GISCUS_THEME_LIGHT;
 
   useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || shouldLoad) return;
+    if (!("IntersectionObserver" in window)) {
+      setShouldLoad(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      setShouldLoad(true);
+      observer.disconnect();
+    });
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [shouldLoad]);
+
+  useEffect(() => {
+    if (!shouldLoad) return;
     warmupGiscusResources();
     const host = hostRef.current;
     if (!discussionTerm || !host || !isGiscusConfigured()) {
@@ -76,7 +96,7 @@ export default function GiscusComments({ commentId, slug }: GiscusCommentsProps)
     script.setAttribute("data-input-position", "top");
     script.setAttribute("data-theme", giscusTheme);
     script.setAttribute("data-lang", "zh-CN");
-    script.setAttribute("data-loading", "eager");
+    script.setAttribute("data-loading", "lazy");
 
     mount.appendChild(script);
 
@@ -85,7 +105,7 @@ export default function GiscusComments({ commentId, slug }: GiscusCommentsProps)
         host.removeChild(mount);
       }
     };
-  }, [discussionTerm, giscusTheme]);
+  }, [discussionTerm, giscusTheme, shouldLoad]);
 
   // Hot-swap the theme on an already-rendered giscus iframe without reloading
   useEffect(() => {
@@ -106,8 +126,9 @@ export default function GiscusComments({ commentId, slug }: GiscusCommentsProps)
   }
 
   return (
-    <section className="mt-12 border-t border-stone-300/60 dark:border-stone-700/60 pt-10">
+    <section ref={sectionRef} className="mt-12 min-h-[280px] border-t border-stone-300/60 dark:border-stone-700/60 pt-10">
       <h2 className="text-xl font-serif mb-6">评论</h2>
+      {!shouldLoad && <p className="text-sm text-subtle">滚动到评论区后加载评论。</p>}
       <div ref={hostRef} />
     </section>
   );

@@ -3,7 +3,7 @@ import { getPostBySlug, getPostByShortId, Post } from "@/lib/api";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import EncryptedGate from "@/components/EncryptedGate";
 import AlsoOnMyBlog from "@/components/AlsoOnMyBlog";
-import GiscusComments, { warmupGiscusResources } from "@/components/GiscusComments";
+import GiscusComments from "@/components/GiscusComments";
 import TagBadge from "@/components/TagBadge";
 import { useState, useEffect, useCallback } from "react";
 import { format, parseISO } from "date-fns";
@@ -23,14 +23,14 @@ function formatPostTime(value: string): string {
 }
 
 function setCanonicalUrl(shortId: string) {
-  const url = `/p/${shortId}`;
+  const url = new URL(`/p/${shortId}`, window.location.origin).href;
   let link = document.querySelector<HTMLLinkElement>("link[rel='canonical']");
   if (!link) {
     link = document.createElement("link");
     link.rel = "canonical";
     document.head.appendChild(link);
   }
-  link.href = url;
+  link.setAttribute("href", url);
 }
 
 export default function PostPage() {
@@ -69,7 +69,6 @@ export default function PostPage() {
 
   useEffect(() => {
     setUnlocked(false);
-    warmupGiscusResources();
     void loadPost();
   }, [loadPost]);
 

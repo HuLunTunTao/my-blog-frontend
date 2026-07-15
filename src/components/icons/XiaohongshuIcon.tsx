@@ -11,7 +11,8 @@ export function XiaohongshuIcon({ size = 20, className, style }: XiaohongshuIcon
     <img
       src="/assets/xiaohongshu.png"
       alt="Xiaohongshu"
-      height={size}
+      width={205}
+      height={96}
       style={{
         display: "inline-block",
         height: size,

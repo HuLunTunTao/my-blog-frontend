@@ -26,7 +26,7 @@ export default function AlsoOnMyBlog({ currentPost }: Props) {
     } catch (error) {
       console.error("Failed to load related posts:", error);
     }
-  }, [currentPost.slug, currentPost.tags]);
+  }, [currentPost.slug, currentPost.tags, currentPost.date]);
 
   useEffect(() => {
     void loadRelated();
@@ -36,12 +36,12 @@ export default function AlsoOnMyBlog({ currentPost }: Props) {
     <div className="mt-24 pt-12 border-t border-border space-y-12">
       {(tagRelated.length > 0 || nearby.length > 0) && (
         <div>
-          <h3 className="text-sm font-sans font-bold text-subtle uppercase tracking-widest mb-6 border-b border-border pb-2 inline-block">
+          <h2 className="text-sm font-sans font-bold text-subtle uppercase tracking-widest mb-6 border-b border-border pb-2 inline-block">
             Also on My Blog
-          </h3>
+          </h2>
           {tagRelated.length > 0 && (
             <div className="mb-8">
-              <h4 className="text-xs uppercase tracking-widest text-subtle mb-3">Same tags</h4>
+              <h3 className="text-xs uppercase tracking-widest text-subtle mb-3">Same tags</h3>
               <ul className="themed-scrollbar flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
                 {tagRelated.map((post) => (
                   <li key={`tag-${post.slug}`} className="min-w-[260px] max-w-[320px] snap-start shrink-0">
@@ -64,7 +64,7 @@ export default function AlsoOnMyBlog({ currentPost }: Props) {
           )}
           {nearby.length > 0 && (
             <div>
-              <h4 className="text-xs uppercase tracking-widest text-subtle mb-3">Nearby in time</h4>
+              <h3 className="text-xs uppercase tracking-widest text-subtle mb-3">Nearby in time</h3>
               <ul className="themed-scrollbar flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
                 {nearby.map((post) => (
                   <li key={`near-${post.slug}`} className="min-w-[260px] max-w-[320px] snap-start shrink-0">
