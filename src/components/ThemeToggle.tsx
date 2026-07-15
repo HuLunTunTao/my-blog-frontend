@@ -26,7 +26,7 @@ export default function ThemeToggle({ className }: ThemeToggleProps) {
       role="radiogroup"
       aria-label="Theme"
       className={cn(
-        "inline-flex items-center gap-0.5 rounded-full border border-border bg-background/70 p-1 font-sans backdrop-blur-sm shadow-[0_1px_2px_rgba(0,0,0,0.03)]",
+        "inline-flex items-center gap-0.5 rounded-full border border-border bg-background p-1 font-sans shadow-[0_1px_2px_rgba(0,0,0,0.03)]",
         className
       )}
     >

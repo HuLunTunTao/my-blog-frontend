@@ -34,7 +34,7 @@ export function NoteModal(props: NoteModalProps) {
       </div>
       <button
         type="button"
-        className="absolute top-6 right-6 px-4 py-2 text-xs font-sans uppercase tracking-widest border border-border bg-background/80 text-foreground backdrop-blur-sm hover:bg-foreground hover:text-background transition-colors"
+        className="absolute top-6 right-6 px-4 py-2 text-xs font-sans uppercase tracking-widest border border-border bg-background text-foreground hover:bg-foreground hover:text-background transition-colors"
         onClick={onClose}
       >
         Close

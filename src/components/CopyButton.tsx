@@ -22,7 +22,7 @@ export default function CopyButton({ text }: { text: string }) {
         "absolute right-2 top-2 px-2 py-1 text-xs rounded border transition-all duration-200 z-10 font-sans",
         copied 
           ? "bg-foreground text-background border-foreground" 
-          : "bg-background/80 text-subtle border-border hover:text-foreground hover:border-foreground backdrop-blur-sm"
+          : "bg-background text-subtle border-border hover:text-foreground hover:border-foreground"
       )}
       aria-label="Copy code"
     >

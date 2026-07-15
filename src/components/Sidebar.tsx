@@ -14,7 +14,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-20 md:w-32 lg:w-48 flex flex-col justify-between py-12 items-center border-r border-stone-200/60 dark:border-stone-800/60 z-50 bg-background/50 backdrop-blur-sm hidden md:flex">
+    <aside className="fixed left-0 top-0 h-screen w-20 md:w-32 lg:w-48 flex flex-col justify-between py-12 items-center border-r border-stone-200/60 dark:border-stone-800/60 z-50 bg-background hidden md:flex">
       {/* Brand / Logo removed */}
       <div />
 

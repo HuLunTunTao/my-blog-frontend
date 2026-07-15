@@ -106,12 +106,7 @@ export default function TagDetailPage() {
         <div className="space-y-8">
           {state.posts.map((post) => (
             <article key={post.slug} className="group relative py-6 px-8 transition-all duration-300 hover:translate-x-1">
-              <div
-                className="absolute inset-0 bg-white/50 dark:bg-stone-900/40 backdrop-blur-[2px] -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none"
-                style={{
-                  backgroundImage: `url("/assets/paperGrain-128.svg")`,
-                }}
-              />
+              <div className="absolute inset-0 bg-white/60 dark:bg-stone-900/55 -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none" />
 
               <Link to={toPostRoute(post)} className="block">
                 <div className="flex justify-between items-baseline mb-2">

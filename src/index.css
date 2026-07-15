@@ -26,15 +26,8 @@
   body {
     @apply bg-background text-foreground antialiased font-serif selection:bg-accent/20 selection:text-accent;
     line-height: 1.8;
-    /* Subtle paper noise texture */
     background-color: theme('colors.background');
-    background-image: url("/assets/noise-200.svg");
     transition: background-color 400ms ease, color 400ms ease;
-  }
-
-  .dark body {
-    /* Tame the noise texture so it reads as soft grain on dark ink */
-    background-blend-mode: overlay;
   }
 
   .writing-vertical-rl {
@@ -261,7 +254,6 @@
 /* Modal */
 .gb-modal-backdrop {
   background: var(--gb-modal-backdrop);
-  backdrop-filter: blur(3px);
   animation: gb-fade-in 260ms ease-out forwards;
 }
 .gb-modal-note-wrapper {

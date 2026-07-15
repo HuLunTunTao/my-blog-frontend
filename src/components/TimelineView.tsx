@@ -184,11 +184,7 @@ export default function TimelineView() {
                           <Link key={post.slug} to={toPostRoute(post)} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/70 dark:focus-visible:ring-stone-500/70">
                             <article className="relative py-4 px-6 transition-all duration-300 hover:translate-x-1">
                               {/* Individual Paper Layer */}
-                              <div className="absolute inset-0 bg-white/60 dark:bg-stone-900/45 -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none" 
-                                   style={{
-                                     backgroundImage: `url("/assets/paperGrain-128.svg")`
-                                   }}
-                              />
+                              <div className="absolute inset-0 bg-white/60 dark:bg-stone-900/45 -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none" />
 
                               <header className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-1">
                                 <span
