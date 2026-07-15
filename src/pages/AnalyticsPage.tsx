@@ -889,16 +889,16 @@ export default function AnalyticsPage() {
         <DataTable
           columns={["Post", "Path", "Requests", "Reads", "Failed", "Unique IPs", "Last Access", "Action"]}
           rows={pagedPosts.items.map((post) => [
-              <button type="button" onClick={() => applySlugFilter(post.slug)} className="text-left">
+              <button key="post" type="button" onClick={() => applySlugFilter(post.slug)} className="text-left">
                 <ScrollTitle title={post.title} slug={post.slug} />
               </button>,
-            <div className="max-w-[14rem] break-all text-stone-500 dark:text-stone-400">{post.path || "/"}</div>,
+            <div key="path" className="max-w-[14rem] break-all text-stone-500 dark:text-stone-400">{post.path || "/"}</div>,
             post.totalRequests,
             post.successfulReads,
             post.failedReads,
             post.uniqueIps,
             formatDateTime(post.latestAccessAt),
-            <div className="grid min-w-[7.5rem] grid-cols-1 gap-2">
+            <div key="actions" className="grid min-w-[7.5rem] grid-cols-1 gap-2">
               <button type="button" onClick={() => applySlugFilter(post.slug)} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">
                 filter
               </button>
@@ -935,7 +935,7 @@ export default function AnalyticsPage() {
         <DataTable
           columns={["IP", "Requests", "Reads", "Failed", "Unique Posts", "Top Posts", "Actions"]}
           rows={pagedIps.items.map((ip) => [
-            <div className="min-w-[9.5rem] space-y-2">
+            <div key="ip" className="min-w-[9.5rem] space-y-2">
               <button type="button" onClick={() => applyIpFilter(ip.ip)} className="space-y-1 text-left">
                 <div className="font-mono text-xs text-stone-900 dark:text-stone-100">{ip.ip}</div>
                 <div className="text-xs text-stone-500 dark:text-stone-400">Last seen {formatDateTime(ip.lastSeenAt)}</div>
@@ -946,8 +946,8 @@ export default function AnalyticsPage() {
             ip.successfulReads,
             ip.failedReads,
             ip.uniquePosts,
-            <div className="max-w-[16rem] overflow-x-auto whitespace-nowrap text-xs text-stone-500 dark:text-stone-400 themed-scrollbar">{(ip.topPosts ?? []).join(" • ") || "-"}</div>,
-            <div className="grid min-w-[11rem] grid-cols-1 gap-2">
+            <div key="top-posts" className="max-w-[16rem] overflow-x-auto whitespace-nowrap text-xs text-stone-500 dark:text-stone-400 themed-scrollbar">{(ip.topPosts ?? []).join(" • ") || "-"}</div>,
+            <div key="actions" className="grid min-w-[11rem] grid-cols-1 gap-2">
               <button type="button" onClick={() => applyIpFilter(ip.ip)} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">
                 filter
               </button>
@@ -976,7 +976,7 @@ export default function AnalyticsPage() {
           <DataTable
             columns={["Referrer", "Host", "Requests", "Reads", "Failed"]}
             rows={(stats?.referrers ?? []).map((referrer) => [
-              <div className="max-w-[20rem] break-all text-stone-600 dark:text-stone-300">{referrer.referrer}</div>,
+              <div key="referrer" className="max-w-[20rem] break-all text-stone-600 dark:text-stone-300">{referrer.referrer}</div>,
               referrer.host || "-",
               referrer.totalRequests,
               referrer.successfulReads,
@@ -989,15 +989,15 @@ export default function AnalyticsPage() {
             columns={["Time", "Post", "IP", "Geo", "Result"]}
             rows={(stats?.recentEvents ?? []).map((event) => [
               formatDateTime(event.accessedAt),
-              <ScrollTitle title={event.title} slug={event.slug} />,
-              <div className="flex items-center gap-2">
+              <ScrollTitle key="post" title={event.title} slug={event.slug} />,
+              <div key="ip" className="flex items-center gap-2">
                 <div className="font-mono text-xs">{event.ip}</div>
                 <InlineCopyButton text={event.ip} />
               </div>,
-              <div className="border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 px-2 py-1 text-xs text-stone-500 dark:text-stone-400">
+              <div key="geo" className="border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 px-2 py-1 text-xs text-stone-500 dark:text-stone-400">
                 {[event.countryName || event.countryCode, event.region].filter(Boolean).join(" / ") || "Unknown"}
               </div>,
-              <span className={cn("inline-flex border px-2 py-1 text-xs font-medium", event.accessGranted ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700")}>
+              <span key="result" className={cn("inline-flex border px-2 py-1 text-xs font-medium", event.accessGranted ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700")}>
                 {event.accessGranted ? "Success" : "Blocked"}
               </span>,
             ])}

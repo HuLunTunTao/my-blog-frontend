@@ -19,10 +19,13 @@ interface GuestbookGiscusProps {
 export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const callbackRef = useRef(onDiscussionUpdate);
-  callbackRef.current = onDiscussionUpdate;
   const mountedRef = useRef(false);
 
   const giscusTheme = resolveGiscusTheme(theme);
+
+  useEffect(() => {
+    callbackRef.current = onDiscussionUpdate;
+  }, [onDiscussionUpdate]);
 
   // Mount the giscus script once.
   useEffect(() => {
@@ -109,10 +112,14 @@ export function GuestbookGiscus({ theme, onDiscussionUpdate }: GuestbookGiscusPr
 
     if (sendTheme()) return;
 
-    const timers = [500, 1500, 3000].map((delay) =>
-      setTimeout(() => sendTheme(), delay)
-    );
-    return () => timers.forEach(clearTimeout);
+    const host = hostRef.current;
+    if (!host) return;
+
+    const observer = new MutationObserver(() => {
+      if (sendTheme()) observer.disconnect();
+    });
+    observer.observe(host, { childList: true, subtree: true });
+    return () => observer.disconnect();
   }, [giscusTheme]);
 
   if (!isGiscusConfigured()) return null;

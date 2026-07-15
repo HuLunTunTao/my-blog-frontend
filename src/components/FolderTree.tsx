@@ -83,11 +83,10 @@ function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
       <AnimatePresence>
         {isOpen && hasChildren && (
           <m.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden"
           >
             {folder.children.map((child) => (
               <FolderTreeItem key={child.path} folder={child} level={level + 1} />
