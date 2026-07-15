@@ -1,6 +1,6 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTheme, type Theme } from "@/context/ThemeContext";
+import { useTheme, type Theme } from "@/context/theme";
 
 interface Option {
   value: Theme;

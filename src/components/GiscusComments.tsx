@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import giscusThemeCss from "@/styles/giscus-theme.css?raw";
 import giscusThemeDarkCss from "@/styles/giscus-theme-dark.css?raw";
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme } from "@/context/theme";
 import { giscusConfig, isGiscusConfigured } from "@/config/giscus.config";
 
 interface GiscusCommentsProps {
@@ -32,7 +32,7 @@ function ensureHeadLink(rel: string, href: string, crossOrigin?: string, asType?
   document.head.appendChild(link);
 }
 
-export function warmupGiscusResources(): void {
+function warmupGiscusResources(): void {
   if (typeof window === "undefined" || warmedUp) {
     return;
   }

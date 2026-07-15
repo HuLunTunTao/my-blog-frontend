@@ -309,18 +309,6 @@ export async function getAnalytics(
   return response.json();
 }
 
-export async function getIgnoredIps(token: string): Promise<IgnoredIPEntry[]> {
-  const response = await fetch(`${API_BASE}/admin/ignored-ips`, {
-    headers: authHeaders(token),
-  });
-  if (!response.ok) {
-    if (response.status === 401) throw new Error("Unauthorized");
-    throw new Error("Failed to fetch ignored IPs");
-  }
-  const data = await response.json();
-  return Array.isArray(data.ignoredIps) ? data.ignoredIps : [];
-}
-
 export async function addIgnoredIp(token: string, ip: string, label?: string): Promise<IgnoredIPEntry[]> {
   const response = await fetch(`${API_BASE}/admin/ignored-ips`, {
     method: "POST",

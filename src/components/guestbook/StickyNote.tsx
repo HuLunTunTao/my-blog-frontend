@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import type { CSSProperties, KeyboardEvent, MouseEvent } from 'react';
 import type { AgingVisual, GuestNote } from '@/lib/guestbook/types';
 import { deriveNote, formatNoteBg, formatNoteBand } from '@/lib/guestbook/derive';
-import { computeAging, getPristineVisual } from '@/lib/guestbook/aging';
-import type { ResolvedTheme } from '@/context/ThemeContext';
+import { computeAging } from '@/lib/guestbook/aging';
+import type { ResolvedTheme } from '@/context/theme';
 
 type CSSVarProperties = CSSProperties & Record<`--${string}`, string | number>;
 
@@ -209,5 +209,3 @@ export function StickyNote(props: StickyNoteProps) {
     </div>
   );
 }
-
-export { getPristineVisual };

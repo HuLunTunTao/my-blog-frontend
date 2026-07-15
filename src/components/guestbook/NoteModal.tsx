@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import type { GuestNote } from '@/lib/guestbook/types';
-import { StickyNote, getPristineVisual } from './StickyNote';
-import type { ResolvedTheme } from '@/context/ThemeContext';
+import { StickyNote } from './StickyNote';
+import { getPristineVisual } from '@/lib/guestbook/aging';
+import type { ResolvedTheme } from '@/context/theme';
 
 interface NoteModalProps {
   note: GuestNote;

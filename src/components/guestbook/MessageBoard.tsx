@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import type { GuestNote } from '@/lib/guestbook/types';
 import { StickyNote } from './StickyNote';
 import { WRINKLE_FILTER_COUNT } from '@/lib/guestbook/derive';
-import type { ResolvedTheme } from '@/context/ThemeContext';
+import type { ResolvedTheme } from '@/context/theme';
 
 interface MessageBoardProps {
   notes: GuestNote[];

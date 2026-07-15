@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import giscusThemeCss from '@/styles/giscus-theme.css?raw';
 import giscusThemeDarkCss from '@/styles/giscus-theme-dark.css?raw';
-import type { ResolvedTheme } from '@/context/ThemeContext';
+import type { ResolvedTheme } from '@/context/theme';
 import { giscusConfig, isGiscusConfigured } from '@/config/giscus.config';
 
 const GISCUS_THEME_LIGHT = `data:text/css;charset=utf-8,${encodeURIComponent(giscusThemeCss)}`;

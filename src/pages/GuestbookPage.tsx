@@ -6,7 +6,7 @@ import { fetchGiscusNotes } from '@/lib/guestbook/giscus';
 import { GuestMessageBoard } from '@/components/guestbook/MessageBoard';
 import { NoteModal } from '@/components/guestbook/NoteModal';
 import { GuestbookGiscus } from '@/components/guestbook/GuestbookGiscus';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from '@/context/theme';
 
 const BASE_LIFESPAN_DAYS = 547.5; // 约 1.5 年
 const BASE_LIFESPAN = BASE_LIFESPAN_DAYS * 86400;

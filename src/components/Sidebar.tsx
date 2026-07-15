@@ -1,17 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
+const NAV_ITEMS = [
+  { name: "Time", path: "/", zh: "岁" },
+  { name: "Folders", path: "/folders", zh: "录" },
+  { name: "Tags", path: "/tags", zh: "类" },
+  { name: "Search", path: "/search", zh: "寻" },
+  { name: "Note", path: "/guestbook", zh: "言" },
+];
+
 export default function Sidebar() {
   const location = useLocation();
   const path = location.pathname;
-
-  const navItems = [
-    { name: "Time", path: "/", zh: "岁" },
-    { name: "Folders", path: "/folders", zh: "录" },
-    { name: "Tags", path: "/tags", zh: "类" },
-    { name: "Search", path: "/search", zh: "寻" },
-    { name: "Note", path: "/guestbook", zh: "言" },
-  ];
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-20 md:w-32 lg:w-48 flex flex-col justify-between py-12 items-center border-r border-stone-200/60 dark:border-stone-800/60 z-50 bg-background hidden md:flex">
@@ -20,7 +20,7 @@ export default function Sidebar() {
 
       {/* Navigation - Bamboo Joint Style Reimagined for Visibility */}
       <nav className="flex flex-col gap-10 items-center flex-1 justify-center">
-        {navItems.map((item) => {
+        {NAV_ITEMS.map((item) => {
           const isActive = item.path === '/' 
             ? path === '/' 
             : path.startsWith(item.path);
