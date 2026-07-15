@@ -486,7 +486,7 @@ function buildImagePreviewSrc(src?: string): string | null {
   try {
     const url = new URL(src, window.location.origin);
     if (!url.pathname.includes("/api/assets/")) return null;
-    url.searchParams.set("preview", "48");
+    url.searchParams.set("preview", "32");
     return url.toString();
   } catch {
     return null;
@@ -515,7 +515,7 @@ function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: s
 
   useEffect(() => {
     if (!loaded) return;
-    const timeout = window.setTimeout(() => setPreviewRetired(true), 420);
+    const timeout = window.setTimeout(() => setPreviewRetired(true), 600);
     return () => window.clearTimeout(timeout);
   }, [loaded]);
 
