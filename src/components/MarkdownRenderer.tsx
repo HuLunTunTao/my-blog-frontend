@@ -33,6 +33,7 @@ import {
   parseObsidianRef,
   preprocessMarkdown,
 } from "@/lib/markdown";
+import { rehypeHeadingIds } from "@/lib/tableOfContents";
 
 interface MarkdownRendererProps {
   content: string;
@@ -611,8 +612,10 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
     [mathPlugins]
   );
   const rehypePlugins = useMemo(
-    () => (mathPlugins ? [mathPlugins.rehypeKatex] : []),
-    [mathPlugins]
+    () => (mathPlugins
+      ? (depth === 0 ? [mathPlugins.rehypeKatex, rehypeHeadingIds] : [mathPlugins.rehypeKatex])
+      : (depth === 0 ? [rehypeHeadingIds] : [])),
+    [depth, mathPlugins]
   );
 
   const components: Components = useMemo(() => ({
@@ -709,7 +712,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
   return (
     <div
       className="prose prose-neutral dark:prose-invert max-w-none
-      prose-headings:font-serif prose-headings:text-foreground prose-headings:font-bold
+      prose-headings:scroll-mt-24 prose-headings:font-serif prose-headings:text-foreground prose-headings:font-bold
       prose-h1:text-4xl prose-h1:font-black prose-h1:tracking-tight prose-h1:mb-8
       prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-12 prose-h2:mb-6 prose-h2:pb-2 prose-h2:border-b prose-h2:border-border
       prose-h3:text-xl prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-4

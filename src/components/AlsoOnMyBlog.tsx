@@ -33,7 +33,7 @@ export default function AlsoOnMyBlog({ currentPost }: Props) {
   }, [loadRelated]);
 
   return (
-    <div className="mt-24 pt-12 border-t border-border space-y-12">
+    <div id="also-on-my-blog" className="mt-24 scroll-mt-24 space-y-12 border-t border-border pt-12">
       {(tagRelated.length > 0 || nearby.length > 0) && (
         <div>
           <h2 className="text-sm font-sans font-bold text-subtle uppercase tracking-widest mb-6 border-b border-border pb-2 inline-block">

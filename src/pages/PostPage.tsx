@@ -4,23 +4,15 @@ import MarkdownRenderer from "@/components/MarkdownRenderer";
 import EncryptedGate from "@/components/EncryptedGate";
 import AlsoOnMyBlog from "@/components/AlsoOnMyBlog";
 import GiscusComments from "@/components/GiscusComments";
-import TagBadge from "@/components/TagBadge";
-import { useState, useEffect, useCallback } from "react";
-import { format, parseISO } from "date-fns";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { decodeSlugFromPath } from "@/lib/postSlug";
-
-// 含 "T" 的展示到分钟，仅日期的（旧文兜底）只展示日期。
-function formatPostTime(value: string): string {
-  try {
-    const d = parseISO(value);
-    return value.includes("T") ? format(d, "yyyy年M月d日 HH:mm") : format(d, "yyyy年M月d日");
-  } catch {
-    return value;
-  }
-}
+import ArticleTableOfContents from "@/components/ArticleTableOfContents";
+import { extractTableOfContents } from "@/lib/tableOfContents";
+import { isGiscusConfigured } from "@/config/giscus.config";
+import ArticleArchive from "@/components/ArticleArchive";
 
 function setCanonicalUrl(shortId: string) {
   const url = new URL(`/p/${shortId}`, window.location.origin).href;
@@ -41,6 +33,10 @@ export default function PostPage() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [unlocked, setUnlocked] = useState(false);
+  const tableOfContents = useMemo(
+    () => extractTableOfContents(post?.content ?? "").filter((item) => item.level >= 2 && item.level <= 4),
+    [post?.content],
+  );
 
   const loadPost = useCallback(async () => {
     setLoading(true);
@@ -117,9 +113,25 @@ export default function PostPage() {
   }
 
   const isProtected = (post.visibility === "encrypted" || post.visibility === "hidden") && !unlocked;
+  const articleNavigation = [...tableOfContents];
+  if (!isProtected && post.visibility !== "hidden") {
+    articleNavigation.push({ id: "also-on-my-blog", text: "Also on My Blog", level: 2, kind: "section" });
+  }
+  if (!isProtected && (post.commentId || post.slug).trim() && isGiscusConfigured()) {
+    articleNavigation.push({ id: "comments", text: "评论区", level: 2, kind: "section" });
+  }
+  const hasArticleSidebar = !isProtected;
+  const archive = {
+    excerpt: post.excerpt,
+    createdTime: post.createdTime,
+    publishedTime: post.date,
+    updatedTime: post.updatedTime,
+    tags: post.tags,
+  };
 
   return (
     <LazyMotion features={domAnimation}>
+      <div className={`mx-auto w-full max-w-7xl ${hasArticleSidebar ? "min-[1180px]:mx-0 min-[1180px]:grid min-[1180px]:w-[calc(100%+4rem)] min-[1180px]:grid-cols-[minmax(0,1fr)_17rem] min-[1180px]:items-start min-[1180px]:gap-12" : ""}`}>
       <m.article
       key={post.slug}
       initial={{ opacity: 0, y: 15 }}
@@ -129,7 +141,7 @@ export default function PostPage() {
         duration: 0.5,
         ease: [0.23, 1, 0.32, 1]
       }}
-      className="max-w-5xl mx-auto relative group"
+      className="relative mx-auto w-full min-w-0 max-w-5xl group"
     >
       <div className="paper-texture absolute inset-x-[-2.5rem] inset-y-[-2.5rem] bg-white/90 dark:bg-stone-900/60 rounded-none -z-10 border border-stone-200/20 dark:border-stone-700/30 hidden md:block" />
 
@@ -138,22 +150,16 @@ export default function PostPage() {
         <h1 className="text-3xl md:text-4xl font-serif font-medium leading-tight">
           {post.title}
         </h1>
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-subtle font-serif">
-            {post.createdTime && (
-              <span>创建时间：{formatPostTime(post.createdTime)}</span>
-            )}
-            {post.date && (
-              <span>发布时间：{formatPostTime(post.date)}</span>
-            )}
-            {post.updatedTime && (
-              <span>最新修改时间：{formatPostTime(post.updatedTime)}</span>
-            )}
-        </div>
-        <div className="flex justify-center gap-2 mb-6">
-            {post.tags.map(tag => (
-                <TagBadge key={tag} tag={tag} />
-            ))}
-        </div>
+        {!isProtected && (
+          <details className="mx-auto mt-5 max-w-md border-y border-stone-300/60 py-3 text-left min-[1180px]:hidden dark:border-stone-700/60">
+            <summary className="cursor-pointer list-none font-sans text-xs tracking-[0.18em] text-stone-500 marker:content-none dark:text-stone-400">
+              文章信息
+            </summary>
+            <div className="mt-5 px-2 pb-2">
+              <ArticleArchive archive={archive} />
+            </div>
+          </details>
+        )}
       </header>
 
       {isProtected ? (
@@ -171,6 +177,8 @@ export default function PostPage() {
       {!isProtected && post.visibility !== "hidden" && <AlsoOnMyBlog currentPost={post} />}
       {!isProtected && <GiscusComments commentId={post.commentId} slug={post.slug} />}
       </m.article>
+      {!isProtected && <ArticleTableOfContents items={articleNavigation} archive={archive} />}
+      </div>
     </LazyMotion>
   );
 }

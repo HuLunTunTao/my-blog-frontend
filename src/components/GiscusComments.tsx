@@ -126,7 +126,7 @@ export default function GiscusComments({ commentId, slug }: GiscusCommentsProps)
   }
 
   return (
-    <section ref={sectionRef} className="mt-12 min-h-[280px] border-t border-stone-300/60 dark:border-stone-700/60 pt-10">
+    <section id="comments" ref={sectionRef} className="mt-12 min-h-[280px] scroll-mt-24 border-t border-stone-300/60 pt-10 dark:border-stone-700/60">
       <h2 className="text-xl font-serif mb-6">评论</h2>
       {!shouldLoad && <p className="text-sm text-subtle">滚动到评论区后加载评论。</p>}
       <div ref={hostRef} />
