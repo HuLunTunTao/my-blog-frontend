@@ -28,6 +28,7 @@ export default function TimelineSidebar({ groups, activeYear, onSelectYear }: Ti
         {years.map((year) => (
           <li key={year} className="relative flex items-center justify-center">
             <button
+              type="button"
               onClick={() => {
                  onSelectYear(year);
                  const el = document.getElementById(`year-${year}`);

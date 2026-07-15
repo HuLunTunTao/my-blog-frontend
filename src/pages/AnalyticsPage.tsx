@@ -865,8 +865,8 @@ export default function AnalyticsPage() {
                 <div className="font-mono text-sm text-stone-900 dark:text-stone-100">{item.ip}</div>
                 <div className="text-xs text-stone-500 dark:text-stone-400">{item.label || "No label"} • added {formatDateTime(item.createdAt)}</div>
               </div>
-              <button type="button" onClick={() => void handleDeleteIgnoredIp(item.ip)} className="rounded-full border border-stone-300 dark:border-stone-600/60 p-2 text-stone-500 dark:text-stone-400 hover:text-red-600">
-                <Trash2 className="h-4 w-4" />
+              <button type="button" aria-label={`删除忽略的 IP ${item.ip}`} onClick={() => void handleDeleteIgnoredIp(item.ip)} className="rounded-full border border-stone-300 dark:border-stone-600/60 p-2 text-stone-500 dark:text-stone-400 hover:text-red-600">
+                <Trash2 aria-hidden="true" className="h-4 w-4" />
               </button>
             </div>
           ))}

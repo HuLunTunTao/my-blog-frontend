@@ -123,6 +123,7 @@ export default function TagDetailPage() {
         {state.totalPages > 1 && (
           <div className="flex justify-center gap-2 mt-8">
             <button
+              type="button"
               onClick={() => dispatch({ type: "set_page", page: Math.max(1, state.page - 1) })}
               disabled={state.page === 1}
               className="px-4 py-2 border rounded disabled:opacity-50"
@@ -133,6 +134,7 @@ export default function TagDetailPage() {
               Page {state.page} of {state.totalPages}
             </span>
             <button
+              type="button"
               onClick={() => dispatch({ type: "set_page", page: Math.min(state.totalPages, state.page + 1) })}
               disabled={state.page === state.totalPages}
               className="px-4 py-2 border rounded disabled:opacity-50"

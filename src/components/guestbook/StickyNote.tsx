@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { CSSProperties, MouseEvent } from 'react';
+import type { CSSProperties, KeyboardEvent, MouseEvent } from 'react';
 import type { AgingVisual, GuestNote } from '@/lib/guestbook/types';
 import { deriveNote, formatNoteBg, formatNoteBand } from '@/lib/guestbook/derive';
 import { computeAging, getPristineVisual } from '@/lib/guestbook/aging';
@@ -122,12 +122,26 @@ export function StickyNote(props: StickyNoteProps) {
     onClick?.(note.id);
   };
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!onClick || (e.key !== 'Enter' && e.key !== ' ')) return;
+    e.preventDefault();
+    onClick(note.id);
+  };
+
   const fontSizeContent = Math.max(12, baseSize * scale * 0.078);
   const fontSizeName = Math.max(11, baseSize * scale * 0.065);
   const padding = Math.max(11, baseSize * scale * 0.075);
 
   return (
-    <div className="gb-sticky-paper" style={outerStyle} onClick={handleClick}>
+    <div
+      className="gb-sticky-paper"
+      style={outerStyle}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick ? handleClick : undefined}
+      onKeyDown={onClick ? handleKeyDown : undefined}
+      aria-label={onClick ? `查看 ${note.userName} 的留言` : undefined}
+    >
       <div className="gb-sticky-paper-surface" style={surfaceStyle}>
         <div className="gb-band" />
         <div className="gb-adhesive" />

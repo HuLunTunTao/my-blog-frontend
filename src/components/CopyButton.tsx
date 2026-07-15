@@ -17,6 +17,7 @@ export default function CopyButton({ text }: { text: string }) {
 
   return (
     <button
+      type="button"
       onClick={handleCopy}
       className={cn(
         "absolute right-2 top-2 px-2 py-1 text-xs rounded border transition-all duration-200 z-10 font-sans",

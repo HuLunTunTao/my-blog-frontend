@@ -27,10 +27,13 @@ function FolderTreeItem({ folder, level }: FolderTreeItemProps) {
         {/* Expand/Collapse Icon */}
         {hasChildren && (
           <button
+            type="button"
+            aria-label={`${isOpen ? "收起" : "展开"}${folder.name}`}
             onClick={() => setIsOpen(!isOpen)}
             className="w-4 h-4 flex items-center justify-center text-stone-400 dark:text-stone-500 hover:text-foreground transition-colors"
           >
             <svg
+              aria-hidden="true"
               className={cn(
                 "w-3 h-3 transition-transform duration-200",
                 isOpen && "rotate-90"

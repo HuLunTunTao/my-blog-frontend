@@ -1,4 +1,4 @@
-import type { MouseEvent } from 'react';
+import { useEffect, useRef } from 'react';
 import type { GuestNote } from '@/lib/guestbook/types';
 import { StickyNote, getPristineVisual } from './StickyNote';
 import type { ResolvedTheme } from '@/context/ThemeContext';
@@ -12,15 +12,29 @@ interface NoteModalProps {
 
 export function NoteModal(props: NoteModalProps) {
   const { note, baseSize, theme, onClose } = props;
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-  const stop = (e: MouseEvent<HTMLDivElement>) => e.stopPropagation();
+  useEffect(() => {
+    dialogRef.current?.showModal();
+  }, []);
 
   return (
-    <div
-      className="gb-modal-backdrop fixed inset-0 z-[100] flex items-center justify-center"
-      onClick={onClose}
+    <dialog
+      ref={dialogRef}
+      className="gb-modal-backdrop fixed inset-0 m-0 h-dvh w-screen max-w-none border-0 p-0 text-inherit open:flex open:items-center open:justify-center"
+      aria-label={`${note.userName} 的留言详情`}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
     >
-      <div className="gb-modal-note-wrapper" onClick={stop}>
+      <button
+        type="button"
+        aria-label="关闭留言详情"
+        className="absolute inset-0 cursor-default"
+        onClick={onClose}
+      />
+      <div className="gb-modal-note-wrapper relative">
         <StickyNote
           note={note}
           currentTime={note.createdAt}
@@ -42,6 +56,6 @@ export function NoteModal(props: NoteModalProps) {
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs text-subtle font-sans">
         点击便签外区域或右上按钮关闭
       </div>
-    </div>
+    </dialog>
   );
 }
