@@ -11,7 +11,7 @@ import {
 import { clearAdminSession, loadAdminSession, saveAdminSession, type AdminSession } from "@/lib/adminSession";
 import { cn } from "@/lib/utils";
 import { format, subDays } from "date-fns";
-import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { Activity, ArrowDown, ArrowUp, ArrowUpDown, BarChart3, Download, Globe2, LockKeyhole, LogOut, MapPinned, RefreshCw, Shield, Trash2 } from "lucide-react";
 
 type FilterState = {
@@ -513,6 +513,230 @@ function LoginPanel({ onSubmit, loading, error }: { onSubmit: (password: string)
   );
 }
 
+type PaginatedResult<T> = {
+  items: T[];
+  page: number;
+  totalPages: number;
+};
+
+interface AnalyticsOverviewProps {
+  stats: AnalyticsResponse | null;
+  filters: FilterState;
+  setFilters: Dispatch<SetStateAction<FilterState>>;
+  loading: boolean;
+  onRefresh: () => Promise<void>;
+  onResetFilters: () => void;
+  onApplyRangePreset: (days: number) => void;
+  onClearSlugFilter: () => void;
+  onClearIpFilter: () => void;
+  ignoredIp: string;
+  setIgnoredIp: (value: string) => void;
+  ignoredLabel: string;
+  setIgnoredLabel: (value: string) => void;
+  ignoredIps: IgnoredIPEntry[];
+  onAddIgnoredIp: () => Promise<void>;
+  onDeleteIgnoredIp: (ip: string) => Promise<void>;
+}
+
+function AnalyticsOverview(props: AnalyticsOverviewProps) {
+  const {
+    stats, filters, setFilters, loading, onRefresh, onResetFilters, onApplyRangePreset,
+    onClearSlugFilter, onClearIpFilter, ignoredIp, setIgnoredIp, ignoredLabel,
+    setIgnoredLabel, ignoredIps, onAddIgnoredIp, onDeleteIgnoredIp,
+  } = props;
+
+  return (
+    <>
+      <section className="grid gap-4 xl:grid-cols-5">
+        <MetricCard icon={BarChart3} label="Requests" value={stats?.overview.totalRequests ?? 0} hint="Raw access attempts in current range" />
+        <MetricCard icon={Activity} label="Reads" value={stats?.overview.successfulReads ?? 0} hint="Successful article reads" />
+        <MetricCard icon={Shield} label="Ignored Traffic" value={stats?.overview.ignoredRequests ?? 0} hint="Requests from your saved IPs" />
+        <MetricCard icon={Globe2} label="Filtered IPs" value={stats?.overview.filteredUniqueIps ?? 0} hint="Unique IPs after filtering" />
+        <MetricCard icon={MapPinned} label="24h Reads" value={stats?.overview.successfulLast24 ?? 0} hint="Successful reads in last 24 hours" />
+      </section>
+
+      <Panel
+        title="Filters & Session Controls"
+        subtitle="Apply structured filters without re-entering the password. Ignored self-IP traffic is excluded by default."
+        action={<div className="rounded-full border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 px-3 py-1 text-xs uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">Generated {formatDateTime(stats?.generatedAt)}</div>}
+      >
+        <div className="grid gap-4 lg:grid-cols-5">
+          <label className="space-y-2 text-sm">
+            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">Post Slug</span>
+            <input value={filters.slug} onChange={(event) => setFilters((current) => ({ ...current, slug: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="folder/post" />
+          </label>
+          <label className="space-y-2 text-sm">
+            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">IP</span>
+            <input value={filters.ip} onChange={(event) => setFilters((current) => ({ ...current, ip: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="203.0.113.8" />
+          </label>
+          <label className="space-y-2 text-sm">
+            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">From</span>
+            <input type="datetime-local" value={filters.from} onChange={(event) => setFilters((current) => ({ ...current, from: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" />
+          </label>
+          <label className="space-y-2 text-sm">
+            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">To</span>
+            <input type="datetime-local" value={filters.to} onChange={(event) => setFilters((current) => ({ ...current, to: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" />
+          </label>
+          <div className="flex flex-col justify-between gap-3">
+            <label className="flex items-center gap-3 rounded-xl border border-stone-200 dark:border-stone-700/60 bg-stone-50/70 dark:bg-stone-900/40 px-3 py-3 text-sm text-stone-700 dark:text-stone-200">
+              <input type="checkbox" checked={filters.excludeIgnored} onChange={(event) => setFilters((current) => ({ ...current, excludeIgnored: event.target.checked }))} className="h-4 w-4 accent-stone-900 dark:accent-stone-100" />
+              Exclude ignored IPs
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => void onRefresh()} className="bg-stone-900 dark:bg-stone-100 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-stone-300" disabled={loading}>Apply</button>
+              <button type="button" onClick={onResetFilters} className="border border-stone-300 dark:border-stone-600/60 bg-white dark:bg-stone-900/60 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800/60">Reset</button>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {RANGE_PRESETS.map((preset) => (
+            <button key={preset.label} type="button" onClick={() => onApplyRangePreset(preset.days)} className="rounded-full border border-stone-300 dark:border-stone-600/60 bg-white dark:bg-stone-900/60 px-3 py-1.5 text-[11px] uppercase tracking-[0.24em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">Last {preset.label}</button>
+          ))}
+        </div>
+        {filters.slug || filters.ip ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {filters.slug ? <FilterBadge label="post" value={filters.slug} onClear={onClearSlugFilter} /> : null}
+            {filters.ip ? <FilterBadge label="ip" value={filters.ip} onClear={onClearIpFilter} /> : null}
+          </div>
+        ) : null}
+      </Panel>
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <Panel title="Blog Traffic Trend" subtitle="Requests, successful reads, and failed attempts across the selected time window.">
+          <LineChart data={stats?.daily ?? []} lines={[{ key: "totalRequests", color: "#1c1917", label: "Requests" }, { key: "successfulReads", color: "#b45309", label: "Reads" }, { key: "failedReads", color: "#dc2626", label: "Failed" }]} />
+        </Panel>
+        <Panel title="Recent Hot Posts" subtitle="Top articles by successful reads in the last 7 days within the current filter scope.">
+          <HorizontalBarChart items={stats?.recentHotPosts ?? []} />
+        </Panel>
+      </div>
+
+      <Panel title="Hourly Access Pulse" subtitle="Short-window hourly rhythm helps distinguish bursts, crawler noise, and release-day spikes.">
+        <LineChart data={stats?.hourly ?? []} lines={[{ key: "totalRequests", color: "#44403c", label: "Hourly Requests" }, { key: "successfulReads", color: "#0f766e", label: "Hourly Reads" }]} />
+      </Panel>
+
+      <Suspense fallback={<AnalyticsMapsLoading />}>
+        <AnalyticsGeoMapsSection countryLocations={stats?.countryLocations ?? []} chinaLocations={stats?.chinaLocations ?? []} />
+      </Suspense>
+
+      <Panel title="Ignored Self-IP Registry" subtitle="Persist your own IPs here. They can be excluded from all analytics with a single toggle.">
+        <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr_auto]">
+          <input value={ignoredIp} onChange={(event) => setIgnoredIp(event.target.value)} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="IP address" />
+          <input value={ignoredLabel} onChange={(event) => setIgnoredLabel(event.target.value)} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="Label (home / office / server)" />
+          <button type="button" onClick={() => void onAddIgnoredIp()} className="bg-stone-900 dark:bg-stone-100 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-stone-300">Save IP</button>
+        </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {ignoredIps.length === 0 ? <div className="text-sm text-stone-500 dark:text-stone-400">No ignored IPs configured yet.</div> : null}
+          {ignoredIps.map((item) => (
+            <div key={item.ip} className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 dark:border-stone-700/60 bg-stone-50/70 dark:bg-stone-900/40 px-4 py-3">
+              <div>
+                <div className="font-mono text-sm text-stone-900 dark:text-stone-100">{item.ip}</div>
+                <div className="text-xs text-stone-500 dark:text-stone-400">{item.label || "No label"} • added {formatDateTime(item.createdAt)}</div>
+              </div>
+              <button type="button" aria-label={`删除忽略的 IP ${item.ip}`} onClick={() => void onDeleteIgnoredIp(item.ip)} className="rounded-full border border-stone-300 dark:border-stone-600/60 p-2 text-stone-500 dark:text-stone-400 hover:text-red-600">
+                <Trash2 aria-hidden="true" className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </Panel>
+    </>
+  );
+}
+
+interface AnalyticsTablesProps {
+  stats: AnalyticsResponse | null;
+  filters: FilterState;
+  pagedPosts: PaginatedResult<AnalyticsPostStat>;
+  postSortKey: PostSortKey;
+  postSortDirection: SortDirection;
+  onTogglePostSort: (key: PostSortKey) => void;
+  onApplySlugFilter: (slug: string) => void;
+  onClearSlugFilter: () => void;
+  onPostPageChange: (page: number) => void;
+  pagedIps: PaginatedResult<AnalyticsResponse["ips"][number]>;
+  ipSortKey: IPSortKey;
+  ipSortDirection: SortDirection;
+  onToggleIpSort: (key: IPSortKey) => void;
+  onApplyIpFilter: (ip: string) => void;
+  onClearIpFilter: () => void;
+  onIpPageChange: (page: number) => void;
+  onPrepareIgnoredIp: (ip: string) => void;
+}
+
+function AnalyticsTables(props: AnalyticsTablesProps) {
+  const {
+    stats, filters, pagedPosts, postSortKey, postSortDirection, onTogglePostSort,
+    onApplySlugFilter, onClearSlugFilter, onPostPageChange, pagedIps, ipSortKey,
+    ipSortDirection, onToggleIpSort, onApplyIpFilter, onClearIpFilter,
+    onIpPageChange, onPrepareIgnoredIp,
+  } = props;
+
+  return (
+    <>
+      <Panel title="Article Performance" subtitle="Dedicated post view with fixed-size article cards, so varying title length no longer changes row rhythm or table density." action={<FilterBadgeSlot active={Boolean(filters.slug)} label="active post" value={filters.slug} onClear={onClearSlugFilter} />}>
+        <div className="mb-4 flex flex-wrap gap-3">
+          <SortButton label="Reads" active={postSortKey === "successfulReads"} direction={postSortDirection} onClick={() => onTogglePostSort("successfulReads")} />
+          <SortButton label="Requests" active={postSortKey === "totalRequests"} direction={postSortDirection} onClick={() => onTogglePostSort("totalRequests")} />
+          <SortButton label="Failed" active={postSortKey === "failedReads"} direction={postSortDirection} onClick={() => onTogglePostSort("failedReads")} />
+          <SortButton label="IPs" active={postSortKey === "uniqueIps"} direction={postSortDirection} onClick={() => onTogglePostSort("uniqueIps")} />
+          <SortButton label="Latest" active={postSortKey === "latestAccessAt"} direction={postSortDirection} onClick={() => onTogglePostSort("latestAccessAt")} />
+          <SortButton label="Title" active={postSortKey === "title"} direction={postSortDirection} onClick={() => onTogglePostSort("title")} />
+        </div>
+        <DataTable columns={["Post", "Path", "Requests", "Reads", "Failed", "Unique IPs", "Last Access", "Action"]} rows={pagedPosts.items.map((post) => [
+          <button key="post" type="button" onClick={() => onApplySlugFilter(post.slug)} className="text-left"><ScrollTitle title={post.title} slug={post.slug} /></button>,
+          <div key="path" className="max-w-[14rem] break-all text-stone-500 dark:text-stone-400">{post.path || "/"}</div>,
+          post.totalRequests, post.successfulReads, post.failedReads, post.uniqueIps, formatDateTime(post.latestAccessAt),
+          <div key="actions" className="grid min-w-[7.5rem] grid-cols-1 gap-2">
+            <button type="button" onClick={() => onApplySlugFilter(post.slug)} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">filter</button>
+            <button type="button" onClick={onClearSlugFilter} disabled={filters.slug !== post.slug} className={cn("border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em]", filters.slug === post.slug ? "text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60" : "pointer-events-none opacity-0")}>clear</button>
+          </div>,
+        ])} />
+        <Pagination page={pagedPosts.page} totalPages={pagedPosts.totalPages} onChange={onPostPageChange} />
+      </Panel>
+
+      <Panel title="IP Observation Deck" subtitle="Dedicated IP view with quick self-IP filtering support and top-post context per address." action={<FilterBadgeSlot active={Boolean(filters.ip)} label="active ip" value={filters.ip} onClear={onClearIpFilter} />}>
+        <div className="mb-4 flex flex-wrap gap-3">
+          <SortButton label="Requests" active={ipSortKey === "totalRequests"} direction={ipSortDirection} onClick={() => onToggleIpSort("totalRequests")} />
+          <SortButton label="Reads" active={ipSortKey === "successfulReads"} direction={ipSortDirection} onClick={() => onToggleIpSort("successfulReads")} />
+          <SortButton label="Failed" active={ipSortKey === "failedReads"} direction={ipSortDirection} onClick={() => onToggleIpSort("failedReads")} />
+          <SortButton label="Posts" active={ipSortKey === "uniquePosts"} direction={ipSortDirection} onClick={() => onToggleIpSort("uniquePosts")} />
+          <SortButton label="Latest" active={ipSortKey === "lastSeenAt"} direction={ipSortDirection} onClick={() => onToggleIpSort("lastSeenAt")} />
+          <SortButton label="IP" active={ipSortKey === "ip"} direction={ipSortDirection} onClick={() => onToggleIpSort("ip")} />
+        </div>
+        <DataTable columns={["IP", "Requests", "Reads", "Failed", "Unique Posts", "Top Posts", "Actions"]} rows={pagedIps.items.map((ip) => [
+          <div key="ip" className="min-w-[9.5rem] space-y-2">
+            <button type="button" onClick={() => onApplyIpFilter(ip.ip)} className="space-y-1 text-left"><div className="font-mono text-xs text-stone-900 dark:text-stone-100">{ip.ip}</div><div className="text-xs text-stone-500 dark:text-stone-400">Last seen {formatDateTime(ip.lastSeenAt)}</div></button>
+            <InlineCopyButton text={ip.ip} />
+          </div>,
+          ip.totalRequests, ip.successfulReads, ip.failedReads, ip.uniquePosts,
+          <div key="top-posts" className="max-w-[16rem] overflow-x-auto whitespace-nowrap text-xs text-stone-500 dark:text-stone-400 themed-scrollbar">{(ip.topPosts ?? []).join(" • ") || "-"}</div>,
+          <div key="actions" className="grid min-w-[11rem] grid-cols-1 gap-2">
+            <button type="button" onClick={() => onApplyIpFilter(ip.ip)} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">filter</button>
+            <button type="button" onClick={onClearIpFilter} disabled={filters.ip !== ip.ip} className={cn("border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em]", filters.ip === ip.ip ? "text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60" : "pointer-events-none opacity-0")}>clear</button>
+            <button type="button" onClick={() => onPrepareIgnoredIp(ip.ip)} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">ignore</button>
+          </div>,
+        ])} />
+        <Pagination page={pagedIps.page} totalPages={pagedIps.totalPages} onChange={onIpPageChange} />
+      </Panel>
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <Panel title="Referrer Intelligence" subtitle="External source breakdown for the current filter scope.">
+          <DataTable columns={["Referrer", "Host", "Requests", "Reads", "Failed"]} rows={(stats?.referrers ?? []).map((referrer) => [<div key="referrer" className="max-w-[20rem] break-all text-stone-600 dark:text-stone-300">{referrer.referrer}</div>, referrer.host || "-", referrer.totalRequests, referrer.successfulReads, referrer.failedReads])} />
+        </Panel>
+        <Panel title="Recent Access Events" subtitle="Recent event stream showing which article, from which IP, and whether content was actually returned.">
+          <DataTable columns={["Time", "Post", "IP", "Geo", "Result"]} rows={(stats?.recentEvents ?? []).map((event) => [
+            formatDateTime(event.accessedAt),
+            <ScrollTitle key="post" title={event.title} slug={event.slug} />,
+            <div key="ip" className="flex items-center gap-2"><div className="font-mono text-xs">{event.ip}</div><InlineCopyButton text={event.ip} /></div>,
+            <div key="geo" className="border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 px-2 py-1 text-xs text-stone-500 dark:text-stone-400">{[event.countryName || event.countryCode, event.region].filter(Boolean).join(" / ") || "Unknown"}</div>,
+            <span key="result" className={cn("inline-flex border px-2 py-1 text-xs font-medium", event.accessGranted ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700")}>{event.accessGranted ? "Success" : "Blocked"}</span>,
+          ])} />
+        </Panel>
+      </div>
+    </>
+  );
+}
+
 export default function AnalyticsPage() {
   const [session, setSession] = useState<AdminSession | null>(null);
   const [booting, setBooting] = useState(true);
@@ -763,247 +987,47 @@ export default function AnalyticsPage() {
 
       {error ? <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
 
-      <section className="grid gap-4 xl:grid-cols-5">
-        <MetricCard icon={BarChart3} label="Requests" value={stats?.overview.totalRequests ?? 0} hint="Raw access attempts in current range" />
-        <MetricCard icon={Activity} label="Reads" value={stats?.overview.successfulReads ?? 0} hint="Successful article reads" />
-        <MetricCard icon={Shield} label="Ignored Traffic" value={stats?.overview.ignoredRequests ?? 0} hint="Requests from your saved IPs" />
-        <MetricCard icon={Globe2} label="Filtered IPs" value={stats?.overview.filteredUniqueIps ?? 0} hint="Unique IPs after filtering" />
-        <MetricCard icon={MapPinned} label="24h Reads" value={stats?.overview.successfulLast24 ?? 0} hint="Successful reads in last 24 hours" />
-      </section>
+      <AnalyticsOverview
+        stats={stats}
+        filters={filters}
+        setFilters={setFilters}
+        loading={loading}
+        onRefresh={handleRefresh}
+        onResetFilters={resetFilters}
+        onApplyRangePreset={applyRangePreset}
+        onClearSlugFilter={clearSlugFilter}
+        onClearIpFilter={clearIpFilter}
+        ignoredIp={ignoredIp}
+        setIgnoredIp={setIgnoredIp}
+        ignoredLabel={ignoredLabel}
+        setIgnoredLabel={setIgnoredLabel}
+        ignoredIps={ignoredIps}
+        onAddIgnoredIp={handleAddIgnoredIp}
+        onDeleteIgnoredIp={handleDeleteIgnoredIp}
+      />
 
-      <Panel
-        title="Filters & Session Controls"
-        subtitle="Apply structured filters without re-entering the password. Ignored self-IP traffic is excluded by default."
-        action={
-          <div className="rounded-full border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 px-3 py-1 text-xs uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">
-            Generated {formatDateTime(stats?.generatedAt)}
-          </div>
-        }
-      >
-        <div className="grid gap-4 lg:grid-cols-5">
-          <label className="space-y-2 text-sm">
-            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">Post Slug</span>
-            <input value={filters.slug} onChange={(event) => setFilters((current) => ({ ...current, slug: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="folder/post" />
-          </label>
-          <label className="space-y-2 text-sm">
-            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">IP</span>
-            <input value={filters.ip} onChange={(event) => setFilters((current) => ({ ...current, ip: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="203.0.113.8" />
-          </label>
-          <label className="space-y-2 text-sm">
-            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">From</span>
-            <input type="datetime-local" value={filters.from} onChange={(event) => setFilters((current) => ({ ...current, from: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" />
-          </label>
-          <label className="space-y-2 text-sm">
-            <span className="block text-[11px] uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">To</span>
-            <input type="datetime-local" value={filters.to} onChange={(event) => setFilters((current) => ({ ...current, to: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" />
-          </label>
-          <div className="flex flex-col justify-between gap-3">
-            <label className="flex items-center gap-3 rounded-xl border border-stone-200 dark:border-stone-700/60 bg-stone-50/70 dark:bg-stone-900/40 px-3 py-3 text-sm text-stone-700 dark:text-stone-200">
-              <input type="checkbox" checked={filters.excludeIgnored} onChange={(event) => setFilters((current) => ({ ...current, excludeIgnored: event.target.checked }))} className="h-4 w-4 accent-stone-900 dark:accent-stone-100" />
-              Exclude ignored IPs
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => void handleRefresh()} className="bg-stone-900 dark:bg-stone-100 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-stone-300" disabled={loading}>
-                Apply
-              </button>
-              <button type="button" onClick={resetFilters} className="border border-stone-300 dark:border-stone-600/60 bg-white dark:bg-stone-900/60 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800/60">
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {RANGE_PRESETS.map((preset) => (
-            <button
-              key={preset.label}
-              type="button"
-              onClick={() => applyRangePreset(preset.days)}
-              className="rounded-full border border-stone-300 dark:border-stone-600/60 bg-white dark:bg-stone-900/60 px-3 py-1.5 text-[11px] uppercase tracking-[0.24em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60"
-            >
-              Last {preset.label}
-            </button>
-          ))}
-        </div>
-        {(filters.slug || filters.ip) ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {filters.slug ? <FilterBadge label="post" value={filters.slug} onClear={clearSlugFilter} /> : null}
-            {filters.ip ? <FilterBadge label="ip" value={filters.ip} onClear={clearIpFilter} /> : null}
-          </div>
-        ) : null}
-      </Panel>
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        <Panel title="Blog Traffic Trend" subtitle="Requests, successful reads, and failed attempts across the selected time window.">
-          <LineChart data={stats?.daily ?? []} lines={[{ key: "totalRequests", color: "#1c1917", label: "Requests" }, { key: "successfulReads", color: "#b45309", label: "Reads" }, { key: "failedReads", color: "#dc2626", label: "Failed" }]} />
-        </Panel>
-        <Panel title="Recent Hot Posts" subtitle="Top articles by successful reads in the last 7 days within the current filter scope.">
-          <HorizontalBarChart items={stats?.recentHotPosts ?? []} />
-        </Panel>
-      </div>
-
-      <Panel title="Hourly Access Pulse" subtitle="Short-window hourly rhythm helps distinguish bursts, crawler noise, and release-day spikes.">
-        <LineChart data={stats?.hourly ?? []} lines={[{ key: "totalRequests", color: "#44403c", label: "Hourly Requests" }, { key: "successfulReads", color: "#0f766e", label: "Hourly Reads" }]} />
-      </Panel>
-
-      <Suspense fallback={<AnalyticsMapsLoading />}>
-        <AnalyticsGeoMapsSection countryLocations={stats?.countryLocations ?? []} chinaLocations={stats?.chinaLocations ?? []} />
-      </Suspense>
-
-      <Panel title="Ignored Self-IP Registry" subtitle="Persist your own IPs here. They can be excluded from all analytics with a single toggle.">
-        <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr_auto]">
-          <input value={ignoredIp} onChange={(event) => setIgnoredIp(event.target.value)} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="IP address" />
-          <input value={ignoredLabel} onChange={(event) => setIgnoredLabel(event.target.value)} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="Label (home / office / server)" />
-          <button type="button" onClick={() => void handleAddIgnoredIp()} className="bg-stone-900 dark:bg-stone-100 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-stone-300">
-            Save IP
-          </button>
-        </div>
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {ignoredIps.length === 0 ? <div className="text-sm text-stone-500 dark:text-stone-400">No ignored IPs configured yet.</div> : null}
-          {ignoredIps.map((item) => (
-            <div key={item.ip} className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 dark:border-stone-700/60 bg-stone-50/70 dark:bg-stone-900/40 px-4 py-3">
-              <div>
-                <div className="font-mono text-sm text-stone-900 dark:text-stone-100">{item.ip}</div>
-                <div className="text-xs text-stone-500 dark:text-stone-400">{item.label || "No label"} • added {formatDateTime(item.createdAt)}</div>
-              </div>
-              <button type="button" aria-label={`删除忽略的 IP ${item.ip}`} onClick={() => void handleDeleteIgnoredIp(item.ip)} className="rounded-full border border-stone-300 dark:border-stone-600/60 p-2 text-stone-500 dark:text-stone-400 hover:text-red-600">
-                <Trash2 aria-hidden="true" className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </Panel>
-
-      <Panel
-        title="Article Performance"
-        subtitle="Dedicated post view with fixed-size article cards, so varying title length no longer changes row rhythm or table density."
-        action={<FilterBadgeSlot active={Boolean(filters.slug)} label="active post" value={filters.slug} onClear={clearSlugFilter} />}
-      >
-        <div className="mb-4 flex flex-wrap gap-3">
-          <SortButton label="Reads" active={postSortKey === "successfulReads"} direction={postSortDirection} onClick={() => togglePostSort("successfulReads")} />
-          <SortButton label="Requests" active={postSortKey === "totalRequests"} direction={postSortDirection} onClick={() => togglePostSort("totalRequests")} />
-          <SortButton label="Failed" active={postSortKey === "failedReads"} direction={postSortDirection} onClick={() => togglePostSort("failedReads")} />
-          <SortButton label="IPs" active={postSortKey === "uniqueIps"} direction={postSortDirection} onClick={() => togglePostSort("uniqueIps")} />
-          <SortButton label="Latest" active={postSortKey === "latestAccessAt"} direction={postSortDirection} onClick={() => togglePostSort("latestAccessAt")} />
-          <SortButton label="Title" active={postSortKey === "title"} direction={postSortDirection} onClick={() => togglePostSort("title")} />
-        </div>
-        <DataTable
-          columns={["Post", "Path", "Requests", "Reads", "Failed", "Unique IPs", "Last Access", "Action"]}
-          rows={pagedPosts.items.map((post) => [
-              <button key="post" type="button" onClick={() => applySlugFilter(post.slug)} className="text-left">
-                <ScrollTitle title={post.title} slug={post.slug} />
-              </button>,
-            <div key="path" className="max-w-[14rem] break-all text-stone-500 dark:text-stone-400">{post.path || "/"}</div>,
-            post.totalRequests,
-            post.successfulReads,
-            post.failedReads,
-            post.uniqueIps,
-            formatDateTime(post.latestAccessAt),
-            <div key="actions" className="grid min-w-[7.5rem] grid-cols-1 gap-2">
-              <button type="button" onClick={() => applySlugFilter(post.slug)} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">
-                filter
-              </button>
-              <button
-                type="button"
-                onClick={clearSlugFilter}
-                disabled={filters.slug !== post.slug}
-                className={cn(
-                  "border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em]",
-                  filters.slug === post.slug ? "text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60" : "pointer-events-none opacity-0",
-                )}
-              >
-                clear
-              </button>
-            </div>,
-          ])}
-        />
-        <Pagination page={pagedPosts.page} totalPages={pagedPosts.totalPages} onChange={setPostPage} />
-      </Panel>
-
-      <Panel
-        title="IP Observation Deck"
-        subtitle="Dedicated IP view with quick self-IP filtering support and top-post context per address."
-        action={<FilterBadgeSlot active={Boolean(filters.ip)} label="active ip" value={filters.ip} onClear={clearIpFilter} />}
-      >
-        <div className="mb-4 flex flex-wrap gap-3">
-          <SortButton label="Requests" active={ipSortKey === "totalRequests"} direction={ipSortDirection} onClick={() => toggleIpSort("totalRequests")} />
-          <SortButton label="Reads" active={ipSortKey === "successfulReads"} direction={ipSortDirection} onClick={() => toggleIpSort("successfulReads")} />
-          <SortButton label="Failed" active={ipSortKey === "failedReads"} direction={ipSortDirection} onClick={() => toggleIpSort("failedReads")} />
-          <SortButton label="Posts" active={ipSortKey === "uniquePosts"} direction={ipSortDirection} onClick={() => toggleIpSort("uniquePosts")} />
-          <SortButton label="Latest" active={ipSortKey === "lastSeenAt"} direction={ipSortDirection} onClick={() => toggleIpSort("lastSeenAt")} />
-          <SortButton label="IP" active={ipSortKey === "ip"} direction={ipSortDirection} onClick={() => toggleIpSort("ip")} />
-        </div>
-        <DataTable
-          columns={["IP", "Requests", "Reads", "Failed", "Unique Posts", "Top Posts", "Actions"]}
-          rows={pagedIps.items.map((ip) => [
-            <div key="ip" className="min-w-[9.5rem] space-y-2">
-              <button type="button" onClick={() => applyIpFilter(ip.ip)} className="space-y-1 text-left">
-                <div className="font-mono text-xs text-stone-900 dark:text-stone-100">{ip.ip}</div>
-                <div className="text-xs text-stone-500 dark:text-stone-400">Last seen {formatDateTime(ip.lastSeenAt)}</div>
-              </button>
-              <InlineCopyButton text={ip.ip} />
-            </div>,
-            ip.totalRequests,
-            ip.successfulReads,
-            ip.failedReads,
-            ip.uniquePosts,
-            <div key="top-posts" className="max-w-[16rem] overflow-x-auto whitespace-nowrap text-xs text-stone-500 dark:text-stone-400 themed-scrollbar">{(ip.topPosts ?? []).join(" • ") || "-"}</div>,
-            <div key="actions" className="grid min-w-[11rem] grid-cols-1 gap-2">
-              <button type="button" onClick={() => applyIpFilter(ip.ip)} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">
-                filter
-              </button>
-              <button
-                type="button"
-                onClick={clearIpFilter}
-                disabled={filters.ip !== ip.ip}
-                className={cn(
-                  "border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em]",
-                  filters.ip === ip.ip ? "text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60" : "pointer-events-none opacity-0",
-                )}
-              >
-                clear
-              </button>
-              <button type="button" onClick={() => { setIgnoredIp(ip.ip); setIgnoredLabel("self"); }} className="border border-stone-300 dark:border-stone-600/60 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">
-                ignore
-              </button>
-            </div>,
-          ])}
-        />
-        <Pagination page={pagedIps.page} totalPages={pagedIps.totalPages} onChange={setIpPage} />
-      </Panel>
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        <Panel title="Referrer Intelligence" subtitle="External source breakdown for the current filter scope.">
-          <DataTable
-            columns={["Referrer", "Host", "Requests", "Reads", "Failed"]}
-            rows={(stats?.referrers ?? []).map((referrer) => [
-              <div key="referrer" className="max-w-[20rem] break-all text-stone-600 dark:text-stone-300">{referrer.referrer}</div>,
-              referrer.host || "-",
-              referrer.totalRequests,
-              referrer.successfulReads,
-              referrer.failedReads,
-            ])}
-          />
-        </Panel>
-        <Panel title="Recent Access Events" subtitle="Recent event stream showing which article, from which IP, and whether content was actually returned.">
-          <DataTable
-            columns={["Time", "Post", "IP", "Geo", "Result"]}
-            rows={(stats?.recentEvents ?? []).map((event) => [
-              formatDateTime(event.accessedAt),
-              <ScrollTitle key="post" title={event.title} slug={event.slug} />,
-              <div key="ip" className="flex items-center gap-2">
-                <div className="font-mono text-xs">{event.ip}</div>
-                <InlineCopyButton text={event.ip} />
-              </div>,
-              <div key="geo" className="border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 px-2 py-1 text-xs text-stone-500 dark:text-stone-400">
-                {[event.countryName || event.countryCode, event.region].filter(Boolean).join(" / ") || "Unknown"}
-              </div>,
-              <span key="result" className={cn("inline-flex border px-2 py-1 text-xs font-medium", event.accessGranted ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700")}>
-                {event.accessGranted ? "Success" : "Blocked"}
-              </span>,
-            ])}
-          />
-        </Panel>
-      </div>
+      <AnalyticsTables
+        stats={stats}
+        filters={filters}
+        pagedPosts={pagedPosts}
+        postSortKey={postSortKey}
+        postSortDirection={postSortDirection}
+        onTogglePostSort={togglePostSort}
+        onApplySlugFilter={applySlugFilter}
+        onClearSlugFilter={clearSlugFilter}
+        onPostPageChange={setPostPage}
+        pagedIps={pagedIps}
+        ipSortKey={ipSortKey}
+        ipSortDirection={ipSortDirection}
+        onToggleIpSort={toggleIpSort}
+        onApplyIpFilter={applyIpFilter}
+        onClearIpFilter={clearIpFilter}
+        onIpPageChange={setIpPage}
+        onPrepareIgnoredIp={(ip) => {
+          setIgnoredIp(ip);
+          setIgnoredLabel("self");
+        }}
+      />
     </section>
   );
 }
