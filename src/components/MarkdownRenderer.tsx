@@ -481,25 +481,103 @@ function getIntrinsicImageSize(src?: string): { width: number; height: number } 
   return null;
 }
 
+function buildImagePreviewSrc(src?: string): string | null {
+  if (!src) return null;
+  try {
+    const url = new URL(src, window.location.origin);
+    if (!url.pathname.includes("/api/assets/")) return null;
+    url.searchParams.set("preview", "48");
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
 function ResilientImage({ src, alt, title, sourceSlug }: { src?: string; alt?: string; title?: string; sourceSlug?: string }) {
   const width = getImageWidthFromTitle(title);
   const intrinsicSize = useMemo(() => getIntrinsicImageSize(src), [src]);
   const candidates = useMemo(() => buildObsidianAssetCandidates(src, sourceSlug), [src, sourceSlug]);
   const [candidateIndex, setCandidateIndex] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  const [previewRetired, setPreviewRetired] = useState(false);
+  const [previewFailed, setPreviewFailed] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const currentSrc = candidates[candidateIndex];
+  const previewSrc = useMemo(() => buildImagePreviewSrc(currentSrc), [currentSrc]);
+
+  useEffect(() => {
+    setLoaded(false);
+    setPreviewRetired(false);
+    setPreviewFailed(false);
+    setImageFailed(false);
+  }, [currentSrc]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    const timeout = window.setTimeout(() => setPreviewRetired(true), 420);
+    return () => window.clearTimeout(timeout);
+  }, [loaded]);
+
+  const revealImage = useCallback(async (image: HTMLImageElement) => {
+    const loadedSrc = image.currentSrc;
+    try {
+      await image.decode();
+    } catch {
+      // A completed load is still safe to reveal when decode() is unavailable or interrupted.
+    }
+    if (imageRef.current === image && image.currentSrc === loadedSrc) {
+      setLoaded(true);
+    }
+  }, []);
+
+  if (!currentSrc) return null;
+
+  const displayWidth = width ?? intrinsicSize?.width;
+  const wrapperStyle = displayWidth
+    ? { width: `${displayWidth}px`, maxWidth: "100%" }
+    : { width: "100%", maxWidth: "100%" };
 
   return (
-    <img
-      src={candidates[candidateIndex]}
-      alt={alt || ""}
-      width={intrinsicSize?.width}
-      height={intrinsicSize?.height}
-      loading="lazy"
-      style={width ? { width: `${width}px`, maxWidth: "100%" } : { maxWidth: "100%" }}
-      className="my-6 border border-stone-300/60 dark:border-stone-700/60 bg-paper"
-      onError={() => {
-        setCandidateIndex((curr) => (curr + 1 < candidates.length ? curr + 1 : curr));
-      }}
-    />
+    <span
+      className="progressive-image my-6 block overflow-hidden border border-stone-300/60 bg-paper dark:border-stone-700/60"
+      style={wrapperStyle}
+      aria-busy={!loaded && !imageFailed}
+    >
+      {previewSrc && !previewRetired && !previewFailed && (
+        <img
+          src={previewSrc}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          className={`progressive-image__preview${loaded ? " is-retiring" : ""}`}
+          onError={() => setPreviewFailed(true)}
+        />
+      )}
+      {imageFailed ? (
+        <span className="progressive-image__error">图片暂时无法载入{alt ? `：${alt}` : ""}</span>
+      ) : (
+        <img
+          ref={imageRef}
+          src={currentSrc}
+          alt={alt || ""}
+          width={intrinsicSize?.width}
+          height={intrinsicSize?.height}
+          loading="lazy"
+          decoding="async"
+          className={`progressive-image__full${loaded ? " is-loaded" : ""}`}
+          onLoad={(event) => void revealImage(event.currentTarget)}
+          onError={() => {
+            if (candidateIndex + 1 < candidates.length) {
+              setCandidateIndex((curr) => curr + 1);
+            } else {
+              setImageFailed(true);
+            }
+          }}
+        />
+      )}
+    </span>
   );
 }
 
