@@ -87,19 +87,19 @@ export default function TimelineView() {
         {/* Hero Section */}
         <section className="py-16 md:py-24 flex flex-col md:flex-row items-center gap-8 md:gap-16 md:pl-4 border-b border-stone-200/50 dark:border-stone-800/50 pb-24 mb-12">
             <div className="relative shrink-0">
-                <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-stone-200/50 dark:bg-stone-800/50 flex items-center justify-center overflow-hidden border border-stone-300 dark:border-stone-700 shadow-inner">
+                <div className="relative isolate w-40 h-40 md:w-56 md:h-56 rounded-full bg-stone-200/50 dark:bg-stone-800/50 flex items-center justify-center overflow-hidden border border-stone-300 dark:border-stone-700 shadow-inner">
                    {siteConfig.author.avatar ? (
                      <>
                        <img
                         src="/assets/avatar-20260723-blur.jpg"
                         alt=""
                         aria-hidden="true"
-                        className={`absolute inset-0 w-full h-full scale-110 object-cover blur-lg transition-opacity duration-500 ${avatarLoaded ? "opacity-0" : "opacity-90"}`}
+                        className={`absolute inset-0 w-full h-full rounded-full scale-110 object-cover blur-lg transition-opacity duration-500 ${avatarLoaded ? "opacity-0" : "opacity-90"}`}
                        />
                        <img
                         src={siteConfig.author.avatar}
                         alt={siteConfig.author.name} 
-                        className={`relative w-full h-full object-cover hover:opacity-100 transition-opacity duration-500 ${avatarLoaded ? "opacity-90" : "opacity-0"}`}
+                        className={`relative w-full h-full rounded-full object-cover hover:opacity-100 transition-opacity duration-500 ${avatarLoaded ? "opacity-90" : "opacity-0"}`}
                         referrerPolicy="no-referrer"
                         loading="eager"
                         decoding="async"
