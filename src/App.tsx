@@ -2,8 +2,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/Layout";
 import TimelineView from "./components/TimelineView";
 import RouteErrorPage from "./components/RouteErrorPage";
-import { lazy, useEffect } from "react";
-import { siteConfig } from "./config/site.config";
+import { lazy } from "react";
 
 const AllTagsPage = lazy(() => import("./pages/AllTagsPage"));
 const TagDetailPage = lazy(() => import("./pages/TagDetailPage"));
@@ -35,14 +34,6 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  useEffect(() => {
-    // Update Favicon (Browser Tab Logo)
-    const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-    if (link) {
-      link.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>${siteConfig.logo}</text></svg>`;
-    }
-  }, []);
-
   return (
     <RouterProvider
       router={router}
