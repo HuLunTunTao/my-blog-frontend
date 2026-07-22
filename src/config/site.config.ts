@@ -48,7 +48,7 @@ export const siteConfig: SiteConfig = {
   logo: env.VITE_SITE_LOGO ?? "🍑",
   author: {
     name: env.VITE_AUTHOR_NAME ?? "囫囵吞桃🍑",
-    avatar: env.VITE_AUTHOR_AVATAR ?? "https://avatars.githubusercontent.com/u/34204332?v=4",
+    avatar: env.VITE_AUTHOR_AVATAR ?? "/assets/avatar-20260723.jpg",
     bio: env.VITE_AUTHOR_BIO ?? "Undergraduate majoring in Computer Science.",
     motto: env.VITE_AUTHOR_MOTTO ?? "爱人者，人恒爱之。",
   },

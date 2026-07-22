@@ -17,6 +17,7 @@ export default function TimelineView() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeYear, setActiveYear] = useState<string>("");
+  const [avatarLoaded, setAvatarLoaded] = useState(false);
 
   const grouped = useMemo(() => groupPostsByYearMonth(posts), [posts]);
   const years = useMemo(
@@ -88,15 +89,24 @@ export default function TimelineView() {
             <div className="relative shrink-0">
                 <div className="w-40 h-40 md:w-56 md:h-56 rounded-full bg-stone-200/50 dark:bg-stone-800/50 flex items-center justify-center overflow-hidden border border-stone-300 dark:border-stone-700 shadow-inner">
                    {siteConfig.author.avatar ? (
-                     <img 
+                     <>
+                       <img
+                        src="/assets/avatar-20260723-blur.jpg"
+                        alt=""
+                        aria-hidden="true"
+                        className={`absolute inset-0 w-full h-full scale-110 object-cover blur-lg transition-opacity duration-500 ${avatarLoaded ? "opacity-0" : "opacity-90"}`}
+                       />
+                       <img
                         src={siteConfig.author.avatar}
                         alt={siteConfig.author.name} 
-                        className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity duration-700" 
+                        className={`relative w-full h-full object-cover hover:opacity-100 transition-opacity duration-500 ${avatarLoaded ? "opacity-90" : "opacity-0"}`}
                         referrerPolicy="no-referrer"
                         loading="eager"
                         decoding="async"
+                        onLoad={() => setAvatarLoaded(true)}
                         {...{ fetchpriority: "high" }}
-                     />
+                       />
+                     </>
                    ) : (
                      <span className="text-4xl grayscale opacity-50">👤</span>
                    )}
