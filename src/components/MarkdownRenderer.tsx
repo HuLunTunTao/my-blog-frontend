@@ -34,6 +34,26 @@ import {
   preprocessMarkdown,
 } from "@/lib/markdown";
 import { rehypeHeadingIds } from "@/lib/tableOfContents";
+import { useTheme } from "@/context/theme";
+import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/prism-light";
+import { oneDark, oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import bash from "react-syntax-highlighter/dist/esm/languages/prism/bash";
+import c from "react-syntax-highlighter/dist/esm/languages/prism/c";
+import cpp from "react-syntax-highlighter/dist/esm/languages/prism/cpp";
+import csharp from "react-syntax-highlighter/dist/esm/languages/prism/csharp";
+import gdscript from "react-syntax-highlighter/dist/esm/languages/prism/gdscript";
+import go from "react-syntax-highlighter/dist/esm/languages/prism/go";
+import java from "react-syntax-highlighter/dist/esm/languages/prism/java";
+import javascript from "react-syntax-highlighter/dist/esm/languages/prism/javascript";
+import json from "react-syntax-highlighter/dist/esm/languages/prism/json";
+import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
+import markdown from "react-syntax-highlighter/dist/esm/languages/prism/markdown";
+import python from "react-syntax-highlighter/dist/esm/languages/prism/python";
+import rust from "react-syntax-highlighter/dist/esm/languages/prism/rust";
+import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql";
+import tsx from "react-syntax-highlighter/dist/esm/languages/prism/tsx";
+import typescript from "react-syntax-highlighter/dist/esm/languages/prism/typescript";
+import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml";
 
 interface MarkdownRendererProps {
   content: string;
@@ -69,13 +89,86 @@ function containsMath(content: string): boolean {
   return /(^|\n)\s*\$\$|\\\(|\\\[|(?:^|[^$])\$[^$\n]+\$/.test(content);
 }
 
-function LazyCodeBlock({ codeText, language }: { codeText: string; language: string }) {
+SyntaxHighlighter.registerLanguage("bash", bash);
+SyntaxHighlighter.registerLanguage("c", c);
+SyntaxHighlighter.registerLanguage("cpp", cpp);
+SyntaxHighlighter.registerLanguage("csharp", csharp);
+SyntaxHighlighter.registerLanguage("gdscript", gdscript);
+SyntaxHighlighter.registerLanguage("go", go);
+SyntaxHighlighter.registerLanguage("java", java);
+SyntaxHighlighter.registerLanguage("javascript", javascript);
+SyntaxHighlighter.registerLanguage("json", json);
+SyntaxHighlighter.registerLanguage("jsx", jsx);
+SyntaxHighlighter.registerLanguage("markdown", markdown);
+SyntaxHighlighter.registerLanguage("python", python);
+SyntaxHighlighter.registerLanguage("rust", rust);
+SyntaxHighlighter.registerLanguage("sql", sql);
+SyntaxHighlighter.registerLanguage("tsx", tsx);
+SyntaxHighlighter.registerLanguage("typescript", typescript);
+SyntaxHighlighter.registerLanguage("yaml", yaml);
+
+const LANGUAGE_ALIASES: Record<string, { syntax: string; label: string }> = {
+  bash: { syntax: "bash", label: "Bash" },
+  sh: { syntax: "bash", label: "Shell" },
+  shell: { syntax: "bash", label: "Shell" },
+  c: { syntax: "c", label: "C" },
+  cpp: { syntax: "cpp", label: "C++" },
+  "c++": { syntax: "cpp", label: "C++" },
+  cs: { syntax: "csharp", label: "C#" },
+  csharp: { syntax: "csharp", label: "C#" },
+  gd: { syntax: "gdscript", label: "GDScript" },
+  gdscript: { syntax: "gdscript", label: "GDScript" },
+  go: { syntax: "go", label: "Go" },
+  java: { syntax: "java", label: "Java" },
+  js: { syntax: "javascript", label: "JavaScript" },
+  javascript: { syntax: "javascript", label: "JavaScript" },
+  json: { syntax: "json", label: "JSON" },
+  jsx: { syntax: "jsx", label: "JSX" },
+  md: { syntax: "markdown", label: "Markdown" },
+  markdown: { syntax: "markdown", label: "Markdown" },
+  py: { syntax: "python", label: "Python" },
+  python: { syntax: "python", label: "Python" },
+  rs: { syntax: "rust", label: "Rust" },
+  rust: { syntax: "rust", label: "Rust" },
+  sql: { syntax: "sql", label: "SQL" },
+  ts: { syntax: "typescript", label: "TypeScript" },
+  typescript: { syntax: "typescript", label: "TypeScript" },
+  tsx: { syntax: "tsx", label: "TSX" },
+  yaml: { syntax: "yaml", label: "YAML" },
+  yml: { syntax: "yaml", label: "YAML" },
+};
+
+function CodeBlock({ codeText, language }: { codeText: string; language?: string }) {
+  const { resolvedTheme } = useTheme();
+  const normalizedLanguage = language?.toLowerCase();
+  const languageInfo = normalizedLanguage ? LANGUAGE_ALIASES[normalizedLanguage] : undefined;
+
   return (
-    <div className="relative group my-6">
-      <CopyButton text={codeText} />
-      <pre className="overflow-x-auto border border-stone-300/60 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900 p-4 text-sm leading-relaxed">
-        <code className={`language-${language}`}>{codeText}</code>
-      </pre>
+    <div className="my-7 overflow-hidden border border-stone-300 bg-[#fdfbf7] text-stone-900 shadow-[0_8px_24px_rgba(120,113,108,0.08)] dark:border-stone-700 dark:bg-stone-950 dark:text-stone-100">
+      <div className="flex min-h-11 items-center justify-between gap-3 border-b border-stone-200 bg-stone-100/80 px-4 py-2 dark:border-stone-800 dark:bg-stone-900/80">
+        {languageInfo ? (
+          <span className="font-sans text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-600 dark:text-stone-300">
+            {languageInfo.label}
+          </span>
+        ) : <span aria-hidden="true" />}
+        <CopyButton text={codeText} />
+      </div>
+      {languageInfo ? (
+        <SyntaxHighlighter
+          language={languageInfo.syntax}
+          style={resolvedTheme === "dark" ? oneDark : oneLight}
+          customStyle={{ margin: 0, padding: "1.25rem 1.5rem", background: "transparent", fontSize: "0.875rem", lineHeight: 1.7 }}
+          codeTagProps={{ style: { fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" } }}
+          wrapLongLines={false}
+        >
+          {codeText}
+        </SyntaxHighlighter>
+      ) : (
+        <pre
+          className="overflow-x-auto text-sm leading-6 text-stone-800 dark:text-stone-100"
+          style={{ margin: 0, padding: "1.25rem 1.5rem" }}
+        ><code>{codeText}</code></pre>
+      )}
     </div>
   );
 }
@@ -636,21 +729,21 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
 
   const components: Components = useMemo(() => ({
     code({ className, children, node, ...props }) {
-      const match = /language-(\w+)/.exec(className || "");
+      const match = /language-([^\s]+)/.exec(className || "");
       const codeText = String(children).replace(/\n$/, "");
       const isInline = (node?.position?.start.line ?? 0) === (node?.position?.end.line ?? 0) && !codeText.includes("\n");
       if (match?.[1]?.toLowerCase() === "mermaid") {
         return <MermaidBlock code={codeText} />;
       }
       return match ? (
-        <LazyCodeBlock codeText={codeText} language={match[1]} />
+        <CodeBlock codeText={codeText} language={match[1]} />
       ) : (
         isInline ? (
           <code className={`${className} bg-neutral-200/60 dark:bg-stone-800/80 px-1.5 py-0.5 rounded font-mono text-sm border border-neutral-300/50 dark:border-stone-700/60 text-foreground`} {...props}>
             {children}
           </code>
         ) : (
-          <LazyCodeBlock codeText={codeText} language="text" />
+          <CodeBlock codeText={codeText} />
         )
       );
     },
