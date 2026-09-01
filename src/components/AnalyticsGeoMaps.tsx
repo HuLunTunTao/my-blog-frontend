@@ -108,13 +108,15 @@ export function WorldMap({ items }: { items: AnalyticsLocationStat[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden border border-stone-200 dark:border-stone-700/60 bg-[radial-gradient(circle_at_30%_30%,rgba(245,158,11,0.10),transparent_35%),linear-gradient(180deg,#fafaf9_0%,#f5f5f4_100%)] dark:bg-none dark:bg-stone-900/60">
+      <div className="overflow-hidden border border-border bg-paper">
         <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full" role="img" aria-label="World IP origin map">
           {worldGeographies.features.map((geo: MapFeature, index: number) => {
             const rawId = String(geo.id ?? geo.properties?.id ?? "").trim();
             const geoName = String(geo.properties?.name ?? "").trim();
             const item = byCode.get(rawId.toUpperCase()) || byName.get(normalizeCountryName(geoName));
-            const fill = item ? `rgba(180, 83, 9, ${clampOpacity(item.totalRequests / maxValue)})` : "#f5f5f4";
+            const fill = item
+              ? `rgb(var(--color-foreground) / ${clampOpacity(item.totalRequests / maxValue)})`
+              : "rgb(var(--color-paper))";
             const path = pathGenerator(geo) ?? "";
 
             return (
@@ -122,7 +124,7 @@ export function WorldMap({ items }: { items: AnalyticsLocationStat[] }) {
                 key={`world-${rawId || geoName || index}`}
                 d={path}
                 fill={fill}
-                stroke={item?.code === "CN" ? "#7c2d12" : "#d6d3d1"}
+                stroke={item?.code === "CN" ? "rgb(var(--color-foreground))" : "rgb(var(--color-border))"}
                 strokeWidth={item?.code === "CN" ? 1.2 : 0.7}
               >
                 <title>{item ? `${item.name}: ${item.totalRequests}` : (geoName || rawId)}</title>
@@ -147,12 +149,14 @@ export function ChinaMap({ items }: { items: AnalyticsLocationStat[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden border border-stone-200 dark:border-stone-700/60 bg-stone-50/80 dark:bg-stone-900/40 p-3">
+      <div className="overflow-hidden border border-border bg-paper p-3">
         <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full" role="img" aria-label="China region origin map">
           {(chinaMapGeo as unknown as MapFeatureCollection).features.map((geo: MapFeature, index: number) => {
             const name = normalizeChinaRegionName(String(geo.properties?.name ?? geo.id ?? ""));
             const item = valueMap.get(name);
-            const fill = item ? `rgba(180, 83, 9, ${clampOpacity(item.totalRequests / maxValue)})` : "#f5f5f4";
+            const fill = item
+              ? `rgb(var(--color-foreground) / ${clampOpacity(item.totalRequests / maxValue)})`
+              : "rgb(var(--color-paper))";
             const path = pathGenerator(geo) ?? "";
 
             return (
@@ -160,7 +164,7 @@ export function ChinaMap({ items }: { items: AnalyticsLocationStat[] }) {
                 key={`china-${name || index}`}
                 d={path}
                 fill={fill}
-                stroke={item ? "#92400e" : "#d6d3d1"}
+                stroke={item ? "rgb(var(--color-foreground))" : "rgb(var(--color-border))"}
                 strokeWidth={0.8}
               >
                 <title>{`${name}: ${item?.totalRequests ?? 0}`}</title>
@@ -183,17 +187,17 @@ export default function AnalyticsGeoMapsSection({
 }) {
   return (
     <div className="grid gap-6 xl:grid-cols-2">
-      <section className="border border-stone-200/70 dark:border-stone-700/60 bg-white/88 dark:bg-stone-900/60 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]">
+      <section className="border border-border bg-paper p-5">
         <div className="mb-4">
-          <h2 className="text-lg font-serif text-stone-900 dark:text-stone-100">Global IP Origins</h2>
-          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Country-level concentration, with full country-name matching instead of a partial hardcoded code list.</p>
+          <h2 className="text-lg font-serif text-foreground">Global IP Origins</h2>
+          <p className="mt-1 text-sm text-muted">Country-level concentration from request headers.</p>
         </div>
         <WorldMap items={countryLocations} />
       </section>
-      <section className="border border-stone-200/70 dark:border-stone-700/60 bg-white/88 dark:bg-stone-900/60 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]">
+      <section className="border border-border bg-paper p-5">
         <div className="mb-4">
-          <h2 className="text-lg font-serif text-stone-900 dark:text-stone-100">China Region Origins</h2>
-          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Province-level heat map, lazily loaded so it no longer blocks the rest of the dashboard.</p>
+          <h2 className="text-lg font-serif text-foreground">China Region Origins</h2>
+          <p className="mt-1 text-sm text-muted">Province-level heat map, loaded separately from the rest of the page.</p>
         </div>
         <ChinaMap items={chinaLocations} />
       </section>

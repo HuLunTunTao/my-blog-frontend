@@ -2,7 +2,7 @@ import { getTimelinePosts, groupPostsByYearMonth, Post } from "@/lib/posts";
 import { parseISO, format } from "date-fns";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Github, Twitter, Link as LinkIcon, Loader2 } from "lucide-react";
+import { Github, Twitter, Link as LinkIcon, Loader2, Lock } from "lucide-react";
 import TimelineSidebar from "./TimelineSidebar";
 import { CnblogsIcon } from "./icons/CnblogsIcon";
 import { XiaohongshuIcon } from "./icons/XiaohongshuIcon";
@@ -108,7 +108,7 @@ export default function TimelineView() {
                        />
                      </>
                    ) : (
-                     <span className="text-4xl grayscale opacity-50">👤</span>
+                     <span className="font-serif text-4xl text-subtle">{siteConfig.author.name.charAt(0)}</span>
                    )}
                 </div>
                 {/* Decorative circle behind */}
@@ -143,10 +143,10 @@ export default function TimelineView() {
                                 href={link.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="p-2 text-subtle hover:text-stone-800 dark:hover:text-stone-200 hover:bg-stone-200/50 dark:hover:bg-stone-800/50 rounded-full transition-all duration-300 group"
+                                className="p-2 text-subtle hover:text-foreground transition-colors duration-200"
                                 title={link.label}
                             >
-                                <Icon size={20} className="group-hover:scale-110 transition-transform" />
+                                <Icon size={20} />
                             </a>
                         );
                     })}
@@ -191,7 +191,7 @@ export default function TimelineView() {
                       <div className="space-y-4 pl-2">
                         {monthPosts.map((post) => (
                           <Link key={post.slug} to={toPostRoute(post)} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/70 dark:focus-visible:ring-stone-500/70">
-                            <article className="relative py-4 px-6 transition-all duration-300 hover:translate-x-1">
+                            <article className="relative py-4 px-6">
                               {/* Individual Paper Layer */}
                               <div className="paper-texture absolute inset-0 bg-white/60 dark:bg-stone-900/45 -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none" />
 
@@ -202,7 +202,7 @@ export default function TimelineView() {
                                         post.visibility === 'encrypted' && "font-mono text-base text-neutral-600 dark:text-neutral-400"
                                     )}
                                 >
-                                  {post.visibility === 'encrypted' && <span className="mr-2">🔒</span>}
+                                  {post.visibility === 'encrypted' && <Lock size={14} strokeWidth={1.5} className="mr-2 inline-block -translate-y-px text-muted" aria-hidden="true" />}
                                   {post.title}
                                 </span>
                                 <span className="text-xs text-subtle font-sans mt-1 md:mt-0">

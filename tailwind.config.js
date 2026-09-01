@@ -15,6 +15,15 @@ export default {
         subtle:     "rgb(var(--color-subtle) / <alpha-value>)",
         border:     "rgb(var(--color-border) / <alpha-value>)",
         accent:     "rgb(var(--color-accent) / <alpha-value>)",
+        stone: {
+          50:  "#F1F1EC",
+          100: "#E6E6E0",
+          200: "#D0D0C8",
+          300: "#B8B8B0",
+          400: "#9A9A92",
+          500: "#6E6E67",
+          600: "#52524D",
+        },
       },
       fontFamily: {
         sans: [

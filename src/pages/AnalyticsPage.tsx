@@ -12,7 +12,7 @@ import { clearAdminSession, loadAdminSession, saveAdminSession, type AdminSessio
 import { cn } from "@/lib/utils";
 import { format, subDays } from "date-fns";
 import { lazy, Suspense, useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
-import { Activity, ArrowDown, ArrowUp, ArrowUpDown, BarChart3, Download, Globe2, LockKeyhole, LogOut, MapPinned, RefreshCw, Shield, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Download, LogOut, RefreshCw, Trash2 } from "lucide-react";
 
 type FilterState = {
   slug: string;
@@ -63,27 +63,19 @@ function ScrollTitle({ title, slug }: { title: string; slug: string }) {
   );
 }
 
-function MetricCard({ icon: Icon, label, value, hint }: { icon: typeof Activity; label: string; value: string | number; hint: string }) {
+function MetricCard({ label, value, hint }: { label: string; value: string | number; hint: string }) {
   return (
-    <div className="relative overflow-hidden border border-stone-200/70 dark:border-stone-700/60 bg-white/90 dark:bg-stone-900/60 p-5 shadow-[0_20px_60px_rgba(120,113,108,0.08)]">
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-stone-700 via-amber-700/70 to-stone-300" />
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="text-[11px] uppercase tracking-[0.32em] text-stone-500 dark:text-stone-400">{label}</div>
-          <div className="mt-4 text-3xl font-serif text-stone-900 dark:text-stone-100">{value}</div>
-          <div className="mt-2 text-sm text-stone-500 dark:text-stone-400">{hint}</div>
-        </div>
-        <div className="rounded-full border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 p-2 text-stone-600 dark:text-stone-300">
-          <Icon className="h-4 w-4" />
-        </div>
-      </div>
+    <div className="border border-border bg-paper p-5">
+      <div className="text-[11px] uppercase tracking-[0.2em] text-subtle">{label}</div>
+      <div className="mt-3 text-3xl font-serif text-foreground">{value}</div>
+      <div className="mt-2 text-sm text-muted">{hint}</div>
     </div>
   );
 }
 
 function Panel({ title, subtitle, action, children, className }: { title: string; subtitle?: string; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cn("border border-stone-200/70 dark:border-stone-700/60 bg-white/88 dark:bg-stone-900/60 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]", className)}>
+    <section className={cn("border border-border bg-paper p-5", className)}>
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-serif text-stone-900 dark:text-stone-100">{title}</h2>
@@ -115,7 +107,7 @@ function LineChart({ data, lines }: { data: AnalyticsTimeBucket[]; lines: Array<
       <div className="flex flex-wrap gap-3 text-xs uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
         {lines.map((line) => (
           <div key={line.key} className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: line.color }} />
+            <span className="h-2 w-2" style={{ backgroundColor: line.color }} />
             {line.label}
           </div>
         ))}
@@ -311,7 +303,7 @@ function AnalyticsMapsLoading() {
   return (
     <div className="grid gap-6 xl:grid-cols-2">
       {["Global IP Origins", "China Region Origins"].map((title) => (
-        <section key={title} className="border border-stone-200/70 dark:border-stone-700/60 bg-white/88 dark:bg-stone-900/60 p-5 shadow-[0_24px_80px_rgba(120,113,108,0.09)]">
+        <section key={title} className="border border-border bg-paper p-5">
           <div className="mb-4">
             <h2 className="text-lg font-serif text-stone-900 dark:text-stone-100">{title}</h2>
             <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">Loading geo visualization...</p>
@@ -441,74 +433,37 @@ function DataTable({
 function LoginPanel({ onSubmit, loading, error }: { onSubmit: (password: string) => Promise<void>; loading: boolean; error: string }) {
   const [password, setPassword] = useState("");
   return (
-    <section className="mx-auto max-w-5xl">
-      <div className="grid gap-8 xl:grid-cols-[1.2fr_0.9fr]">
-        <div className="relative overflow-hidden border border-stone-200/70 dark:border-stone-700/60 bg-[radial-gradient(circle_at_top_left,rgba(120,113,108,0.14),transparent_35%),linear-gradient(135deg,#fafaf9_0%,#f5f5f4_45%,#eee7da_100%)] dark:bg-none dark:bg-stone-900/60 p-8 md:p-10">
-          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-amber-600/10 blur-3xl" />
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-stone-300/70 dark:border-stone-600/60 bg-white/70 dark:bg-stone-900/60 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-stone-600 dark:text-stone-300">
-              <Shield className="h-3.5 w-3.5" />
-              Ops Analytics
-            </div>
-            <div>
-              <h1 className="max-w-xl text-4xl font-serif leading-tight text-stone-900 dark:text-stone-100 md:text-5xl">Professional traffic intelligence for your blog operations.</h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600 dark:text-stone-300">
-                JWT session persistence, ignored self-IP management, recent hot posts, access trends, referrers, and geo-origin dashboards are all consolidated here.
-              </p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              {[
-                ["JWT Session", "Login once, keep the state until token expiry."],
-                ["Self-IP Filter", "Persist your own IPs and exclude them by default."],
-                ["Geo Pulse", "Visualize country and China-region access concentration."],
-              ].map(([title, desc]) => (
-                <div key={title} className="border border-stone-200/70 dark:border-stone-700/60 bg-white/75 dark:bg-stone-900/60 p-4">
-                  <div className="text-sm font-medium text-stone-900 dark:text-stone-100">{title}</div>
-                  <div className="mt-2 text-sm text-stone-500 dark:text-stone-400">{desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="border border-stone-200/70 dark:border-stone-700/60 bg-white/90 dark:bg-stone-900/60 p-8 shadow-[0_24px_70px_rgba(120,113,108,0.10)]">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="rounded-full border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 p-3 text-stone-700 dark:text-stone-200">
-              <LockKeyhole className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-sm font-medium text-stone-900 dark:text-stone-100">Administrator Sign-In</div>
-              <div className="text-sm text-stone-500 dark:text-stone-400">The route stays hidden, and all data requires backend authorization.</div>
-            </div>
-          </div>
-          <form
-            className="space-y-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void onSubmit(password);
-            }}
-          >
-            <label className="block space-y-2">
-              <span className="text-[11px] uppercase tracking-[0.24em] text-stone-500 dark:text-stone-400">Admin Password</span>
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-4 py-3 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400"
-                placeholder="Enter password"
-              />
-            </label>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-stone-900 dark:bg-stone-100 px-4 py-3 text-sm uppercase tracking-[0.28em] text-white dark:text-stone-900 transition hover:bg-stone-800 dark:hover:bg-stone-300 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? "Signing In..." : "Enter Dashboard"}
-            </button>
-            {error ? <div className="text-sm text-red-600">{error}</div> : null}
-          </form>
-        </div>
-      </div>
+    <section className="mx-auto max-w-md">
+      <h1 className="text-3xl font-serif text-foreground">访问统计</h1>
+      <p className="mt-3 text-sm leading-7 text-muted">
+        输入管理密码后查看阅读量、来源和地域。会话在令牌过期前保持有效。
+      </p>
+      <form
+        className="mt-8 space-y-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void onSubmit(password);
+        }}
+      >
+        <label className="block space-y-2">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-subtle">Admin Password</span>
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className="w-full border border-border bg-paper px-4 py-3 focus:outline-none focus:ring-1 focus:ring-foreground"
+            placeholder="Enter password"
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-foreground px-4 py-3 text-sm uppercase tracking-[0.2em] text-background transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? "Signing In..." : "登录"}
+        </button>
+        {error ? <p className="text-sm text-muted">{error}</p> : null}
+      </form>
     </section>
   );
 }
@@ -548,17 +503,17 @@ function AnalyticsOverview(props: AnalyticsOverviewProps) {
   return (
     <>
       <section className="grid gap-4 xl:grid-cols-5">
-        <MetricCard icon={BarChart3} label="Requests" value={stats?.overview.totalRequests ?? 0} hint="Raw access attempts in current range" />
-        <MetricCard icon={Activity} label="Reads" value={stats?.overview.successfulReads ?? 0} hint="Successful article reads" />
-        <MetricCard icon={Shield} label="Ignored Traffic" value={stats?.overview.ignoredRequests ?? 0} hint="Requests from your saved IPs" />
-        <MetricCard icon={Globe2} label="Filtered IPs" value={stats?.overview.filteredUniqueIps ?? 0} hint="Unique IPs after filtering" />
-        <MetricCard icon={MapPinned} label="24h Reads" value={stats?.overview.successfulLast24 ?? 0} hint="Successful reads in last 24 hours" />
+        <MetricCard label="Requests" value={stats?.overview.totalRequests ?? 0} hint="Raw access attempts in current range" />
+        <MetricCard label="Reads" value={stats?.overview.successfulReads ?? 0} hint="Successful article reads" />
+        <MetricCard label="Ignored Traffic" value={stats?.overview.ignoredRequests ?? 0} hint="Requests from your saved IPs" />
+        <MetricCard label="Filtered IPs" value={stats?.overview.filteredUniqueIps ?? 0} hint="Unique IPs after filtering" />
+        <MetricCard label="24h Reads" value={stats?.overview.successfulLast24 ?? 0} hint="Successful reads in last 24 hours" />
       </section>
 
       <Panel
-        title="Filters & Session Controls"
-        subtitle="Apply structured filters without re-entering the password. Ignored self-IP traffic is excluded by default."
-        action={<div className="rounded-full border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 px-3 py-1 text-xs uppercase tracking-[0.22em] text-stone-500 dark:text-stone-400">Generated {formatDateTime(stats?.generatedAt)}</div>}
+        title="Filters"
+        subtitle="Ignored self-IP traffic is excluded by default."
+        action={<div className="border border-border bg-paper px-3 py-1 text-xs text-subtle">Generated {formatDateTime(stats?.generatedAt)}</div>}
       >
         <div className="grid gap-4 lg:grid-cols-5">
           <label className="space-y-2 text-sm">
@@ -578,7 +533,7 @@ function AnalyticsOverview(props: AnalyticsOverviewProps) {
             <input type="datetime-local" value={filters.to} onChange={(event) => setFilters((current) => ({ ...current, to: event.target.value }))} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" />
           </label>
           <div className="flex flex-col justify-between gap-3">
-            <label className="flex items-center gap-3 rounded-xl border border-stone-200 dark:border-stone-700/60 bg-stone-50/70 dark:bg-stone-900/40 px-3 py-3 text-sm text-stone-700 dark:text-stone-200">
+            <label className="flex items-center gap-3 border border-border bg-paper px-3 py-3 text-sm text-foreground">
               <input type="checkbox" checked={filters.excludeIgnored} onChange={(event) => setFilters((current) => ({ ...current, excludeIgnored: event.target.checked }))} className="h-4 w-4 accent-stone-900 dark:accent-stone-100" />
               Exclude ignored IPs
             </label>
@@ -590,7 +545,7 @@ function AnalyticsOverview(props: AnalyticsOverviewProps) {
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {RANGE_PRESETS.map((preset) => (
-            <button key={preset.label} type="button" onClick={() => onApplyRangePreset(preset.days)} className="rounded-full border border-stone-300 dark:border-stone-600/60 bg-white dark:bg-stone-900/60 px-3 py-1.5 text-[11px] uppercase tracking-[0.24em] text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800/60">Last {preset.label}</button>
+            <button key={preset.label} type="button" onClick={() => onApplyRangePreset(preset.days)} className="border border-border bg-paper px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-muted hover:text-foreground">Last {preset.label}</button>
           ))}
         </div>
         {filters.slug || filters.ip ? (
@@ -602,23 +557,23 @@ function AnalyticsOverview(props: AnalyticsOverviewProps) {
       </Panel>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Panel title="Blog Traffic Trend" subtitle="Requests, successful reads, and failed attempts across the selected time window.">
-          <LineChart data={stats?.daily ?? []} lines={[{ key: "totalRequests", color: "#1c1917", label: "Requests" }, { key: "successfulReads", color: "#b45309", label: "Reads" }, { key: "failedReads", color: "#dc2626", label: "Failed" }]} />
+        <Panel title="Traffic" subtitle="Requests, successful reads, and failed attempts in the selected window.">
+          <LineChart data={stats?.daily ?? []} lines={[{ key: "totalRequests", color: "#1c1c1c", label: "Requests" }, { key: "successfulReads", color: "#6e6e67", label: "Reads" }, { key: "failedReads", color: "#a3a39a", label: "Failed" }]} />
         </Panel>
-        <Panel title="Recent Hot Posts" subtitle="Top articles by successful reads in the last 7 days within the current filter scope.">
+        <Panel title="Recent hot posts" subtitle="Top articles by successful reads in the last 7 days.">
           <HorizontalBarChart items={stats?.recentHotPosts ?? []} />
         </Panel>
       </div>
 
-      <Panel title="Hourly Access Pulse" subtitle="Short-window hourly rhythm helps distinguish bursts, crawler noise, and release-day spikes.">
-        <LineChart data={stats?.hourly ?? []} lines={[{ key: "totalRequests", color: "#44403c", label: "Hourly Requests" }, { key: "successfulReads", color: "#0f766e", label: "Hourly Reads" }]} />
+      <Panel title="Hourly" subtitle="Requests and reads by hour in the current range.">
+        <LineChart data={stats?.hourly ?? []} lines={[{ key: "totalRequests", color: "#1c1c1c", label: "Hourly Requests" }, { key: "successfulReads", color: "#6e6e67", label: "Hourly Reads" }]} />
       </Panel>
 
       <Suspense fallback={<AnalyticsMapsLoading />}>
         <AnalyticsGeoMapsSection countryLocations={stats?.countryLocations ?? []} chinaLocations={stats?.chinaLocations ?? []} />
       </Suspense>
 
-      <Panel title="Ignored Self-IP Registry" subtitle="Persist your own IPs here. They can be excluded from all analytics with a single toggle.">
+      <Panel title="Ignored IPs" subtitle="Saved addresses can be excluded from the totals.">
         <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr_auto]">
           <input value={ignoredIp} onChange={(event) => setIgnoredIp(event.target.value)} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="IP address" />
           <input value={ignoredLabel} onChange={(event) => setIgnoredLabel(event.target.value)} className="w-full border border-stone-300 dark:border-stone-600/60 bg-stone-50/60 dark:bg-stone-900/40 px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-500 dark:focus:ring-stone-400" placeholder="Label (home / office / server)" />
@@ -627,12 +582,12 @@ function AnalyticsOverview(props: AnalyticsOverviewProps) {
         <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {ignoredIps.length === 0 ? <div className="text-sm text-stone-500 dark:text-stone-400">No ignored IPs configured yet.</div> : null}
           {ignoredIps.map((item) => (
-            <div key={item.ip} className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 dark:border-stone-700/60 bg-stone-50/70 dark:bg-stone-900/40 px-4 py-3">
+            <div key={item.ip} className="flex items-center justify-between gap-3 border border-border bg-paper px-4 py-3">
               <div>
                 <div className="font-mono text-sm text-stone-900 dark:text-stone-100">{item.ip}</div>
                 <div className="text-xs text-stone-500 dark:text-stone-400">{item.label || "No label"} • added {formatDateTime(item.createdAt)}</div>
               </div>
-              <button type="button" aria-label={`删除忽略的 IP ${item.ip}`} onClick={() => void onDeleteIgnoredIp(item.ip)} className="rounded-full border border-stone-300 dark:border-stone-600/60 p-2 text-stone-500 dark:text-stone-400 hover:text-red-600">
+              <button type="button" aria-label={`删除忽略的 IP ${item.ip}`} onClick={() => void onDeleteIgnoredIp(item.ip)} className="border border-border p-2 text-muted hover:text-foreground">
                 <Trash2 aria-hidden="true" className="h-4 w-4" />
               </button>
             </div>
@@ -720,7 +675,7 @@ function AnalyticsTables(props: AnalyticsTablesProps) {
       </Panel>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Panel title="Referrer Intelligence" subtitle="External source breakdown for the current filter scope.">
+        <Panel title="Referrers" subtitle="External sources for the current filter.">
           <DataTable columns={["Referrer", "Host", "Requests", "Reads", "Failed"]} rows={(stats?.referrers ?? []).map((referrer) => [<div key="referrer" className="max-w-[20rem] break-all text-stone-600 dark:text-stone-300">{referrer.referrer}</div>, referrer.host || "-", referrer.totalRequests, referrer.successfulReads, referrer.failedReads])} />
         </Panel>
         <Panel title="Recent Access Events" subtitle="Recent event stream showing which article, from which IP, and whether content was actually returned.">
@@ -729,7 +684,7 @@ function AnalyticsTables(props: AnalyticsTablesProps) {
             <ScrollTitle key="post" title={event.title} slug={event.slug} />,
             <div key="ip" className="flex items-center gap-2"><div className="font-mono text-xs">{event.ip}</div><InlineCopyButton text={event.ip} /></div>,
             <div key="geo" className="border border-stone-200 dark:border-stone-700/60 bg-stone-50 dark:bg-stone-900/40 px-2 py-1 text-xs text-stone-500 dark:text-stone-400">{[event.countryName || event.countryCode, event.region].filter(Boolean).join(" / ") || "Unknown"}</div>,
-            <span key="result" className={cn("inline-flex border px-2 py-1 text-xs font-medium", event.accessGranted ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-red-200 bg-red-50 text-red-700")}>{event.accessGranted ? "Success" : "Blocked"}</span>,
+            <span key="result" className="inline-flex border border-border bg-paper px-2 py-1 text-xs text-foreground">{event.accessGranted ? "Success" : "Blocked"}</span>,
           ])} />
         </Panel>
       </div>
@@ -932,26 +887,19 @@ export default function AnalyticsPage() {
 
   return (
     <section className="space-y-8">
-      <header className="relative overflow-hidden border border-stone-200/70 dark:border-stone-700/60 bg-[radial-gradient(circle_at_top_left,rgba(146,64,14,0.12),transparent_32%),linear-gradient(145deg,#fafaf9_0%,#f6f3ee_52%,#f0ece4_100%)] dark:bg-none dark:bg-stone-900/60 p-6 md:p-8">
-        <div className="absolute inset-y-0 right-0 w-1/3 bg-[linear-gradient(to_left,rgba(120,113,108,0.12),transparent)]" />
-        <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-stone-300/70 dark:border-stone-600/60 bg-white/80 dark:bg-stone-900/60 px-3 py-1 text-[11px] uppercase tracking-[0.3em] text-stone-600 dark:text-stone-300">
-              <Activity className="h-3.5 w-3.5" />
-              Internal Analytics
-            </div>
-            <div>
-              <h1 className="text-3xl font-serif text-stone-900 dark:text-stone-100 md:text-4xl">Traffic Intelligence Console</h1>
-              <p className="mt-2 max-w-3xl text-sm leading-7 text-stone-600 dark:text-stone-300">
-                JWT session active until {formatDateTime(session.expiresAt)}. Geo charts rely on reverse-proxy country and region headers when available.
-              </p>
-            </div>
+      <header className="border border-border bg-paper p-6 md:p-8">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <h1 className="text-3xl font-serif text-foreground md:text-4xl">访问记录</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-muted">
+              会话有效至 {formatDateTime(session.expiresAt)}。地域图使用反代提供的国家与地区头。
+            </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={() => void handleRefresh()}
-              className="inline-flex items-center gap-2 border border-stone-300 dark:border-stone-600/60 bg-white/80 dark:bg-stone-900/60 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-800/60"
+              className="inline-flex items-center gap-2 border border-border bg-paper px-4 py-2 text-xs uppercase tracking-[0.2em] text-foreground hover:bg-background"
               disabled={loading}
             >
               <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
@@ -960,7 +908,7 @@ export default function AnalyticsPage() {
             <button
               type="button"
               onClick={handleExportJson}
-              className="inline-flex items-center gap-2 border border-stone-300 dark:border-stone-600/60 bg-white/80 dark:bg-stone-900/60 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-800/60"
+              className="inline-flex items-center gap-2 border border-border bg-paper px-4 py-2 text-xs uppercase tracking-[0.2em] text-foreground hover:bg-background"
             >
               <Download className="h-4 w-4" />
               JSON
@@ -968,7 +916,7 @@ export default function AnalyticsPage() {
             <button
               type="button"
               onClick={handleExportCsv}
-              className="inline-flex items-center gap-2 border border-stone-300 dark:border-stone-600/60 bg-white/80 dark:bg-stone-900/60 px-4 py-2 text-xs uppercase tracking-[0.24em] text-stone-700 dark:text-stone-200 hover:bg-white dark:hover:bg-stone-800/60"
+              className="inline-flex items-center gap-2 border border-border bg-paper px-4 py-2 text-xs uppercase tracking-[0.2em] text-foreground hover:bg-background"
             >
               <Download className="h-4 w-4" />
               CSV
@@ -976,7 +924,7 @@ export default function AnalyticsPage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 border border-stone-300 dark:border-stone-600/60 bg-stone-900 dark:bg-stone-100 px-4 py-2 text-xs uppercase tracking-[0.24em] text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-stone-300"
+              className="inline-flex items-center gap-2 border border-foreground bg-foreground px-4 py-2 text-xs uppercase tracking-[0.2em] text-background hover:opacity-90"
             >
               <LogOut className="h-4 w-4" />
               Logout
@@ -985,7 +933,7 @@ export default function AnalyticsPage() {
         </div>
       </header>
 
-      {error ? <div className="border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
+      {error ? <div className="border border-border bg-paper px-4 py-3 text-sm text-foreground"><span className="font-medium">错误</span> — {error}</div> : null}
 
       <AnalyticsOverview
         stats={stats}

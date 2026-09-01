@@ -338,7 +338,7 @@ function ObsidianEmbed({ reference, depth, sourceSlug }: { reference: string; de
   }
 
   if (state.error) {
-    return <span className="text-xs text-red-500">{state.error}</span>;
+    return <span className="text-xs text-muted">{state.error}</span>;
   }
 
   if (state.locked) {
@@ -377,7 +377,7 @@ function ObsidianEmbed({ reference, depth, sourceSlug }: { reference: string; de
 function ObsidianDetails({ href, depth, sourceSlug }: { href: string; depth: number; sourceSlug?: string }) {
   const details = useMemo(() => decodeObsidianDetailsHref(href), [href]);
   if (!details) {
-    return <span className="text-xs text-red-500">折叠内容解析失败</span>;
+    return <span className="text-xs text-muted">折叠内容解析失败</span>;
   }
   return (
     <details className="my-6 rounded-sm border border-stone-300/70 dark:border-stone-700/70 bg-stone-50/40 dark:bg-stone-900/40 px-4 py-3">
@@ -399,38 +399,30 @@ function getPlainText(node: unknown): string {
   return "";
 }
 
-const CALLOUT_STYLES: Record<string, string> = {
-  note:     "border-l-blue-400 bg-blue-50/50 dark:bg-blue-950/30",
-  tip:      "border-l-emerald-500 bg-emerald-50/55 dark:bg-emerald-950/30",
-  info:     "border-l-cyan-500 bg-cyan-50/55 dark:bg-cyan-950/30",
-  success:  "border-l-lime-500 bg-lime-50/60 dark:bg-lime-950/30",
-  question: "border-l-sky-500 bg-sky-50/60 dark:bg-sky-950/30",
-  warning:  "border-l-amber-500 bg-amber-50/55 dark:bg-amber-950/30",
-  failure:  "border-l-orange-500 bg-orange-50/60 dark:bg-orange-950/30",
-  danger:   "border-l-rose-500 bg-rose-50/55 dark:bg-rose-950/30",
-  bug:      "border-l-red-500 bg-red-50/60 dark:bg-red-950/30",
-  quote:    "border-l-stone-500 bg-stone-100/70 dark:bg-stone-800/50",
-  summary:  "border-l-indigo-500 bg-indigo-50/55 dark:bg-indigo-950/30",
-  abstract: "border-l-violet-500 bg-violet-50/55 dark:bg-violet-950/30",
-  example:  "border-l-teal-500 bg-teal-50/55 dark:bg-teal-950/30",
-  todo:     "border-l-fuchsia-500 bg-fuchsia-50/60 dark:bg-fuchsia-950/30",
-};
+const CALLOUT_CAUTION_TYPES = new Set(["warning", "failure", "danger", "bug"]);
 
-const CALLOUT_META: Record<string, { icon: LucideIcon; titleClassName: string }> = {
-  note:     { icon: FileText,     titleClassName: "text-blue-700 dark:text-blue-300" },
-  tip:      { icon: Lightbulb,    titleClassName: "text-emerald-700 dark:text-emerald-300" },
-  info:     { icon: Info,         titleClassName: "text-cyan-700 dark:text-cyan-300" },
-  success:  { icon: CheckCircle2, titleClassName: "text-lime-700 dark:text-lime-300" },
-  question: { icon: HelpCircle,   titleClassName: "text-sky-700 dark:text-sky-300" },
-  warning:  { icon: AlertTriangle,titleClassName: "text-amber-700 dark:text-amber-300" },
-  failure:  { icon: AlertTriangle,titleClassName: "text-orange-700 dark:text-orange-300" },
-  danger:   { icon: AlertOctagon, titleClassName: "text-rose-700 dark:text-rose-300" },
-  bug:      { icon: Bug,          titleClassName: "text-red-700 dark:text-red-300" },
-  quote:    { icon: Quote,        titleClassName: "text-stone-700 dark:text-stone-300" },
-  summary:  { icon: ClipboardList,titleClassName: "text-indigo-700 dark:text-indigo-300" },
-  abstract: { icon: ClipboardList,titleClassName: "text-violet-700 dark:text-violet-300" },
-  example:  { icon: FlaskConical, titleClassName: "text-teal-700 dark:text-teal-300" },
-  todo:     { icon: ListTodo,     titleClassName: "text-fuchsia-700 dark:text-fuchsia-300" },
+function calloutClassName(type: string): string {
+  const caution = CALLOUT_CAUTION_TYPES.has(type);
+  return caution
+    ? "my-6 border-l border-foreground/40 bg-paper px-5 py-4"
+    : "my-6 border-l border-border bg-paper px-5 py-4";
+}
+
+const CALLOUT_ICONS: Record<string, LucideIcon> = {
+  note: FileText,
+  tip: Lightbulb,
+  info: Info,
+  success: CheckCircle2,
+  question: HelpCircle,
+  warning: AlertTriangle,
+  failure: AlertTriangle,
+  danger: AlertOctagon,
+  bug: Bug,
+  quote: Quote,
+  summary: ClipboardList,
+  abstract: ClipboardList,
+  example: FlaskConical,
+  todo: ListTodo,
 };
 
 const CALLOUT_TYPE_ALIASES: Record<string, string> = {
@@ -460,11 +452,10 @@ function calloutDefaultTitle(type: string): string {
 }
 
 function CalloutTitle({ type, title }: { type: string; title: string }) {
-  const meta = CALLOUT_META[type] || CALLOUT_META.note;
-  const Icon = meta.icon;
+  const Icon = CALLOUT_ICONS[type] || FileText;
   return (
-    <div className={`mb-2 flex items-center gap-2 text-sm tracking-wide font-sans font-semibold ${meta.titleClassName}`}>
-      <Icon size={18} strokeWidth={2.2} aria-hidden="true" />
+    <div className="mb-2 flex items-center gap-2 text-xs font-sans uppercase tracking-widest text-subtle">
+      <Icon size={14} strokeWidth={1.5} aria-hidden="true" />
       <span>{title}</span>
     </div>
   );
@@ -780,7 +771,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       const match = /^\[!([a-zA-Z0-9_-]+)\]([+-])?\s*(.*)$/.exec((firstLine || "").trim());
       if (!match) {
         return (
-          <blockquote className="my-6 border-l-[6px] border-stone-300/90 dark:border-stone-600/80 bg-background/50 px-5 py-4 rounded-r-sm text-stone-600 dark:text-stone-300 before:content-none after:content-none [&>p]:my-4 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0 [&>p]:whitespace-pre-line [&>p:first-of-type]:before:content-none [&>p:last-of-type]:after:content-none [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1 [&_li_p]:my-0 [&_strong]:font-semibold">
+          <blockquote className="my-6 border-l border-border bg-paper px-5 py-4 text-muted before:content-none after:content-none [&>p]:my-4 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0 [&>p]:whitespace-pre-line [&>p:first-of-type]:before:content-none [&>p:last-of-type]:after:content-none [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-1 [&_li_p]:my-0 [&_strong]:font-semibold">
 
             {children}
           </blockquote>
@@ -800,7 +791,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
 
       if (foldMarker) {
         return (
-          <details open={foldMarker === "+"} className={`my-6 border-l-4 px-5 py-4 rounded-r-sm ${CALLOUT_STYLES[type] || CALLOUT_STYLES.note}`}>
+          <details open={foldMarker === "+"} className={calloutClassName(type)}>
             <summary className="mb-2 cursor-pointer select-none marker:content-none">
               <CalloutTitle type={type} title={title} />
             </summary>
@@ -810,7 +801,7 @@ export default function MarkdownRenderer({ content, depth = 0, sourceSlug }: Mar
       }
 
       return (
-        <div className={`my-6 border-l-4 px-5 py-4 rounded-r-sm ${CALLOUT_STYLES[type] || CALLOUT_STYLES.note}`}>
+        <div className={calloutClassName(type)}>
           <CalloutTitle type={type} title={title} />
           {body}
         </div>

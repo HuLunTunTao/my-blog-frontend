@@ -14,7 +14,7 @@ export default function EncryptedGate({ onUnlock }: { onUnlock: (password: strin
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-12 border border-dashed border-border rounded-lg bg-neutral-50/50 dark:bg-stone-900/40">
+    <div className="flex flex-col items-center justify-center p-12 border border-border bg-paper">
       <h3 className="text-lg font-serif mb-4">This post is encrypted</h3>
       <div className="flex flex-col items-center space-y-4">
         <input
@@ -25,16 +25,16 @@ export default function EncryptedGate({ onUnlock }: { onUnlock: (password: strin
               setError(false);
           }}
           placeholder="Enter password"
-          className="border-b border-neutral-300 dark:border-neutral-700 bg-transparent text-center focus:outline-none focus:border-foreground transition-colors py-1"
+          className="border-b border-border bg-transparent text-center focus:outline-none focus:border-foreground transition-colors py-1"
         />
         <button
             type="button"
             onClick={() => void handleUnlock()}
-            className="text-xs uppercase tracking-widest hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors"
+            className="text-xs uppercase tracking-widest hover:text-muted transition-colors"
         >
             [ Unlock ]
         </button>
-        {error && <p className="text-red-500 text-xs">Incorrect password</p>}
+        {error && <p className="text-muted text-xs">Incorrect password</p>}
       </div>
     </div>
   );

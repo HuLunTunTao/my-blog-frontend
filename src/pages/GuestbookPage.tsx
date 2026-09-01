@@ -80,7 +80,7 @@ export default function GuestbookPage() {
             <span>·</span>
             <span>便签数 · {notes.length}</span>
             {loading && <span>· 加载中...</span>}
-            {error && <span className="text-red-500">· {error}</span>}
+            {error && <span className="text-muted">· {error}</span>}
             <button
               type="button"
               className="ml-auto px-3 py-1 text-[10px] font-sans uppercase tracking-widest border border-border text-subtle hover:text-foreground hover:border-foreground transition-colors"

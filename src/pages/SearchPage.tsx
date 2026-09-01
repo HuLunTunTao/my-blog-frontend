@@ -26,7 +26,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
       nodes.push(<span key={`plain-${lastIndex}`}>{text.slice(lastIndex, start)}</span>);
     }
     nodes.push(
-      <mark key={`match-${start}`} className="bg-yellow-200 dark:bg-yellow-600/40 dark:text-yellow-100 rounded-sm px-0.5">
+      <mark key={`match-${start}`} className="bg-foreground/10 text-inherit px-0.5">
         {text.slice(start, end)}
       </mark>,
     );
@@ -169,7 +169,7 @@ export default function SearchPage() {
             )}
 
             {results.map((post) => (
-              <article key={post.slug} className="group relative p-6 transition-all duration-300 hover:translate-x-1">
+              <article key={post.slug} className="group relative p-6">
                 {/* Individual Paper Layer */}
                 <div className="paper-texture absolute inset-0 bg-white/60 dark:bg-stone-900/55 -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-sm" />
 
