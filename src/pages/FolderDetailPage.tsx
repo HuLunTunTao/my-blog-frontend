@@ -6,6 +6,7 @@ import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { toPostRoute } from "@/lib/postSlug";
+import { usePageMeta } from "@/lib/pageMeta";
 
 const container = {
   hidden: { opacity: 0 },
@@ -28,6 +29,16 @@ export default function FolderDetailPage() {
   const [folder, setFolder] = useState<FolderNode | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+
+  usePageMeta({
+    title: decodedPath ? `文件夹：${decodedPath}` : "文件夹",
+    description: folder?.description
+      ? folder.description.slice(0, 160)
+      : `浏览文件夹「${decodedPath}」下的文章。`,
+    canonicalPath: decodedPath
+      ? `/folders/${encodeURIComponent(decodedPath)}`
+      : "/folders",
+  });
 
   const loadFolder = useCallback(async () => {
     setLoading(true);

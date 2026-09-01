@@ -7,6 +7,7 @@ import { GuestMessageBoard } from '@/components/guestbook/MessageBoard';
 import { NoteModal } from '@/components/guestbook/NoteModal';
 import { GuestbookGiscus } from '@/components/guestbook/GuestbookGiscus';
 import { useTheme } from '@/context/theme';
+import { usePageMeta } from '@/lib/pageMeta';
 
 const BASE_LIFESPAN_DAYS = 547.5; // 约 1.5 年
 const BASE_LIFESPAN = BASE_LIFESPAN_DAYS * 86400;
@@ -14,6 +15,12 @@ const LIFESPAN_LABEL = '1.5 年';
 const BASE_SIZE = 220;
 
 export default function GuestbookPage() {
+  usePageMeta({
+    title: "留言板",
+    description: "囫囵吞桃个人博客的留言板。",
+    canonicalPath: "/guestbook",
+  });
+
   const { resolvedTheme } = useTheme();
   const [notes, setNotes] = useState<GuestNote[]>([]);
   const [loading, setLoading] = useState(true);

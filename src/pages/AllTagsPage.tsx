@@ -3,8 +3,14 @@ import { getAllTags, Tag } from "@/lib/posts";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { usePageMeta } from "@/lib/pageMeta";
 
 export default function AllTagsPage() {
+  usePageMeta({
+    title: "标签",
+    description: "浏览囫囵吞桃个人博客的全部标签索引。",
+    canonicalPath: "/tags",
+  });
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
 

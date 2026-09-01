@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+Disallow: /ops/
+Sitemap: https://blog.hltt.online/sitemap.xml

@@ -8,5 +8,7 @@
 - [标签索引](https://blog.hltt.online/tags)
 - [文件夹索引](https://blog.hltt.online/folders)
 - [站内搜索](https://blog.hltt.online/search)
+- [RSS 订阅](https://blog.hltt.online/rss.xml)
+- [Sitemap](https://blog.hltt.online/sitemap.xml)
 
 文章的规范地址使用 `https://blog.hltt.online/p/<short-id>` 格式。

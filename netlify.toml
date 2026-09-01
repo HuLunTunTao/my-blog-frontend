@@ -2,10 +2,33 @@
   command = "npm run build"
   publish = "dist"
 
-# SSR: /p/:shortId → backend render endpoint
+# SSR: article pages
 [[redirects]]
   from = "/p/*"
   to = "https://api.blog.hltt.online/render/post/:splat"
+  status = 200
+
+# Slug URLs → canonical short-id redirect (backend returns 301)
+[[redirects]]
+  from = "/posts/*"
+  to = "https://api.blog.hltt.online/render/redirect-slug/:splat"
+  status = 200
+
+# Discoverability feeds (dynamic, from backend)
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "https://api.blog.hltt.online/sitemap.xml"
+  status = 200
+
+[[redirects]]
+  from = "/rss.xml"
+  to = "https://api.blog.hltt.online/rss.xml"
+  status = 200
+
+# Homepage SSR
+[[redirects]]
+  from = "/"
+  to = "https://api.blog.hltt.online/render/home"
   status = 200
 
 # Proxy API assets so images work in SSR HTML

@@ -5,6 +5,7 @@ import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { toPostRoute } from "@/lib/postSlug";
+import { usePageMeta } from "@/lib/pageMeta";
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -42,6 +43,13 @@ function Highlight({ text, query }: { text: string; query: string }) {
 }
 
 export default function SearchPage() {
+  usePageMeta({
+    title: "搜索",
+    description: "在囫囵吞桃个人博客中搜索文章。",
+    canonicalPath: "/search",
+    robots: "noindex",
+  });
+
   const [searchParams, setSearchParams] = useSearchParams();
   const initialQueryRef = useRef(searchParams.get("q") || "");
   const [inputValue, setInputValue] = useState(initialQueryRef.current);

@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { getPostBySlug, getPostByShortId, Post } from "@/lib/api";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import EncryptedGate from "@/components/EncryptedGate";
@@ -8,25 +8,16 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import { decodeSlugFromPath } from "@/lib/postSlug";
+import { decodeSlugFromPath, toShortPostRoute } from "@/lib/postSlug";
 import ArticleTableOfContents from "@/components/ArticleTableOfContents";
 import { extractTableOfContents } from "@/lib/tableOfContents";
 import { isGiscusConfigured } from "@/config/giscus.config";
 import ArticleArchive from "@/components/ArticleArchive";
-
-function setCanonicalUrl(shortId: string) {
-  const url = new URL(`/p/${shortId}`, window.location.origin).href;
-  let link = document.querySelector<HTMLLinkElement>("link[rel='canonical']");
-  if (!link) {
-    link = document.createElement("link");
-    link.rel = "canonical";
-    document.head.appendChild(link);
-  }
-  link.setAttribute("href", url);
-}
+import { applyPageMeta } from "@/lib/pageMeta";
 
 export default function PostPage() {
   const params = useParams();
+  const navigate = useNavigate();
   const shortId = params.shortId?.trim();
   const slug = shortId ? "" : decodeSlugFromPath(params["*"]);
 
@@ -53,7 +44,18 @@ export default function PostPage() {
       }
       setPost(data);
       if (data.shortId) {
-        setCanonicalUrl(data.shortId);
+        const isProtectedPost =
+          data.visibility === "encrypted" || data.visibility === "hidden";
+        applyPageMeta({
+          title: data.title,
+          description: data.excerpt || data.title,
+          canonicalPath: `/p/${data.shortId}`,
+          robots: isProtectedPost ? "noindex,nofollow" : "index",
+          ogType: "article",
+        });
+        if (!shortId && slug) {
+          navigate(toShortPostRoute(data.shortId), { replace: true });
+        }
       }
     } catch (error) {
       console.error("Failed to load post:", error);
@@ -61,7 +63,7 @@ export default function PostPage() {
     } finally {
       setLoading(false);
     }
-  }, [shortId, slug]);
+  }, [shortId, slug, navigate]);
 
   useEffect(() => {
     setUnlocked(false);

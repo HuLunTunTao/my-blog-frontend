@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { format, subDays } from "date-fns";
 import { lazy, Suspense, useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, Download, LogOut, RefreshCw, Trash2 } from "lucide-react";
+import { usePageMeta } from "@/lib/pageMeta";
 
 type FilterState = {
   slug: string;
@@ -693,6 +694,12 @@ function AnalyticsTables(props: AnalyticsTablesProps) {
 }
 
 export default function AnalyticsPage() {
+  usePageMeta({
+    title: "访问统计",
+    canonicalPath: "/ops/analytics",
+    robots: "noindex,nofollow",
+  });
+
   const [session, setSession] = useState<AdminSession | null>(null);
   const [booting, setBooting] = useState(true);
   const [authLoading, setAuthLoading] = useState(false);

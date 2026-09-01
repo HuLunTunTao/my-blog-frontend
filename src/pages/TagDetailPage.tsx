@@ -5,6 +5,7 @@ import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useReducer, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { toPostRoute } from "@/lib/postSlug";
+import { usePageMeta } from "@/lib/pageMeta";
 
 type State = {
   posts: Post[];
@@ -49,6 +50,12 @@ function reducer(state: State, action: Action): State {
 export default function TagDetailPage() {
   const { tag } = useParams();
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  usePageMeta({
+    title: tag ? `标签：${tag}` : "标签",
+    description: state.tagInfo?.description || `浏览标签「${tag ?? ""}」下的文章。`,
+    canonicalPath: tag ? `/tags/${encodeURIComponent(tag)}` : "/tags",
+  });
 
   const loadData = useCallback(async () => {
     if (!tag) {

@@ -9,11 +9,13 @@ import { XiaohongshuIcon } from "./icons/XiaohongshuIcon";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { siteConfig } from "@/config/site.config";
 import { toPostRoute } from "@/lib/postSlug";
+import { usePageMeta } from "@/lib/pageMeta";
 import type { ComponentType } from "react";
 
 type SocialIconProps = { size?: string | number; className?: string };
 
 export default function TimelineView() {
+  usePageMeta({ title: siteConfig.title, canonicalPath: "/" });
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeYear, setActiveYear] = useState<string>("");
@@ -49,6 +51,12 @@ export default function TimelineView() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!loading) {
+      window.dispatchEvent(new Event("blog:spa-ready"));
+    }
+  }, [loading]);
 
   // Simple scroll spy-like effect for active year (rAF-throttled)
   const tickingRef = useRef(false);

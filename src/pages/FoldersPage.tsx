@@ -3,8 +3,14 @@ import FolderTree from "@/components/FolderTree";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { usePageMeta } from "@/lib/pageMeta";
 
 export default function FoldersPage() {
+  usePageMeta({
+    title: "文件夹",
+    description: "按文件夹层次浏览囫囵吞桃个人博客的文章。",
+    canonicalPath: "/folders",
+  });
   const [folderTree, setFolderTree] = useState<FolderNode | null>(null);
   const [loading, setLoading] = useState(true);
 
