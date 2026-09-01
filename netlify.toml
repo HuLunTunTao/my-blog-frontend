@@ -25,11 +25,13 @@
   to = "https://api.blog.hltt.online/rss.xml"
   status = 200
 
-# Homepage SSR
+# Homepage SSR. force overrides Netlify file shadowing, which would otherwise
+# serve the static dist/index.html shell instead of proxying.
 [[redirects]]
   from = "/"
   to = "https://api.blog.hltt.online/render/home"
   status = 200
+  force = true
 
 # Proxy API assets so images work in SSR HTML
 [[redirects]]
