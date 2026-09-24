@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { getFolderByPath, getAllPostsInFolder, Post, FolderNode } from "@/lib/posts";
+import { getFolderByPath, getAllPostsInFolder, isPinnedPost, Post, FolderNode } from "@/lib/posts";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { format, parseISO } from "date-fns";
 import { LazyMotion, domAnimation, m } from "framer-motion";
@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { toPostRoute } from "@/lib/postSlug";
 import { usePageMeta } from "@/lib/pageMeta";
+import PinnedPostBadge from "@/components/PinnedPostBadge";
 
 const container = {
   hidden: { opacity: 0 },
@@ -233,12 +234,13 @@ export default function FolderDetailPage() {
                 {/* Paper Layer - Consistent with other pages */}
                 <div className="paper-texture absolute inset-0 bg-white/60 dark:bg-stone-900/55 -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none" />
 
-                <header className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-1">
+                <header className="flex flex-col md:flex-row md:items-center md:justify-between mb-1">
                   <Link
                     to={toPostRoute(post)}
-                    className="text-xl font-medium decoration-1 underline-offset-4 hover:underline"
+                    className="inline-flex items-center gap-3 text-xl font-medium leading-tight decoration-1 underline-offset-4 hover:underline"
                   >
-                    {post.title}
+                    {isPinnedPost(post) && <PinnedPostBadge />}
+                    <span>{post.title}</span>
                   </Link>
                   <span className="text-xs text-subtle font-sans mt-1 md:mt-0">
                     {format(parseISO(post.date), 'yyyy-MM-dd')}

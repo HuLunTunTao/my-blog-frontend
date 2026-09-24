@@ -1,11 +1,12 @@
 import { useSearchParams, Link } from "react-router-dom";
-import { searchPosts, Post } from "@/lib/posts";
+import { searchPosts, isPinnedPost, Post } from "@/lib/posts";
 import { format, parseISO } from "date-fns";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { toPostRoute } from "@/lib/postSlug";
 import { usePageMeta } from "@/lib/pageMeta";
+import PinnedPostBadge from "@/components/PinnedPostBadge";
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -183,7 +184,8 @@ export default function SearchPage() {
 
                 <Link to={toPostRoute(post)} className="block space-y-2">
                   <div className="flex justify-between items-baseline">
-                    <h2 className="text-xl font-medium group-hover:underline decoration-1 underline-offset-4">
+                    <h2 className="flex items-center gap-2 text-xl font-medium leading-tight group-hover:underline decoration-1 underline-offset-4">
+                      {isPinnedPost(post) && <PinnedPostBadge />}
                       <Highlight text={post.title} query={query} />
                     </h2>
                     <span className="text-xs text-subtle font-sans">

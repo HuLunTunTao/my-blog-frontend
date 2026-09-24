@@ -1,11 +1,12 @@
 import { useParams, Link } from "react-router-dom";
-import { getPostsByTag, getAllTags, Post, Tag } from "@/lib/posts";
+import { getPostsByTag, getAllTags, isPinnedPost, Post, Tag } from "@/lib/posts";
 import { format, parseISO } from "date-fns";
 import { LazyMotion, domAnimation, m } from "framer-motion";
 import { useReducer, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { toPostRoute } from "@/lib/postSlug";
 import { usePageMeta } from "@/lib/pageMeta";
+import PinnedPostBadge from "@/components/PinnedPostBadge";
 
 type State = {
   posts: Post[];
@@ -117,7 +118,10 @@ export default function TagDetailPage() {
 
               <Link to={toPostRoute(post)} className="block">
                 <div className="flex justify-between items-baseline mb-2">
-                  <h2 className="text-xl font-medium decoration-1 underline-offset-4 hover:underline tracking-tight transition-colors">{post.title}</h2>
+                  <h2 className="flex items-center gap-2 text-xl font-medium leading-tight decoration-1 underline-offset-4 hover:underline tracking-tight transition-colors">
+                    {isPinnedPost(post) && <PinnedPostBadge />}
+                    {post.title}
+                  </h2>
                   <span className="text-xs text-subtle font-sans opacity-70">{format(parseISO(post.date), "yyyy-MM-dd")}</span>
                 </div>
                 {post.excerpt && <p className="text-stone-500 dark:text-stone-400 font-serif text-sm line-clamp-2 leading-relaxed">{post.excerpt}</p>}

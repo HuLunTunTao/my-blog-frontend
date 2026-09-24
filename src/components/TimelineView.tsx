@@ -1,4 +1,4 @@
-import { getTimelinePosts, groupPostsByYearMonth, Post } from "@/lib/posts";
+import { getTimelinePosts, groupPostsByYearMonth, isPinnedPost, Post } from "@/lib/posts";
 import { parseISO, format } from "date-fns";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { siteConfig } from "@/config/site.config";
 import { toPostRoute } from "@/lib/postSlug";
 import { usePageMeta } from "@/lib/pageMeta";
+import PinnedPostBadge from "./PinnedPostBadge";
 import type { ComponentType } from "react";
 
 type SocialIconProps = { size?: string | number; className?: string };
@@ -21,7 +22,11 @@ export default function TimelineView() {
   const [activeYear, setActiveYear] = useState<string>("");
   const [avatarLoaded, setAvatarLoaded] = useState(false);
 
-  const grouped = useMemo(() => groupPostsByYearMonth(posts), [posts]);
+  const pinnedPosts = useMemo(() => posts.filter(isPinnedPost), [posts]);
+  const grouped = useMemo(
+    () => groupPostsByYearMonth(posts.filter((post) => !isPinnedPost(post))),
+    [posts],
+  );
   const years = useMemo(
     () => Object.keys(grouped).sort((a, b) => Number(b) - Number(a)),
     [grouped]
@@ -167,7 +172,35 @@ export default function TimelineView() {
             <Loader2 className="h-8 w-8 animate-spin text-stone-400 dark:text-stone-500" />
             <span className="sr-only">正在加载文章列表</span>
           </div>
-        ) : years.map((year) => (
+        ) : (
+          <>
+          {pinnedPosts.length > 0 && (
+            <section className="relative scroll-mt-32" aria-labelledby="pinned-posts-title">
+              <div className="flex items-baseline border-b border-black dark:border-stone-200 pb-4 mb-8">
+                <h2 id="pinned-posts-title" className="text-3xl font-serif font-bold tracking-tight">置顶文章</h2>
+                <span className="ml-4 text-xs font-sans uppercase tracking-widest text-subtle">Pinned</span>
+              </div>
+              <div className="space-y-4">
+                {pinnedPosts.map((post) => (
+                  <Link key={post.slug} to={toPostRoute(post)} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/70 dark:focus-visible:ring-stone-500/70">
+                    <article className="relative py-4 px-6">
+                      <div className="paper-texture absolute inset-0 bg-white/60 dark:bg-stone-900/45 -z-10 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.4)] rounded-none" />
+                      <header className="flex flex-col md:flex-row md:items-baseline md:justify-between mb-1">
+                        <span className={cn("flex items-center gap-2 text-xl font-medium leading-tight decoration-1 underline-offset-4 group-hover:underline", post.visibility === 'encrypted' && "font-mono text-base text-neutral-600 dark:text-neutral-400")}>
+                          {post.visibility === 'encrypted' && <Lock size={14} strokeWidth={1.5} className="inline-block -translate-y-px text-muted" aria-hidden="true" />}
+                          <PinnedPostBadge />
+                          {post.title}
+                        </span>
+                        <span className="text-xs text-subtle font-sans mt-1 md:mt-0">{format(parseISO(post.date), "yyyy-MM-dd")}</span>
+                      </header>
+                      {post.excerpt && <p className="text-neutral-500 dark:text-neutral-400 font-serif text-sm leading-relaxed line-clamp-2 max-w-lg">{post.visibility === 'encrypted' ? "********" : post.excerpt}</p>}
+                    </article>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+          {years.map((year) => (
           <div key={year} id={`year-${year}`} className="relative scroll-mt-32">
              {/* Year Marker - Optimized: Ink wash style, muted, serif water mark */}
             <div className="flex items-baseline border-b border-black dark:border-stone-200 pb-4 mb-12 relative">
@@ -232,6 +265,8 @@ export default function TimelineView() {
             </div>
           </div>
         ))}
+        </>
+        )}
       </div>
     </>
   );

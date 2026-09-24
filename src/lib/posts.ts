@@ -4,6 +4,10 @@ import * as api from "./api";
 // Re-export types from API
 export type { Post, Tag } from "./api";
 
+export function isPinnedPost(post: Pick<api.Post, "tags">): boolean {
+  return post.tags.some((tag) => tag.trim().toLowerCase() === "置顶");
+}
+
 // 兼容旧的 FolderNode 类型
 export interface FolderNode {
   name: string;
